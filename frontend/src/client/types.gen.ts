@@ -301,3 +301,120 @@ export type HabitsDeleteHabitData = {
 };
 
 export type HabitsDeleteHabitResponse = (Message);
+
+export type HabitPublicWithStats = {
+    name: string;
+    frequency: Frequency;
+    target_count: number;
+    description?: (string | null);
+    id: string;
+    owner_id: string;
+    created_at?: (string | null);
+    total_checkins: number;
+    current_streak: number;
+    longest_streak: number;
+    completion_rate: number;
+    is_checked_today: boolean;
+};
+
+export type HabitsPublicWithStats = {
+    data: Array<HabitPublicWithStats>;
+    count: number;
+};
+
+export type CheckinRecordCreate = {
+    habit_id: string;
+};
+
+export type CheckinRecordPublic = {
+    id: string;
+    habit_id: string;
+    user_id: string;
+    checkin_date: string;
+    created_at?: (string | null);
+};
+
+export type CheckinRecordsPublic = {
+    data: Array<CheckinRecordPublic>;
+    count: number;
+};
+
+export type CheckinCalendarDay = {
+    date: string;
+    has_checkin: boolean;
+    checkin_count: number;
+};
+
+export type CheckinCalendarMonth = {
+    year: number;
+    month: number;
+    days: Array<CheckinCalendarDay>;
+};
+
+export type HabitStats = {
+    habit_id: string;
+    habit_name: string;
+    total_checkins: number;
+    current_streak: number;
+    longest_streak: number;
+    completion_rate: number;
+};
+
+export type WeeklyStats = {
+    total_checkins: number;
+    habits_with_checkins: number;
+    completion_rate: number;
+};
+
+export type MonthlyStats = {
+    total_checkins: number;
+    habits_with_checkins: number;
+    completion_rate: number;
+};
+
+export type DashboardStats = {
+    weekly: WeeklyStats;
+    monthly: MonthlyStats;
+    top_habits: Array<HabitStats>;
+    longest_streak: number;
+    longest_streak_habit_name?: (string | null);
+    total_habits: number;
+};
+
+export type CheckinsCreateCheckinData = {
+    requestBody: CheckinRecordCreate;
+};
+
+export type CheckinsCreateCheckinResponse = (CheckinRecordPublic);
+
+export type CheckinsCancelCheckinData = {
+    habit_id: string;
+    date?: (string | null);
+};
+
+export type CheckinsCancelCheckinResponse = (Message);
+
+export type CheckinsGetCheckinsByHabitData = {
+    habit_id: string;
+    limit?: number;
+    skip?: number;
+};
+
+export type CheckinsGetCheckinsByHabitResponse = (CheckinRecordsPublic);
+
+export type CheckinsGetCheckinCalendarData = {
+    habit_id: string;
+    year?: (number | null);
+    month?: (number | null);
+};
+
+export type CheckinsGetCheckinCalendarResponse = (CheckinCalendarMonth);
+
+export type CheckinsGetHabitsWithStatsData = {
+    limit?: number;
+    skip?: number;
+};
+
+export type CheckinsGetHabitsWithStatsResponse = (HabitsPublicWithStats);
+
+export type CheckinsGetDashboardStatsResponse = (DashboardStats);
