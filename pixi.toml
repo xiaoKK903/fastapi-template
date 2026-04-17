@@ -1,0 +1,20 @@
+[workspace]
+name = "full-stack-fastapi-template"
+version = "0.1.0"
+description = "Full stack FastAPI template with React frontend"
+authors = ["Your Name <your@email.com>"]
+channels = ["conda-forge"]
+platforms = ["osx-arm64", "osx-64", "linux-64", "win-64"]
+
+[tasks]
+start-postgres = "pg_ctl -D $PIXI_HOME/envs/$PIXI_PROJECT_NAME/var/lib/postgresql -l $PIXI_HOME/envs/$PIXI_PROJECT_NAME/var/log/postgresql.log start"
+stop-postgres = "pg_ctl -D $PIXI_HOME/envs/$PIXI_PROJECT_NAME/var/lib/postgresql stop"
+init-postgres = "initdb -D $PIXI_HOME/envs/$PIXI_PROJECT_NAME/var/lib/postgresql -U postgres"
+create-db = "createdb -U postgres app"
+
+[dependencies]
+postgresql = ">=16.0"
+python = ">=3.10"
+
+[pypi-dependencies]
+uv = ">=0.1.0"

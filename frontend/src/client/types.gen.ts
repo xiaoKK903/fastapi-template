@@ -13,6 +13,37 @@ export type HTTPValidationError = {
     detail?: Array<ValidationError>;
 };
 
+export type Frequency = 'daily' | 'weekly' | 'monthly';
+
+export type HabitCreate = {
+    name: string;
+    frequency?: Frequency;
+    target_count?: number;
+    description?: (string | null);
+};
+
+export type HabitPublic = {
+    name: string;
+    frequency: Frequency;
+    target_count: number;
+    description?: (string | null);
+    id: string;
+    owner_id: string;
+    created_at?: (string | null);
+};
+
+export type HabitsPublic = {
+    data: Array<HabitPublic>;
+    count: number;
+};
+
+export type HabitUpdate = {
+    name?: (string | null);
+    frequency?: (Frequency | null);
+    target_count?: (number | null);
+    description?: (string | null);
+};
+
 export type ItemCreate = {
     title: string;
     description?: (string | null);
@@ -238,3 +269,35 @@ export type UtilsTestEmailData = {
 export type UtilsTestEmailResponse = (Message);
 
 export type UtilsHealthCheckResponse = (boolean);
+
+export type HabitsReadHabitsData = {
+    limit?: number;
+    skip?: number;
+};
+
+export type HabitsReadHabitsResponse = (HabitsPublic);
+
+export type HabitsCreateHabitData = {
+    requestBody: HabitCreate;
+};
+
+export type HabitsCreateHabitResponse = (HabitPublic);
+
+export type HabitsReadHabitData = {
+    id: string;
+};
+
+export type HabitsReadHabitResponse = (HabitPublic);
+
+export type HabitsUpdateHabitData = {
+    id: string;
+    requestBody: HabitUpdate;
+};
+
+export type HabitsUpdateHabitResponse = (HabitPublic);
+
+export type HabitsDeleteHabitData = {
+    id: string;
+};
+
+export type HabitsDeleteHabitResponse = (Message);

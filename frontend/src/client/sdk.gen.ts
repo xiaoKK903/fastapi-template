@@ -3,7 +3,118 @@
 import type { CancelablePromise } from './core/CancelablePromise';
 import { OpenAPI } from './core/OpenAPI';
 import { request as __request } from './core/request';
-import type { ItemsReadItemsData, ItemsReadItemsResponse, ItemsCreateItemData, ItemsCreateItemResponse, ItemsReadItemData, ItemsReadItemResponse, ItemsUpdateItemData, ItemsUpdateItemResponse, ItemsDeleteItemData, ItemsDeleteItemResponse, LoginLoginAccessTokenData, LoginLoginAccessTokenResponse, LoginTestTokenResponse, LoginRecoverPasswordData, LoginRecoverPasswordResponse, LoginResetPasswordData, LoginResetPasswordResponse, LoginRecoverPasswordHtmlContentData, LoginRecoverPasswordHtmlContentResponse, PrivateCreateUserData, PrivateCreateUserResponse, UsersReadUsersData, UsersReadUsersResponse, UsersCreateUserData, UsersCreateUserResponse, UsersReadUserMeResponse, UsersDeleteUserMeResponse, UsersUpdateUserMeData, UsersUpdateUserMeResponse, UsersUpdatePasswordMeData, UsersUpdatePasswordMeResponse, UsersRegisterUserData, UsersRegisterUserResponse, UsersReadUserByIdData, UsersReadUserByIdResponse, UsersUpdateUserData, UsersUpdateUserResponse, UsersDeleteUserData, UsersDeleteUserResponse, UtilsTestEmailData, UtilsTestEmailResponse, UtilsHealthCheckResponse } from './types.gen';
+import type { HabitsReadHabitsData, HabitsReadHabitsResponse, HabitsCreateHabitData, HabitsCreateHabitResponse, HabitsReadHabitData, HabitsReadHabitResponse, HabitsUpdateHabitData, HabitsUpdateHabitResponse, HabitsDeleteHabitData, HabitsDeleteHabitResponse, ItemsReadItemsData, ItemsReadItemsResponse, ItemsCreateItemData, ItemsCreateItemResponse, ItemsReadItemData, ItemsReadItemResponse, ItemsUpdateItemData, ItemsUpdateItemResponse, ItemsDeleteItemData, ItemsDeleteItemResponse, LoginLoginAccessTokenData, LoginLoginAccessTokenResponse, LoginTestTokenResponse, LoginRecoverPasswordData, LoginRecoverPasswordResponse, LoginResetPasswordData, LoginResetPasswordResponse, LoginRecoverPasswordHtmlContentData, LoginRecoverPasswordHtmlContentResponse, PrivateCreateUserData, PrivateCreateUserResponse, UsersReadUsersData, UsersReadUsersResponse, UsersCreateUserData, UsersCreateUserResponse, UsersReadUserMeResponse, UsersDeleteUserMeResponse, UsersUpdateUserMeData, UsersUpdateUserMeResponse, UsersUpdatePasswordMeData, UsersUpdatePasswordMeResponse, UsersRegisterUserData, UsersRegisterUserResponse, UsersReadUserByIdData, UsersReadUserByIdResponse, UsersUpdateUserData, UsersUpdateUserResponse, UsersDeleteUserData, UsersDeleteUserResponse, UtilsTestEmailData, UtilsTestEmailResponse, UtilsHealthCheckResponse } from './types.gen';
+
+export class HabitsService {
+    /**
+     * Read Habits
+     * Retrieve habits.
+     * @param data The data for the request.
+     * @param data.skip
+     * @param data.limit
+     * @returns HabitsPublic Successful Response
+     * @throws ApiError
+     */
+    public static readHabits(data: HabitsReadHabitsData = {}): CancelablePromise<HabitsReadHabitsResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/habits/',
+            query: {
+                skip: data.skip,
+                limit: data.limit
+            },
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Create Habit
+     * Create new habit.
+     * @param data The data for the request.
+     * @param data.requestBody
+     * @returns HabitPublic Successful Response
+     * @throws ApiError
+     */
+    public static createHabit(data: HabitsCreateHabitData): CancelablePromise<HabitsCreateHabitResponse> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/v1/habits/',
+            body: data.requestBody,
+            mediaType: 'application/json',
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Read Habit
+     * Get habit by ID.
+     * @param data The data for the request.
+     * @param data.id
+     * @returns HabitPublic Successful Response
+     * @throws ApiError
+     */
+    public static readHabit(data: HabitsReadHabitData): CancelablePromise<HabitsReadHabitResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/habits/{id}',
+            path: {
+                id: data.id
+            },
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Update Habit
+     * Update a habit.
+     * @param data The data for the request.
+     * @param data.id
+     * @param data.requestBody
+     * @returns HabitPublic Successful Response
+     * @throws ApiError
+     */
+    public static updateHabit(data: HabitsUpdateHabitData): CancelablePromise<HabitsUpdateHabitResponse> {
+        return __request(OpenAPI, {
+            method: 'PATCH',
+            url: '/api/v1/habits/{id}',
+            path: {
+                id: data.id
+            },
+            body: data.requestBody,
+            mediaType: 'application/json',
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Delete Habit
+     * Delete a habit.
+     * @param data The data for the request.
+     * @param data.id
+     * @returns Message Successful Response
+     * @throws ApiError
+     */
+    public static deleteHabit(data: HabitsDeleteHabitData): CancelablePromise<HabitsDeleteHabitResponse> {
+        return __request(OpenAPI, {
+            method: 'DELETE',
+            url: '/api/v1/habits/{id}',
+            path: {
+                id: data.id
+            },
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+}
 
 export class ItemsService {
     /**

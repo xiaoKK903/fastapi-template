@@ -1,5 +1,6 @@
 import uuid
 from datetime import datetime, timezone
+from enum import Enum
 
 from pydantic import EmailStr
 from sqlalchemy import DateTime
@@ -8,6 +9,12 @@ from sqlmodel import Field, Relationship, SQLModel
 
 def get_datetime_utc() -> datetime:
     return datetime.now(timezone.utc)
+
+
+class Frequency(str, Enum):
+    DAILY = "daily"
+    WEEKLY = "weekly"
+    MONTHLY = "monthly"
 
 
 # Shared properties
@@ -51,9 +58,10 @@ class User(UserBase, table=True):
     hashed_password: str
     created_at: datetime | None = Field(
         default_factory=get_datetime_utc,
-        sa_type=DateTime(timezone=True),  # type: ignore
+        sa_type=DateTime(timezone=True),
     )
     items: list["Item"] = Relationship(back_populates="owner", cascade_delete=True)
+    habits: list["Habit"] = Relationship(back_populates="owner", cascade_delete=True)
 
 
 # Properties to return via API, id is always required
@@ -64,6 +72,52 @@ class UserPublic(UserBase):
 
 class UsersPublic(SQLModel):
     data: list[UserPublic]
+    count: int
+
+
+# Shared properties
+class HabitBase(SQLModel):
+    name: str = Field(min_length=1, max_length=255)
+    frequency: Frequency = Field(default=Frequency.DAILY)
+    target_count: int = Field(default=1, ge=1)
+    description: str | None = Field(default=None, max_length=500)
+
+
+# Properties to receive on habit creation
+class HabitCreate(HabitBase):
+    pass
+
+
+# Properties to receive on habit update
+class HabitUpdate(SQLModel):
+    name: str | None = Field(default=None, min_length=1, max_length=255)
+    frequency: Frequency | None = None
+    target_count: int | None = Field(default=None, ge=1)
+    description: str | None = Field(default=None, max_length=500)
+
+
+# Database model, database table inferred from class name
+class Habit(HabitBase, table=True):
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    created_at: datetime | None = Field(
+        default_factory=get_datetime_utc,
+        sa_type=DateTime(timezone=True),
+    )
+    owner_id: uuid.UUID = Field(
+        foreign_key="user.id", nullable=False, ondelete="CASCADE"
+    )
+    owner: User | None = Relationship(back_populates="habits")
+
+
+# Properties to return via API, id is always required
+class HabitPublic(HabitBase):
+    id: uuid.UUID
+    owner_id: uuid.UUID
+    created_at: datetime | None = None
+
+
+class HabitsPublic(SQLModel):
+    data: list[HabitPublic]
     count: int
 
 
@@ -80,7 +134,7 @@ class ItemCreate(ItemBase):
 
 # Properties to receive on item update
 class ItemUpdate(ItemBase):
-    title: str | None = Field(default=None, min_length=1, max_length=255)  # type: ignore[assignment]
+    title: str | None = Field(default=None, min_length=1, max_length=255)
 
 
 # Database model, database table inferred from class name
@@ -88,7 +142,7 @@ class Item(ItemBase, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     created_at: datetime | None = Field(
         default_factory=get_datetime_utc,
-        sa_type=DateTime(timezone=True),  # type: ignore
+        sa_type=DateTime(timezone=True),
     )
     owner_id: uuid.UUID = Field(
         foreign_key="user.id", nullable=False, ondelete="CASCADE"
