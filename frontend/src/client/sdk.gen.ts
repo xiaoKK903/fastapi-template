@@ -3,7 +3,7 @@
 import type { CancelablePromise } from './core/CancelablePromise';
 import { OpenAPI } from './core/OpenAPI';
 import { request as __request } from './core/request';
-import type { HabitsReadHabitsData, HabitsReadHabitsResponse, HabitsCreateHabitData, HabitsCreateHabitResponse, HabitsReadHabitData, HabitsReadHabitResponse, HabitsUpdateHabitData, HabitsUpdateHabitResponse, HabitsDeleteHabitData, HabitsDeleteHabitResponse, ItemsReadItemsData, ItemsReadItemsResponse, ItemsCreateItemData, ItemsCreateItemResponse, ItemsReadItemData, ItemsReadItemResponse, ItemsUpdateItemData, ItemsUpdateItemResponse, ItemsDeleteItemData, ItemsDeleteItemResponse, LoginLoginAccessTokenData, LoginLoginAccessTokenResponse, LoginTestTokenResponse, LoginRecoverPasswordData, LoginRecoverPasswordResponse, LoginResetPasswordData, LoginResetPasswordResponse, LoginRecoverPasswordHtmlContentData, LoginRecoverPasswordHtmlContentResponse, PrivateCreateUserData, PrivateCreateUserResponse, UsersReadUsersData, UsersReadUsersResponse, UsersCreateUserData, UsersCreateUserResponse, UsersReadUserMeResponse, UsersDeleteUserMeResponse, UsersUpdateUserMeData, UsersUpdateUserMeResponse, UsersUpdatePasswordMeData, UsersUpdatePasswordMeResponse, UsersRegisterUserData, UsersRegisterUserResponse, UsersReadUserByIdData, UsersReadUserByIdResponse, UsersUpdateUserData, UsersUpdateUserResponse, UsersDeleteUserData, UsersDeleteUserResponse, UtilsTestEmailData, UtilsTestEmailResponse, UtilsHealthCheckResponse } from './types.gen';
+import type { HabitsReadHabitsData, HabitsReadHabitsResponse, HabitsCreateHabitData, HabitsCreateHabitResponse, HabitsReadHabitData, HabitsReadHabitResponse, HabitsUpdateHabitData, HabitsUpdateHabitResponse, HabitsDeleteHabitData, HabitsDeleteHabitResponse, ItemsReadItemsData, ItemsReadItemsResponse, ItemsCreateItemData, ItemsCreateItemResponse, ItemsReadItemData, ItemsReadItemResponse, ItemsUpdateItemData, ItemsUpdateItemResponse, ItemsDeleteItemData, ItemsDeleteItemResponse, LoginLoginAccessTokenData, LoginLoginAccessTokenResponse, LoginTestTokenResponse, LoginRecoverPasswordData, LoginRecoverPasswordResponse, LoginResetPasswordData, LoginResetPasswordResponse, LoginRecoverPasswordHtmlContentData, LoginRecoverPasswordHtmlContentResponse, PrivateCreateUserData, PrivateCreateUserResponse, UsersReadUsersData, UsersReadUsersResponse, UsersCreateUserData, UsersCreateUserResponse, UsersReadUserMeResponse, UsersDeleteUserMeResponse, UsersUpdateUserMeData, UsersUpdateUserMeResponse, UsersUpdatePasswordMeData, UsersUpdatePasswordMeResponse, UsersRegisterUserData, UsersRegisterUserResponse, UsersReadUserByIdData, UsersReadUserByIdResponse, UsersUpdateUserData, UsersUpdateUserResponse, UsersDeleteUserData, UsersDeleteUserResponse, UtilsTestEmailData, UtilsTestEmailResponse, UtilsHealthCheckResponse, CheckinsCreateCheckinData, CheckinsCreateCheckinResponse, CheckinsCancelCheckinData, CheckinsCancelCheckinResponse, CheckinsGetCheckinsByHabitData, CheckinsGetCheckinsByHabitResponse, CheckinsGetCheckinCalendarData, CheckinsGetCheckinCalendarResponse, CheckinsGetHabitsWithStatsData, CheckinsGetHabitsWithStatsResponse, CheckinsGetDashboardStatsResponse } from './types.gen';
 
 export class HabitsService {
     /**
@@ -574,6 +574,141 @@ export class UtilsService {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/v1/utils/health-check/'
+        });
+    }
+}
+
+export class CheckinsService {
+    /**
+     * Create Checkin
+     * Create a new checkin. Same habit can only be checked once per day.
+     * @param data The data for the request.
+     * @param data.requestBody
+     * @returns CheckinRecordPublic Successful Response
+     * @throws ApiError
+     */
+    public static createCheckin(data: CheckinsCreateCheckinData): CancelablePromise<CheckinsCreateCheckinResponse> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/v1/checkins/',
+            body: data.requestBody,
+            mediaType: 'application/json',
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Cancel Checkin
+     * Cancel a checkin.
+     * @param data The data for the request.
+     * @param data.habit_id
+     * @param data.date
+     * @returns Message Successful Response
+     * @throws ApiError
+     */
+    public static cancelCheckin(data: CheckinsCancelCheckinData): CancelablePromise<CheckinsCancelCheckinResponse> {
+        return __request(OpenAPI, {
+            method: 'DELETE',
+            url: '/api/v1/checkins/cancel',
+            query: {
+                habit_id: data.habit_id,
+                date: data.date
+            },
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Get Checkins By Habit
+     * Get all checkins for a specific habit.
+     * @param data The data for the request.
+     * @param data.habit_id
+     * @param data.skip
+     * @param data.limit
+     * @returns CheckinRecordsPublic Successful Response
+     * @throws ApiError
+     */
+    public static getCheckinsByHabit(data: CheckinsGetCheckinsByHabitData): CancelablePromise<CheckinsGetCheckinsByHabitResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/checkins/habit/{habit_id}',
+            path: {
+                habit_id: data.habit_id
+            },
+            query: {
+                skip: data.skip,
+                limit: data.limit
+            },
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Get Checkin Calendar
+     * Get checkin calendar for a specific habit and month.
+     * @param data The data for the request.
+     * @param data.habit_id
+     * @param data.year
+     * @param data.month
+     * @returns CheckinCalendarMonth Successful Response
+     * @throws ApiError
+     */
+    public static getCheckinCalendar(data: CheckinsGetCheckinCalendarData): CancelablePromise<CheckinsGetCheckinCalendarResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/checkins/calendar/{habit_id}',
+            path: {
+                habit_id: data.habit_id
+            },
+            query: {
+                year: data.year,
+                month: data.month
+            },
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Get Habits With Stats
+     * Get habits with checkin statistics.
+     * @param data The data for the request.
+     * @param data.skip
+     * @param data.limit
+     * @returns HabitsPublicWithStats Successful Response
+     * @throws ApiError
+     */
+    public static getHabitsWithStats(data: CheckinsGetHabitsWithStatsData = {}): CancelablePromise<CheckinsGetHabitsWithStatsResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/checkins/habits-with-stats',
+            query: {
+                skip: data.skip,
+                limit: data.limit
+            },
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Get Dashboard Stats
+     * Get dashboard statistics for current user.
+     * @returns DashboardStats Successful Response
+     * @throws ApiError
+     */
+    public static getDashboardStats(): CancelablePromise<CheckinsGetDashboardStatsResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/checkins/dashboard'
         });
     }
 }

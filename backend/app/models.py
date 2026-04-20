@@ -107,6 +107,9 @@ class Habit(HabitBase, table=True):
         foreign_key="user.id", nullable=False, ondelete="CASCADE"
     )
     owner: User | None = Relationship(back_populates="habits")
+    checkin_records: list["CheckinRecord"] = Relationship(
+        back_populates="habit", cascade_delete=True
+    )
 
 
 # Properties to return via API, id is always required
@@ -116,9 +119,110 @@ class HabitPublic(HabitBase):
     created_at: datetime | None = None
 
 
+class HabitPublicWithStats(HabitPublic):
+    total_checkins: int = 0
+    current_streak: int = 0
+    longest_streak: int = 0
+    completion_rate: float = 0.0
+    is_checked_today: bool = False
+
+
 class HabitsPublic(SQLModel):
     data: list[HabitPublic]
     count: int
+
+
+class HabitsPublicWithStats(SQLModel):
+    data: list[HabitPublicWithStats]
+    count: int
+
+
+# Checkin Record models
+class CheckinRecordBase(SQLModel):
+    pass
+
+
+class CheckinRecordCreate(CheckinRecordBase):
+    habit_id: uuid.UUID
+
+
+class CheckinRecordPublic(CheckinRecordBase):
+    id: uuid.UUID
+    habit_id: uuid.UUID
+    user_id: uuid.UUID
+    checkin_date: datetime
+    created_at: datetime | None = None
+
+
+class CheckinRecordsPublic(SQLModel):
+    data: list[CheckinRecordPublic]
+    count: int
+
+
+class CheckinCalendarDay(SQLModel):
+    date: str
+    has_checkin: bool
+    checkin_count: int = 0
+
+
+class CheckinCalendarMonth(SQLModel):
+    year: int
+    month: int
+    days: list[CheckinCalendarDay]
+
+
+# Database model
+class CheckinRecord(CheckinRecordBase, table=True):
+    __table_args__ = (
+        {"sqlite_autoincrement": True},
+    )
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    checkin_date: datetime = Field(
+        sa_type=DateTime(timezone=True),
+        index=True,
+    )
+    created_at: datetime | None = Field(
+        default_factory=get_datetime_utc,
+        sa_type=DateTime(timezone=True),
+    )
+    habit_id: uuid.UUID = Field(
+        foreign_key="habit.id", nullable=False, ondelete="CASCADE", index=True
+    )
+    user_id: uuid.UUID = Field(
+        foreign_key="user.id", nullable=False, ondelete="CASCADE", index=True
+    )
+    habit: Habit | None = Relationship(back_populates="checkin_records")
+
+
+# Dashboard Stats models
+class HabitStats(SQLModel):
+    habit_id: uuid.UUID
+    habit_name: str
+    total_checkins: int = 0
+    current_streak: int = 0
+    longest_streak: int = 0
+    completion_rate: float = 0.0
+
+
+class WeeklyStats(SQLModel):
+    total_checkins: int = 0
+    habits_with_checkins: int = 0
+    completion_rate: float = 0.0
+
+
+class MonthlyStats(SQLModel):
+    total_checkins: int = 0
+    habits_with_checkins: int = 0
+    completion_rate: float = 0.0
+
+
+class DashboardStats(SQLModel):
+    weekly: WeeklyStats
+    monthly: MonthlyStats
+    top_habits: list[HabitStats]
+    longest_streak: int
+    longest_streak_habit_name: str | None = None
+    total_habits: int = 0
 
 
 # Shared properties

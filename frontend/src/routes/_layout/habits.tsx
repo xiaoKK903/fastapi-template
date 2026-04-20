@@ -3,7 +3,7 @@ import { createFileRoute } from "@tanstack/react-router"
 import { Search } from "lucide-react"
 import { Suspense } from "react"
 
-import { HabitsService } from "@/client"
+import { CheckinsService } from "@/client"
 import { DataTable } from "@/components/Common/DataTable"
 import AddHabit from "@/components/Habits/AddHabit"
 import { columns } from "@/components/Habits/columns"
@@ -11,7 +11,7 @@ import PendingHabits from "@/components/Pending/PendingHabits"
 
 function getHabitsQueryOptions() {
   return {
-    queryFn: () => HabitsService.readHabits({ skip: 0, limit: 100 }),
+    queryFn: () => CheckinsService.getHabitsWithStats({ skip: 0, limit: 100 }),
     queryKey: ["habits"],
   }
 }
