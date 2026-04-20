@@ -4,7 +4,7 @@ from enum import Enum
 from typing import Optional
 
 from pydantic import EmailStr
-from sqlalchemy import DateTime
+from sqlalchemy import DateTime as SA_DateTime
 from sqlmodel import Column, Field, Relationship, SQLModel
 
 
@@ -59,7 +59,7 @@ class User(UserBase, table=True):
     hashed_password: str
     created_at: datetime | None = Field(
         default_factory=get_datetime_utc,
-        sa_type=DateTime(timezone=True),
+        sa_type=SA_DateTime(timezone=True),
     )
     items: list["Item"] = Relationship(back_populates="owner", cascade_delete=True)
     habits: list["Habit"] = Relationship(back_populates="owner", cascade_delete=True)
@@ -98,7 +98,7 @@ class Habit(HabitBase, table=True):
     id: str = Field(default_factory=generate_uuid, primary_key=True)
     created_at: datetime | None = Field(
         default_factory=get_datetime_utc,
-        sa_type=DateTime(timezone=True),
+        sa_type=SA_DateTime(timezone=True),
     )
     owner_id: str = Field(
         foreign_key="user.id", nullable=False, ondelete="CASCADE"
@@ -135,7 +135,7 @@ class Item(ItemBase, table=True):
     id: str = Field(default_factory=generate_uuid, primary_key=True)
     created_at: datetime | None = Field(
         default_factory=get_datetime_utc,
-        sa_type=DateTime(timezone=True),
+        sa_type=SA_DateTime(timezone=True),
     )
     owner_id: str = Field(
         foreign_key="user.id", nullable=False, ondelete="CASCADE"
@@ -169,10 +169,10 @@ class HabitRecord(HabitRecordBase, table=True):
     habit_id: str = Field(
         foreign_key="habit.id", nullable=False, ondelete="CASCADE"
     )
-    check_date: date = Field(sa_column=Column(DateTime, nullable=False))
+    check_date: datetime = Field(sa_column=Column(SA_DateTime, nullable=False))
     created_at: datetime | None = Field(
         default_factory=get_datetime_utc,
-        sa_type=DateTime(timezone=True),
+        sa_type=SA_DateTime(timezone=True),
     )
     owner_id: str = Field(
         foreign_key="user.id", nullable=False, ondelete="CASCADE"
@@ -185,7 +185,7 @@ class HabitRecordPublic(HabitRecordBase):
     id: str
     habit_id: str
     owner_id: str
-    check_date: date
+    check_date: datetime
     created_at: datetime | None = None
 
 
@@ -195,7 +195,7 @@ class HabitRecordsPublic(SQLModel):
 
 
 class HabitCalendarDay(SQLModel):
-    date: date
+    date: str
     total_count: int
     completed_count: int
     habit_ids: list[str]
@@ -208,7 +208,7 @@ class HabitCalendar(SQLModel):
 
 
 class HabitTrendDay(SQLModel):
-    date: date
+    date: str
     completed_count: int
     total_habits: int
 

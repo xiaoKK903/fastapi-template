@@ -23,6 +23,20 @@ from app.models import (
 router = APIRouter(prefix="/habit-records", tags=["habit-records"])
 
 
+def date_to_datetime(d: date) -> datetime:
+    return datetime.combine(d, datetime.min.time())
+
+
+def datetime_to_str(dt: datetime | date) -> str:
+    if isinstance(dt, datetime):
+        return dt.strftime("%Y-%m-%d")
+    return dt.strftime("%Y-%m-%d")
+
+
+def truncate_datetime(dt: datetime) -> datetime:
+    return dt.replace(hour=0, minute=0, second=0, microsecond=0)
+
+
 @router.get("/", response_model=HabitRecordsPublic)
 def read_habit_records(
     session: SessionDep,
@@ -38,9 +52,11 @@ def read_habit_records(
     if habit_id:
         statement = statement.where(HabitRecord.habit_id == habit_id)
     if start_date:
-        statement = statement.where(HabitRecord.check_date >= start_date)
+        start_dt = date_to_datetime(start_date)
+        statement = statement.where(HabitRecord.check_date >= start_dt)
     if end_date:
-        statement = statement.where(HabitRecord.check_date <= end_date)
+        end_dt = date_to_datetime(end_date) + timedelta(days=1)
+        statement = statement.where(HabitRecord.check_date < end_dt)
     
     count_statement = select(func.count()).select_from(statement.subquery())
     count = session.exec(count_statement).one()
@@ -48,8 +64,7 @@ def read_habit_records(
     statement = statement.order_by(col(HabitRecord.check_date).desc()).offset(skip).limit(limit)
     records = session.exec(statement).all()
     
-    records_public = [HabitRecordPublic.model_validate(record) for record in records]
-    return HabitRecordsPublic(data=records_public, count=count)
+    return HabitRecordsPublic(data=records, count=count)
 
 
 @router.get("/calendar", response_model=HabitCalendar)
@@ -64,9 +79,12 @@ def get_habit_calendar(
     
     start_date = date(year, month, 1)
     if month == 12:
-        end_date = date(year + 1, 1, 1) - timedelta(days=1)
+        end_date = date(year + 1, 1, 1)
     else:
-        end_date = date(year, month + 1, 1) - timedelta(days=1)
+        end_date = date(year, month + 1, 1)
+    
+    start_dt = date_to_datetime(start_date)
+    end_dt = date_to_datetime(end_date)
     
     habits = session.exec(
         select(Habit).where(Habit.owner_id == current_user.id)
@@ -75,18 +93,22 @@ def get_habit_calendar(
     records = session.exec(
         select(HabitRecord)
         .where(HabitRecord.owner_id == current_user.id)
-        .where(HabitRecord.check_date >= start_date)
-        .where(HabitRecord.check_date <= end_date)
+        .where(HabitRecord.check_date >= start_dt)
+        .where(HabitRecord.check_date < end_dt)
     ).all()
     
     records_by_date = defaultdict(list)
     for record in records:
-        records_by_date[record.check_date].append(record)
+        date_key = datetime_to_str(record.check_date)
+        records_by_date[date_key].append(record)
     
+    days_in_month = (end_date - start_date).days
     days: list[HabitCalendarDay] = []
-    for day in range(1, end_date.day + 1):
-        current_date = date(year, month, day)
-        day_records = records_by_date.get(current_date, [])
+    
+    for day_offset in range(days_in_month):
+        current_date = start_date + timedelta(days=day_offset)
+        date_key = datetime_to_str(current_date)
+        day_records = records_by_date.get(date_key, [])
         
         habit_ids = [r.habit_id for r in day_records]
         completed_count = len(day_records)
@@ -94,7 +116,7 @@ def get_habit_calendar(
         
         days.append(
             HabitCalendarDay(
-                date=current_date,
+                date=date_key,
                 total_count=total_count,
                 completed_count=completed_count,
                 habit_ids=habit_ids,
@@ -113,8 +135,12 @@ def get_habit_trend(
     if days < 1 or days > 90:
         raise HTTPException(status_code=400, detail="Days must be between 1 and 90")
     
-    end_date = date.today()
-    start_date = end_date - timedelta(days=days - 1)
+    today = date.today()
+    end_date = today + timedelta(days=1)
+    start_date = today - timedelta(days=days - 1)
+    
+    start_dt = date_to_datetime(start_date)
+    end_dt = date_to_datetime(end_date)
     
     habits = session.exec(
         select(Habit).where(Habit.owner_id == current_user.id)
@@ -124,24 +150,26 @@ def get_habit_trend(
     records = session.exec(
         select(HabitRecord)
         .where(HabitRecord.owner_id == current_user.id)
-        .where(HabitRecord.check_date >= start_date)
-        .where(HabitRecord.check_date <= end_date)
+        .where(HabitRecord.check_date >= start_dt)
+        .where(HabitRecord.check_date < end_dt)
     ).all()
     
     records_by_date = defaultdict(list)
     for record in records:
-        records_by_date[record.check_date].append(record)
+        date_key = datetime_to_str(record.check_date)
+        records_by_date[date_key].append(record)
     
     trend_days: list[HabitTrendDay] = []
     for i in range(days):
-        current_date = end_date - timedelta(days=days - 1 - i)
-        day_records = records_by_date.get(current_date, [])
+        current_date = start_date + timedelta(days=i)
+        date_key = datetime_to_str(current_date)
+        day_records = records_by_date.get(date_key, [])
         
         completed_count = len(day_records)
         
         trend_days.append(
             HabitTrendDay(
-                date=current_date,
+                date=date_key,
                 completed_count=completed_count,
                 total_habits=total_habits,
             )
@@ -155,8 +183,12 @@ def get_habit_statistics(
     session: SessionDep,
     current_user: CurrentUser,
 ) -> Any:
-    end_date = date.today()
-    start_date = end_date - timedelta(days=30)
+    today = date.today()
+    end_date = today + timedelta(days=1)
+    start_date = today - timedelta(days=30)
+    
+    start_dt = date_to_datetime(start_date)
+    end_dt = date_to_datetime(end_date)
     
     habits = session.exec(
         select(Habit).where(Habit.owner_id == current_user.id)
@@ -166,15 +198,16 @@ def get_habit_statistics(
     records = session.exec(
         select(HabitRecord)
         .where(HabitRecord.owner_id == current_user.id)
-        .where(HabitRecord.check_date >= start_date)
-        .where(HabitRecord.check_date <= end_date)
+        .where(HabitRecord.check_date >= start_dt)
+        .where(HabitRecord.check_date < end_dt)
     ).all()
     
     total_checks_last_30_days = len(records)
     
     records_by_date = defaultdict(list)
     for record in records:
-        records_by_date[record.check_date].append(record)
+        date_key = datetime_to_str(record.check_date)
+        records_by_date[date_key].append(record)
     
     active_days = len(records_by_date.keys())
     average_checks_per_day = total_checks_last_30_days / 30 if total_checks_last_30_days > 0 else 0
@@ -184,14 +217,15 @@ def get_habit_statistics(
     for check_date, day_records in records_by_date.items():
         if len(day_records) > max_checks:
             max_checks = len(day_records)
-            most_active_day = check_date.strftime("%Y-%m-%d")
+            most_active_day = check_date
     
     streak_days = 0
-    current_date = end_date
+    current_check_date = today
     while True:
-        if current_date in records_by_date:
+        date_key = datetime_to_str(current_check_date)
+        if date_key in records_by_date:
             streak_days += 1
-            current_date -= timedelta(days=1)
+            current_check_date -= timedelta(days=1)
         else:
             break
         if streak_days >= 365:
@@ -219,10 +253,14 @@ def create_habit_record(
     if habit.owner_id != current_user.id:
         raise HTTPException(status_code=403, detail="Not enough permissions")
     
+    check_date_start = date_to_datetime(record_in.check_date)
+    check_date_end = check_date_start + timedelta(days=1)
+    
     existing_records = session.exec(
         select(HabitRecord)
         .where(HabitRecord.habit_id == record_in.habit_id)
-        .where(HabitRecord.check_date == record_in.check_date)
+        .where(HabitRecord.check_date >= check_date_start)
+        .where(HabitRecord.check_date < check_date_end)
     ).all()
     
     if existing_records:
@@ -231,7 +269,7 @@ def create_habit_record(
     
     record = HabitRecord(
         habit_id=record_in.habit_id,
-        check_date=record_in.check_date,
+        check_date=check_date_start,
         count=record_in.count,
         note=record_in.note,
         owner_id=current_user.id,
