@@ -1,10 +1,11 @@
 import uuid
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 from enum import Enum
+from typing import Optional
 
 from pydantic import EmailStr
 from sqlalchemy import DateTime
-from sqlmodel import Field, Relationship, SQLModel
+from sqlmodel import Column, Field, Relationship, SQLModel
 
 
 def get_datetime_utc() -> datetime:
@@ -62,6 +63,7 @@ class User(UserBase, table=True):
     )
     items: list["Item"] = Relationship(back_populates="owner", cascade_delete=True)
     habits: list["Habit"] = Relationship(back_populates="owner", cascade_delete=True)
+    habit_records: list["HabitRecord"] = Relationship(back_populates="owner", cascade_delete=True)
 
 
 class UserPublic(UserBase):
@@ -102,6 +104,7 @@ class Habit(HabitBase, table=True):
         foreign_key="user.id", nullable=False, ondelete="CASCADE"
     )
     owner: User | None = Relationship(back_populates="habits")
+    records: list["HabitRecord"] = Relationship(back_populates="habit", cascade_delete=True)
 
 
 class HabitPublic(HabitBase):
@@ -149,6 +152,77 @@ class ItemPublic(ItemBase):
 class ItemsPublic(SQLModel):
     data: list[ItemPublic]
     count: int
+
+
+class HabitRecordBase(SQLModel):
+    count: int = Field(default=1, ge=1)
+    note: str | None = Field(default=None, max_length=500)
+
+
+class HabitRecordCreate(HabitRecordBase):
+    habit_id: str
+    check_date: date
+
+
+class HabitRecord(HabitRecordBase, table=True):
+    id: str = Field(default_factory=generate_uuid, primary_key=True)
+    habit_id: str = Field(
+        foreign_key="habit.id", nullable=False, ondelete="CASCADE"
+    )
+    check_date: date = Field(sa_column=Column(DateTime, nullable=False))
+    created_at: datetime | None = Field(
+        default_factory=get_datetime_utc,
+        sa_type=DateTime(timezone=True),
+    )
+    owner_id: str = Field(
+        foreign_key="user.id", nullable=False, ondelete="CASCADE"
+    )
+    habit: Habit | None = Relationship(back_populates="records")
+    owner: User | None = Relationship(back_populates="habit_records")
+
+
+class HabitRecordPublic(HabitRecordBase):
+    id: str
+    habit_id: str
+    owner_id: str
+    check_date: date
+    created_at: datetime | None = None
+
+
+class HabitRecordsPublic(SQLModel):
+    data: list[HabitRecordPublic]
+    count: int
+
+
+class HabitCalendarDay(SQLModel):
+    date: date
+    total_count: int
+    completed_count: int
+    habit_ids: list[str]
+
+
+class HabitCalendar(SQLModel):
+    year: int
+    month: int
+    days: list[HabitCalendarDay]
+
+
+class HabitTrendDay(SQLModel):
+    date: date
+    completed_count: int
+    total_habits: int
+
+
+class HabitTrend(SQLModel):
+    days: list[HabitTrendDay]
+
+
+class HabitStatistics(SQLModel):
+    total_habits: int
+    total_checks_last_30_days: int
+    average_checks_per_day: float
+    most_active_day: str | None
+    streak_days: int
 
 
 class Message(SQLModel):
