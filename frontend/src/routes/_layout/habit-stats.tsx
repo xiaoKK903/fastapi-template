@@ -12,6 +12,8 @@ import {
   ResponsiveContainer,
   Legend,
   Cell,
+  PieChart,
+  Pie,
 } from "recharts"
 import { Suspense } from "react"
 import {
@@ -26,7 +28,7 @@ import {
   HabitRecordsService,
   type HabitStatistics,
   type HabitTrend,
-} from "@/client"
+} from "@/client/habitRecords"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -177,6 +179,15 @@ function HabitStatsContent() {
     }
   })
 
+  const monthlyCompletionRate = trendData.length > 0
+    ? Math.round((trendData.filter(d => d.completed_count > 0).length / trendData.length) * 100)
+    : 0
+
+  const pieData = [
+    { name: "完成天数", value: trendData.filter(d => d.completed_count > 0).length },
+    { name: "未完成天数", value: trendData.filter(d => d.completed_count === 0).length },
+  ]
+
   return (
     <div className="flex flex-col gap-6">
       <div>
@@ -213,16 +224,9 @@ function HabitStatsContent() {
         />
         <StatCard
           icon={Trophy}
-          title="最活跃日"
-          value={
-            statistics?.most_active_day
-              ? new Date(statistics.most_active_day).toLocaleDateString("zh-CN", {
-                  month: "short",
-                  day: "numeric",
-                })
-              : "-"
-          }
-          color="text-yellow-500"
+          title="月度打卡率"
+          value={`${monthlyCompletionRate}%`}
+          color="text-emerald-500"
         />
       </div>
 
@@ -230,6 +234,7 @@ function HabitStatsContent() {
         <TabsList>
           <TabsTrigger value="trend">打卡趋势</TabsTrigger>
           <TabsTrigger value="weekday">周度分析</TabsTrigger>
+          <TabsTrigger value="overview">数据概览</TabsTrigger>
         </TabsList>
 
         <TabsContent value="trend" className="space-y-4 pt-4">
@@ -453,6 +458,105 @@ function HabitStatsContent() {
               </div>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="overview" className="space-y-4 pt-4">
+          <div className="grid gap-4 md:grid-cols-2">
+            <Card>
+              <CardHeader>
+                <CardTitle>本月完成情况</CardTitle>
+                <p className="text-sm text-muted-foreground">
+                  近30天打卡天数统计
+                </p>
+              </CardHeader>
+              <CardContent>
+                <div className="h-64">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={pieData}
+                        cx="50%"
+                        cy="50%"
+                        labelLine={false}
+                        label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                        outerRadius={80}
+                        fill="#8884d8"
+                        dataKey="value"
+                      >
+                        {pieData.map((entry, index) => (
+                          <Cell
+                            key={`cell-${index}`}
+                            fill={index === 0 ? "#10b981" : "#ef4444"}
+                          />
+                        ))}
+                      </Pie>
+                      <Tooltip
+                        contentStyle={{
+                          backgroundColor: "hsl(var(--background))",
+                          border: "1px solid hsl(var(--border))",
+                          borderRadius: "0.5rem",
+                        }}
+                      />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>关键指标</CardTitle>
+                <p className="text-sm text-muted-foreground">
+                  您的打卡核心数据
+                </p>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-muted-foreground">总习惯数</p>
+                      <p className="text-2xl font-bold">{statistics?.total_habits || 0}</p>
+                    </div>
+                    <Badge variant="outline">习惯管理</Badge>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-muted-foreground">近30天打卡次数</p>
+                      <p className="text-2xl font-bold">{statistics?.total_checks_last_30_days || 0}</p>
+                    </div>
+                    <Badge variant="outline" className="text-green-600 border-green-200 dark:text-green-400 dark:border-green-800">
+                      打卡记录
+                    </Badge>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-muted-foreground">日均打卡</p>
+                      <p className="text-2xl font-bold">{(statistics?.average_checks_per_day || 0).toFixed(1)}</p>
+                    </div>
+                    <Badge variant="outline">平均值</Badge>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-muted-foreground">连续打卡天数</p>
+                      <p className="text-2xl font-bold text-orange-600">{statistics?.streak_days || 0}</p>
+                    </div>
+                    <Badge variant="outline" className="text-orange-600 border-orange-200 dark:text-orange-400 dark:border-orange-800">
+                      🔥 连续
+                    </Badge>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-muted-foreground">月度打卡率</p>
+                      <p className="text-2xl font-bold text-emerald-600">{monthlyCompletionRate}%</p>
+                    </div>
+                    <Badge variant="outline" className="text-emerald-600 border-emerald-200 dark:text-emerald-400 dark:border-emerald-800">
+                      完成率
+                    </Badge>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </TabsContent>
       </Tabs>
     </div>
