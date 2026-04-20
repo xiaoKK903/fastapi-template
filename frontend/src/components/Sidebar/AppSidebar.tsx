@@ -1,4 +1,11 @@
-import { Briefcase, Home, Target, Users } from "lucide-react"
+import {
+  Briefcase,
+  Home,
+  Target,
+  Users,
+  Calendar as CalendarIcon,
+  BarChart3,
+} from "lucide-react"
 
 import { SidebarAppearance } from "@/components/Common/Appearance"
 import { Logo } from "@/components/Common/Logo"
@@ -16,6 +23,8 @@ const baseItems: Item[] = [
   { icon: Home, title: "Dashboard", path: "/" },
   { icon: Briefcase, title: "Items", path: "/items" },
   { icon: Target, title: "习惯管理", path: "/habits" },
+  { icon: CalendarIcon, title: "打卡日历", path: "/habit-calendar" },
+  { icon: BarChart3, title: "数据统计", path: "/habit-stats" },
 ]
 
 export function AppSidebar() {

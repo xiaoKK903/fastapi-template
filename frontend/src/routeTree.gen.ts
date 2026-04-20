@@ -18,6 +18,8 @@ import { Route as LayoutIndexRouteImport } from './routes/_layout/index'
 import { Route as LayoutSettingsRouteImport } from './routes/_layout/settings'
 import { Route as LayoutItemsRouteImport } from './routes/_layout/items'
 import { Route as LayoutHabitsRouteImport } from './routes/_layout/habits'
+import { Route as LayoutHabitStatsRouteImport } from './routes/_layout/habit-stats'
+import { Route as LayoutHabitCalendarRouteImport } from './routes/_layout/habit-calendar'
 import { Route as LayoutAdminRouteImport } from './routes/_layout/admin'
 
 const SignupRoute = SignupRouteImport.update({
@@ -64,6 +66,16 @@ const LayoutHabitsRoute = LayoutHabitsRouteImport.update({
   path: '/habits',
   getParentRoute: () => LayoutRoute,
 } as any)
+const LayoutHabitStatsRoute = LayoutHabitStatsRouteImport.update({
+  id: '/habit-stats',
+  path: '/habit-stats',
+  getParentRoute: () => LayoutRoute,
+} as any)
+const LayoutHabitCalendarRoute = LayoutHabitCalendarRouteImport.update({
+  id: '/habit-calendar',
+  path: '/habit-calendar',
+  getParentRoute: () => LayoutRoute,
+} as any)
 const LayoutAdminRoute = LayoutAdminRouteImport.update({
   id: '/admin',
   path: '/admin',
@@ -77,6 +89,8 @@ export interface FileRoutesByFullPath {
   '/reset-password': typeof ResetPasswordRoute
   '/signup': typeof SignupRoute
   '/admin': typeof LayoutAdminRoute
+  '/habit-calendar': typeof LayoutHabitCalendarRoute
+  '/habit-stats': typeof LayoutHabitStatsRoute
   '/habits': typeof LayoutHabitsRoute
   '/items': typeof LayoutItemsRoute
   '/settings': typeof LayoutSettingsRoute
@@ -87,6 +101,8 @@ export interface FileRoutesByTo {
   '/reset-password': typeof ResetPasswordRoute
   '/signup': typeof SignupRoute
   '/admin': typeof LayoutAdminRoute
+  '/habit-calendar': typeof LayoutHabitCalendarRoute
+  '/habit-stats': typeof LayoutHabitStatsRoute
   '/habits': typeof LayoutHabitsRoute
   '/items': typeof LayoutItemsRoute
   '/settings': typeof LayoutSettingsRoute
@@ -100,6 +116,8 @@ export interface FileRoutesById {
   '/reset-password': typeof ResetPasswordRoute
   '/signup': typeof SignupRoute
   '/_layout/admin': typeof LayoutAdminRoute
+  '/_layout/habit-calendar': typeof LayoutHabitCalendarRoute
+  '/_layout/habit-stats': typeof LayoutHabitStatsRoute
   '/_layout/habits': typeof LayoutHabitsRoute
   '/_layout/items': typeof LayoutItemsRoute
   '/_layout/settings': typeof LayoutSettingsRoute
@@ -114,6 +132,8 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/signup'
     | '/admin'
+    | '/habit-calendar'
+    | '/habit-stats'
     | '/habits'
     | '/items'
     | '/settings'
@@ -124,6 +144,8 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/signup'
     | '/admin'
+    | '/habit-calendar'
+    | '/habit-stats'
     | '/habits'
     | '/items'
     | '/settings'
@@ -136,6 +158,8 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/signup'
     | '/_layout/admin'
+    | '/_layout/habit-calendar'
+    | '/_layout/habit-stats'
     | '/_layout/habits'
     | '/_layout/items'
     | '/_layout/settings'
@@ -215,6 +239,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LayoutHabitsRouteImport
       parentRoute: typeof LayoutRoute
     }
+    '/_layout/habit-stats': {
+      id: '/_layout/habit-stats'
+      path: '/habit-stats'
+      fullPath: '/habit-stats'
+      preLoaderRoute: typeof LayoutHabitStatsRouteImport
+      parentRoute: typeof LayoutRoute
+    }
+    '/_layout/habit-calendar': {
+      id: '/_layout/habit-calendar'
+      path: '/habit-calendar'
+      fullPath: '/habit-calendar'
+      preLoaderRoute: typeof LayoutHabitCalendarRouteImport
+      parentRoute: typeof LayoutRoute
+    }
     '/_layout/admin': {
       id: '/_layout/admin'
       path: '/admin'
@@ -227,6 +265,8 @@ declare module '@tanstack/react-router' {
 
 interface LayoutRouteChildren {
   LayoutAdminRoute: typeof LayoutAdminRoute
+  LayoutHabitCalendarRoute: typeof LayoutHabitCalendarRoute
+  LayoutHabitStatsRoute: typeof LayoutHabitStatsRoute
   LayoutHabitsRoute: typeof LayoutHabitsRoute
   LayoutItemsRoute: typeof LayoutItemsRoute
   LayoutSettingsRoute: typeof LayoutSettingsRoute
@@ -235,6 +275,8 @@ interface LayoutRouteChildren {
 
 const LayoutRouteChildren: LayoutRouteChildren = {
   LayoutAdminRoute: LayoutAdminRoute,
+  LayoutHabitCalendarRoute: LayoutHabitCalendarRoute,
+  LayoutHabitStatsRoute: LayoutHabitStatsRoute,
   LayoutHabitsRoute: LayoutHabitsRoute,
   LayoutItemsRoute: LayoutItemsRoute,
   LayoutSettingsRoute: LayoutSettingsRoute,
