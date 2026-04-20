@@ -29,6 +29,7 @@ export type HabitCalendarDay = {
     total_count: number;
     completed_count: number;
     habit_ids: Array<string>;
+    record_ids: Record<string, string>;
 };
 
 export type HabitCalendar = {

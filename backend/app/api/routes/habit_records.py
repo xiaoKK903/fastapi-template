@@ -111,6 +111,7 @@ def get_habit_calendar(
         day_records = records_by_date.get(date_key, [])
         
         habit_ids = [r.habit_id for r in day_records]
+        record_ids = {r.habit_id: r.id for r in day_records}
         completed_count = len(day_records)
         total_count = len(habits)
         
@@ -120,6 +121,7 @@ def get_habit_calendar(
                 total_count=total_count,
                 completed_count=completed_count,
                 habit_ids=habit_ids,
+                record_ids=record_ids,
             )
         )
     

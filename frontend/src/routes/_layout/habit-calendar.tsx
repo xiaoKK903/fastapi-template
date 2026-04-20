@@ -3,15 +3,12 @@ import { createFileRoute } from "@tanstack/react-router"
 import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Check, X, Trash2 } from "lucide-react"
 import { Suspense, useMemo, useState } from "react"
 
+import { HabitsService, type HabitPublic } from "@/client"
 import {
+  HabitRecordsService,
   type HabitCalendar,
   type HabitCalendarDay,
   type HabitRecordCreate,
-  HabitsService,
-  type HabitPublic,
-} from "@/client"
-import {
-  HabitRecordsService,
   type HabitRecordPublic,
   type HabitRecordsPublic,
 } from "@/client/habitRecords"
@@ -468,8 +465,8 @@ function HabitCalendarContent() {
                           size="icon"
                           className="text-red-500 hover:text-red-600 hover:bg-red-50"
                           onClick={() => {
-                            if (selectedDay) {
-                              const recordId = `${habit.id}-${selectedDay.date}`
+                            if (selectedDay?.record_ids && selectedDay.record_ids[habit.id]) {
+                              const recordId = selectedDay.record_ids[habit.id]
                               const fakeRecord: HabitRecordPublic = {
                                 id: recordId,
                                 habit_id: habit.id,
