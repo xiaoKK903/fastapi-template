@@ -86,6 +86,7 @@ function getCalendarDays(
         total_count: 0,
         completed_count: 0,
         habit_ids: [],
+        record_ids: {},
       })
     }
   }
