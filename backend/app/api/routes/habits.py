@@ -1,4 +1,3 @@
-import uuid
 from typing import Any
 
 from fastapi import APIRouter, HTTPException
@@ -14,9 +13,6 @@ router = APIRouter(prefix="/habits", tags=["habits"])
 def read_habits(
     session: SessionDep, current_user: CurrentUser, skip: int = 0, limit: int = 100
 ) -> Any:
-    """
-    Retrieve habits.
-    """
     count_statement = (
         select(func.count())
         .select_from(Habit)
@@ -37,10 +33,7 @@ def read_habits(
 
 
 @router.get("/{id}", response_model=HabitPublic)
-def read_habit(session: SessionDep, current_user: CurrentUser, id: uuid.UUID) -> Any:
-    """
-    Get habit by ID.
-    """
+def read_habit(session: SessionDep, current_user: CurrentUser, id: str) -> Any:
     habit = session.get(Habit, id)
     if not habit:
         raise HTTPException(status_code=404, detail="Habit not found")
@@ -53,9 +46,6 @@ def read_habit(session: SessionDep, current_user: CurrentUser, id: uuid.UUID) ->
 def create_habit(
     *, session: SessionDep, current_user: CurrentUser, habit_in: HabitCreate
 ) -> Any:
-    """
-    Create new habit.
-    """
     habit = Habit.model_validate(habit_in, update={"owner_id": current_user.id})
     session.add(habit)
     session.commit()
@@ -68,12 +58,9 @@ def update_habit(
     *,
     session: SessionDep,
     current_user: CurrentUser,
-    id: uuid.UUID,
+    id: str,
     habit_in: HabitUpdate,
 ) -> Any:
-    """
-    Update a habit.
-    """
     habit = session.get(Habit, id)
     if not habit:
         raise HTTPException(status_code=404, detail="Habit not found")
@@ -90,11 +77,8 @@ def update_habit(
 
 @router.delete("/{id}")
 def delete_habit(
-    session: SessionDep, current_user: CurrentUser, id: uuid.UUID
+    session: SessionDep, current_user: CurrentUser, id: str
 ) -> Message:
-    """
-    Delete a habit.
-    """
     habit = session.get(Habit, id)
     if not habit:
         raise HTTPException(status_code=404, detail="Habit not found")
