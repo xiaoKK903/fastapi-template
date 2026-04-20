@@ -200,6 +200,8 @@ class HabitCalendarDay(SQLModel):
     completed_count: int
     habit_ids: list[str]
 
+    record_ids: dict[str, str]
+
 
 class HabitCalendar(SQLModel):
     year: int
