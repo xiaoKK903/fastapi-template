@@ -37,7 +37,7 @@ const useAuth = () => {
     queryKey: ["userPermissions"],
     queryFn: PermissionsService.readMyPermissions,
     enabled: isLoggedIn(),
-    retry: false,
+    retry: 1,
   })
 
   const signUpMutation = useMutation({

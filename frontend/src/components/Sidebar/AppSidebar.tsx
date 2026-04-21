@@ -8,6 +8,7 @@ import {
   Wallet,
   PieChart,
   Tag,
+  CheckSquare,
 } from "lucide-react"
 
 import { SidebarAppearance } from "@/components/Common/Appearance"
@@ -33,6 +34,7 @@ const menuConfigs: MenuConfig[] = [
   { icon: Target, title: "习惯管理", path: "/habits" },
   { icon: CalendarIcon, title: "打卡日历", path: "/habit-calendar" },
   { icon: BarChart3, title: "习惯统计", path: "/habit-stats" },
+  { icon: CheckSquare, title: "任务管理", path: "/tasks" },
   { icon: Wallet, title: "交易记录", path: "/transactions" },
   { icon: Tag, title: "分类管理", path: "/categories" },
   { icon: PieChart, title: "预算管理", path: "/budgets" },

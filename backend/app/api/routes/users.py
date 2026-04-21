@@ -8,6 +8,7 @@ from app.api.deps import (
     CurrentUser,
     SessionDep,
     get_current_active_superuser,
+    get_current_user,
     get_user_roles,
     get_user_permissions,
 )
@@ -37,10 +38,15 @@ router = APIRouter(prefix="/users", tags=["users"])
 
 @router.get(
     "/",
-    dependencies=[Depends(get_current_active_superuser)],
     response_model=UsersPublic,
 )
-def read_users(session: SessionDep, skip: int = 0, limit: int = 100) -> Any:
+def read_users(session: SessionDep, current_user: CurrentUser, skip: int = 0, limit: int = 100) -> Any:
+    if not current_user.is_superuser:
+        raise HTTPException(
+            status_code=403,
+            detail="The user doesn't have enough privileges"
+        )
+    
     count_statement = select(func.count()).select_from(User)
     count = session.exec(count_statement).one()
 
@@ -137,6 +143,37 @@ def delete_user_me(session: SessionDep, current_user: CurrentUser) -> Any:
     session.delete(current_user)
     session.commit()
     return Message(message="User deleted successfully")
+
+
+@router.get("/me/roles", response_model=list[RolePublic])
+def read_my_roles(session: SessionDep, current_user: CurrentUser) -> list[Role]:
+    statement = (
+        select(Role)
+        .join(UserRoleLink, UserRoleLink.role_id == Role.id)
+        .where(UserRoleLink.user_id == current_user.id)
+    )
+    roles = session.exec(statement).all()
+    return roles
+
+
+@router.get("/me/permissions", response_model=list[str])
+def read_my_permissions(session: SessionDep, current_user: CurrentUser) -> list[str]:
+    permissions = get_user_permissions(session, current_user)
+    return sorted(list(permissions))
+
+
+@router.get("/me/full-info", response_model=UserWithRoles)
+def read_my_full_info(session: SessionDep, current_user: CurrentUser) -> UserWithRoles:
+    statement = (
+        select(Role)
+        .join(UserRoleLink, UserRoleLink.role_id == Role.id)
+        .where(UserRoleLink.user_id == current_user.id)
+    )
+    roles = session.exec(statement).all()
+
+    user_dict = current_user.model_dump()
+    user_dict["roles"] = [RolePublic.model_validate(r) for r in roles]
+    return UserWithRoles.model_validate(user_dict)
 
 
 @router.post("/signup", response_model=UserPublic)
@@ -349,34 +386,3 @@ def remove_role_from_user(
     session.delete(link)
     session.commit()
     return Message(message="Role removed from user successfully")
-
-
-@router.get("/me/roles", response_model=list[RolePublic])
-def read_my_roles(session: SessionDep, current_user: CurrentUser) -> list[Role]:
-    statement = (
-        select(Role)
-        .join(UserRoleLink, UserRoleLink.role_id == Role.id)
-        .where(UserRoleLink.user_id == current_user.id)
-    )
-    roles = session.exec(statement).all()
-    return roles
-
-
-@router.get("/me/permissions", response_model=list[str])
-def read_my_permissions(session: SessionDep, current_user: CurrentUser) -> list[str]:
-    permissions = get_user_permissions(session, current_user)
-    return sorted(list(permissions))
-
-
-@router.get("/me/full-info", response_model=UserWithRoles)
-def read_my_full_info(session: SessionDep, current_user: CurrentUser) -> UserWithRoles:
-    statement = (
-        select(Role)
-        .join(UserRoleLink, UserRoleLink.role_id == Role.id)
-        .where(UserRoleLink.user_id == current_user.id)
-    )
-    roles = session.exec(statement).all()
-
-    user_dict = current_user.model_dump()
-    user_dict["roles"] = [RolePublic.model_validate(r) for r in roles]
-    return UserWithRoles.model_validate(user_dict)
