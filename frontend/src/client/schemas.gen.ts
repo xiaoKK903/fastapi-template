@@ -57,6 +57,570 @@ export const Body_login_login_access_tokenSchema = {
     title: 'Body_login-login_access_token'
 } as const;
 
+export const BudgetCreateSchema = {
+    properties: {
+        amount: {
+            type: 'number',
+            exclusiveMinimum: 0,
+            title: 'Amount',
+            default: 0
+        },
+        month: {
+            type: 'integer',
+            maximum: 12,
+            minimum: 1,
+            title: 'Month'
+        },
+        year: {
+            type: 'integer',
+            maximum: 2100,
+            minimum: 2020,
+            title: 'Year'
+        },
+        category_id: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Category Id'
+        }
+    },
+    type: 'object',
+    required: ['month', 'year'],
+    title: 'BudgetCreate'
+} as const;
+
+export const BudgetPublicSchema = {
+    properties: {
+        amount: {
+            type: 'number',
+            exclusiveMinimum: 0,
+            title: 'Amount',
+            default: 0
+        },
+        month: {
+            type: 'integer',
+            maximum: 12,
+            minimum: 1,
+            title: 'Month'
+        },
+        year: {
+            type: 'integer',
+            maximum: 2100,
+            minimum: 2020,
+            title: 'Year'
+        },
+        id: {
+            type: 'string',
+            title: 'Id'
+        },
+        category_id: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Category Id'
+        },
+        owner_id: {
+            type: 'string',
+            title: 'Owner Id'
+        },
+        created_at: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date-time'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Created At'
+        }
+    },
+    type: 'object',
+    required: ['month', 'year', 'id', 'category_id', 'owner_id'],
+    title: 'BudgetPublic'
+} as const;
+
+export const BudgetUpdateSchema = {
+    properties: {
+        amount: {
+            anyOf: [
+                {
+                    type: 'number',
+                    exclusiveMinimum: 0
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Amount'
+        },
+        category_id: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Category Id'
+        }
+    },
+    type: 'object',
+    title: 'BudgetUpdate'
+} as const;
+
+export const BudgetWithCategorySchema = {
+    properties: {
+        id: {
+            type: 'string',
+            title: 'Id'
+        },
+        amount: {
+            type: 'number',
+            title: 'Amount'
+        },
+        month: {
+            type: 'integer',
+            title: 'Month'
+        },
+        year: {
+            type: 'integer',
+            title: 'Year'
+        },
+        category_id: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Category Id'
+        },
+        category_name: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Category Name'
+        },
+        category_icon: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Category Icon'
+        },
+        category_color: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Category Color'
+        },
+        spent: {
+            type: 'number',
+            title: 'Spent'
+        },
+        remaining: {
+            type: 'number',
+            title: 'Remaining'
+        },
+        percentage: {
+            type: 'number',
+            title: 'Percentage'
+        }
+    },
+    type: 'object',
+    required: ['id', 'amount', 'month', 'year', 'category_id', 'category_name', 'category_icon', 'category_color', 'spent', 'remaining', 'percentage'],
+    title: 'BudgetWithCategory'
+} as const;
+
+export const BudgetsWithCategoryPublicSchema = {
+    properties: {
+        data: {
+            items: {
+                '$ref': '#/components/schemas/BudgetWithCategory'
+            },
+            type: 'array',
+            title: 'Data'
+        },
+        count: {
+            type: 'integer',
+            title: 'Count'
+        }
+    },
+    type: 'object',
+    required: ['data', 'count'],
+    title: 'BudgetsWithCategoryPublic'
+} as const;
+
+export const CategoriesPublicSchema = {
+    properties: {
+        data: {
+            items: {
+                '$ref': '#/components/schemas/CategoryPublic'
+            },
+            type: 'array',
+            title: 'Data'
+        },
+        count: {
+            type: 'integer',
+            title: 'Count'
+        }
+    },
+    type: 'object',
+    required: ['data', 'count'],
+    title: 'CategoriesPublic'
+} as const;
+
+export const CategoryCreateSchema = {
+    properties: {
+        name: {
+            type: 'string',
+            maxLength: 100,
+            minLength: 1,
+            title: 'Name'
+        },
+        type: {
+            '$ref': '#/components/schemas/TransactionType',
+            default: 'expense'
+        },
+        icon: {
+            anyOf: [
+                {
+                    type: 'string',
+                    maxLength: 50
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Icon'
+        },
+        color: {
+            anyOf: [
+                {
+                    type: 'string',
+                    maxLength: 20
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Color'
+        },
+        description: {
+            anyOf: [
+                {
+                    type: 'string',
+                    maxLength: 255
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Description'
+        }
+    },
+    type: 'object',
+    required: ['name'],
+    title: 'CategoryCreate'
+} as const;
+
+export const CategoryMonthlySummariesSchema = {
+    properties: {
+        income_categories: {
+            items: {
+                '$ref': '#/components/schemas/CategoryMonthlySummary'
+            },
+            type: 'array',
+            title: 'Income Categories'
+        },
+        expense_categories: {
+            items: {
+                '$ref': '#/components/schemas/CategoryMonthlySummary'
+            },
+            type: 'array',
+            title: 'Expense Categories'
+        },
+        total_income: {
+            type: 'number',
+            title: 'Total Income'
+        },
+        total_expense: {
+            type: 'number',
+            title: 'Total Expense'
+        }
+    },
+    type: 'object',
+    required: ['income_categories', 'expense_categories', 'total_income', 'total_expense'],
+    title: 'CategoryMonthlySummaries'
+} as const;
+
+export const CategoryMonthlySummarySchema = {
+    properties: {
+        category_id: {
+            type: 'string',
+            title: 'Category Id'
+        },
+        category_name: {
+            type: 'string',
+            title: 'Category Name'
+        },
+        category_icon: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Category Icon'
+        },
+        category_color: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Category Color'
+        },
+        type: {
+            '$ref': '#/components/schemas/TransactionType'
+        },
+        total_amount: {
+            type: 'number',
+            title: 'Total Amount'
+        },
+        transaction_count: {
+            type: 'integer',
+            title: 'Transaction Count'
+        },
+        percentage: {
+            type: 'number',
+            title: 'Percentage'
+        }
+    },
+    type: 'object',
+    required: ['category_id', 'category_name', 'category_icon', 'category_color', 'type', 'total_amount', 'transaction_count', 'percentage'],
+    title: 'CategoryMonthlySummary'
+} as const;
+
+export const CategoryPublicSchema = {
+    properties: {
+        name: {
+            type: 'string',
+            maxLength: 100,
+            minLength: 1,
+            title: 'Name'
+        },
+        type: {
+            '$ref': '#/components/schemas/TransactionType',
+            default: 'expense'
+        },
+        icon: {
+            anyOf: [
+                {
+                    type: 'string',
+                    maxLength: 50
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Icon'
+        },
+        color: {
+            anyOf: [
+                {
+                    type: 'string',
+                    maxLength: 20
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Color'
+        },
+        description: {
+            anyOf: [
+                {
+                    type: 'string',
+                    maxLength: 255
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Description'
+        },
+        id: {
+            type: 'string',
+            title: 'Id'
+        },
+        owner_id: {
+            type: 'string',
+            title: 'Owner Id'
+        },
+        created_at: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date-time'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Created At'
+        }
+    },
+    type: 'object',
+    required: ['name', 'id', 'owner_id'],
+    title: 'CategoryPublic'
+} as const;
+
+export const CategoryUpdateSchema = {
+    properties: {
+        name: {
+            anyOf: [
+                {
+                    type: 'string',
+                    maxLength: 100,
+                    minLength: 1
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Name'
+        },
+        type: {
+            anyOf: [
+                {
+                    '$ref': '#/components/schemas/TransactionType'
+                },
+                {
+                    type: 'null'
+                }
+            ]
+        },
+        icon: {
+            anyOf: [
+                {
+                    type: 'string',
+                    maxLength: 50
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Icon'
+        },
+        color: {
+            anyOf: [
+                {
+                    type: 'string',
+                    maxLength: 20
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Color'
+        },
+        description: {
+            anyOf: [
+                {
+                    type: 'string',
+                    maxLength: 255
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Description'
+        }
+    },
+    type: 'object',
+    title: 'CategoryUpdate'
+} as const;
+
+export const DailyTrendSchema = {
+    properties: {
+        date: {
+            type: 'string',
+            title: 'Date'
+        },
+        income: {
+            type: 'number',
+            title: 'Income'
+        },
+        expense: {
+            type: 'number',
+            title: 'Expense'
+        },
+        balance: {
+            type: 'number',
+            title: 'Balance'
+        }
+    },
+    type: 'object',
+    required: ['date', 'income', 'expense', 'balance'],
+    title: 'DailyTrend'
+} as const;
+
+export const DailyTrendsSchema = {
+    properties: {
+        days: {
+            items: {
+                '$ref': '#/components/schemas/DailyTrend'
+            },
+            type: 'array',
+            title: 'Days'
+        }
+    },
+    type: 'object',
+    required: ['days'],
+    title: 'DailyTrends'
+} as const;
+
+export const FrequencySchema = {
+    type: 'string',
+    enum: ['daily', 'weekly', 'monthly'],
+    title: 'Frequency'
+} as const;
+
 export const HTTPValidationErrorSchema = {
     properties: {
         detail: {
@@ -69,6 +633,407 @@ export const HTTPValidationErrorSchema = {
     },
     type: 'object',
     title: 'HTTPValidationError'
+} as const;
+
+export const HabitCalendarSchema = {
+    properties: {
+        year: {
+            type: 'integer',
+            title: 'Year'
+        },
+        month: {
+            type: 'integer',
+            title: 'Month'
+        },
+        days: {
+            items: {
+                '$ref': '#/components/schemas/HabitCalendarDay'
+            },
+            type: 'array',
+            title: 'Days'
+        }
+    },
+    type: 'object',
+    required: ['year', 'month', 'days'],
+    title: 'HabitCalendar'
+} as const;
+
+export const HabitCalendarDaySchema = {
+    properties: {
+        date: {
+            type: 'string',
+            title: 'Date'
+        },
+        total_count: {
+            type: 'integer',
+            title: 'Total Count'
+        },
+        completed_count: {
+            type: 'integer',
+            title: 'Completed Count'
+        },
+        habit_ids: {
+            items: {
+                type: 'string'
+            },
+            type: 'array',
+            title: 'Habit Ids'
+        },
+        record_ids: {
+            additionalProperties: {
+                type: 'string'
+            },
+            type: 'object',
+            title: 'Record Ids'
+        }
+    },
+    type: 'object',
+    required: ['date', 'total_count', 'completed_count', 'habit_ids', 'record_ids'],
+    title: 'HabitCalendarDay'
+} as const;
+
+export const HabitCreateSchema = {
+    properties: {
+        name: {
+            type: 'string',
+            maxLength: 255,
+            minLength: 1,
+            title: 'Name'
+        },
+        frequency: {
+            '$ref': '#/components/schemas/Frequency',
+            default: 'daily'
+        },
+        target_count: {
+            type: 'integer',
+            minimum: 1,
+            title: 'Target Count',
+            default: 1
+        },
+        description: {
+            anyOf: [
+                {
+                    type: 'string',
+                    maxLength: 500
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Description'
+        }
+    },
+    type: 'object',
+    required: ['name'],
+    title: 'HabitCreate'
+} as const;
+
+export const HabitPublicSchema = {
+    properties: {
+        name: {
+            type: 'string',
+            maxLength: 255,
+            minLength: 1,
+            title: 'Name'
+        },
+        frequency: {
+            '$ref': '#/components/schemas/Frequency',
+            default: 'daily'
+        },
+        target_count: {
+            type: 'integer',
+            minimum: 1,
+            title: 'Target Count',
+            default: 1
+        },
+        description: {
+            anyOf: [
+                {
+                    type: 'string',
+                    maxLength: 500
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Description'
+        },
+        id: {
+            type: 'string',
+            title: 'Id'
+        },
+        owner_id: {
+            type: 'string',
+            title: 'Owner Id'
+        },
+        created_at: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date-time'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Created At'
+        }
+    },
+    type: 'object',
+    required: ['name', 'id', 'owner_id'],
+    title: 'HabitPublic'
+} as const;
+
+export const HabitRecordCreateSchema = {
+    properties: {
+        count: {
+            type: 'integer',
+            minimum: 1,
+            title: 'Count',
+            default: 1
+        },
+        note: {
+            anyOf: [
+                {
+                    type: 'string',
+                    maxLength: 500
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Note'
+        },
+        habit_id: {
+            type: 'string',
+            title: 'Habit Id'
+        },
+        check_date: {
+            type: 'string',
+            format: 'date',
+            title: 'Check Date'
+        }
+    },
+    type: 'object',
+    required: ['habit_id', 'check_date'],
+    title: 'HabitRecordCreate'
+} as const;
+
+export const HabitRecordPublicSchema = {
+    properties: {
+        count: {
+            type: 'integer',
+            minimum: 1,
+            title: 'Count',
+            default: 1
+        },
+        note: {
+            anyOf: [
+                {
+                    type: 'string',
+                    maxLength: 500
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Note'
+        },
+        id: {
+            type: 'string',
+            title: 'Id'
+        },
+        habit_id: {
+            type: 'string',
+            title: 'Habit Id'
+        },
+        owner_id: {
+            type: 'string',
+            title: 'Owner Id'
+        },
+        check_date: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Check Date'
+        },
+        created_at: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date-time'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Created At'
+        }
+    },
+    type: 'object',
+    required: ['id', 'habit_id', 'owner_id', 'check_date'],
+    title: 'HabitRecordPublic'
+} as const;
+
+export const HabitRecordsPublicSchema = {
+    properties: {
+        data: {
+            items: {
+                '$ref': '#/components/schemas/HabitRecordPublic'
+            },
+            type: 'array',
+            title: 'Data'
+        },
+        count: {
+            type: 'integer',
+            title: 'Count'
+        }
+    },
+    type: 'object',
+    required: ['data', 'count'],
+    title: 'HabitRecordsPublic'
+} as const;
+
+export const HabitStatisticsSchema = {
+    properties: {
+        total_habits: {
+            type: 'integer',
+            title: 'Total Habits'
+        },
+        total_checks_last_30_days: {
+            type: 'integer',
+            title: 'Total Checks Last 30 Days'
+        },
+        average_checks_per_day: {
+            type: 'number',
+            title: 'Average Checks Per Day'
+        },
+        most_active_day: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Most Active Day'
+        },
+        streak_days: {
+            type: 'integer',
+            title: 'Streak Days'
+        }
+    },
+    type: 'object',
+    required: ['total_habits', 'total_checks_last_30_days', 'average_checks_per_day', 'most_active_day', 'streak_days'],
+    title: 'HabitStatistics'
+} as const;
+
+export const HabitTrendSchema = {
+    properties: {
+        days: {
+            items: {
+                '$ref': '#/components/schemas/HabitTrendDay'
+            },
+            type: 'array',
+            title: 'Days'
+        }
+    },
+    type: 'object',
+    required: ['days'],
+    title: 'HabitTrend'
+} as const;
+
+export const HabitTrendDaySchema = {
+    properties: {
+        date: {
+            type: 'string',
+            title: 'Date'
+        },
+        completed_count: {
+            type: 'integer',
+            title: 'Completed Count'
+        },
+        total_habits: {
+            type: 'integer',
+            title: 'Total Habits'
+        }
+    },
+    type: 'object',
+    required: ['date', 'completed_count', 'total_habits'],
+    title: 'HabitTrendDay'
+} as const;
+
+export const HabitUpdateSchema = {
+    properties: {
+        name: {
+            anyOf: [
+                {
+                    type: 'string',
+                    maxLength: 255,
+                    minLength: 1
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Name'
+        },
+        frequency: {
+            anyOf: [
+                {
+                    '$ref': '#/components/schemas/Frequency'
+                },
+                {
+                    type: 'null'
+                }
+            ]
+        },
+        target_count: {
+            anyOf: [
+                {
+                    type: 'integer',
+                    minimum: 1
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Target Count'
+        },
+        description: {
+            anyOf: [
+                {
+                    type: 'string',
+                    maxLength: 500
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Description'
+        }
+    },
+    type: 'object',
+    title: 'HabitUpdate'
+} as const;
+
+export const HabitsPublicSchema = {
+    properties: {
+        data: {
+            items: {
+                '$ref': '#/components/schemas/HabitPublic'
+            },
+            type: 'array',
+            title: 'Data'
+        },
+        count: {
+            type: 'integer',
+            title: 'Count'
+        }
+    },
+    type: 'object',
+    required: ['data', 'count'],
+    title: 'HabitsPublic'
 } as const;
 
 export const ItemCreateSchema = {
@@ -119,12 +1084,10 @@ export const ItemPublicSchema = {
         },
         id: {
             type: 'string',
-            format: 'uuid',
             title: 'Id'
         },
         owner_id: {
             type: 'string',
-            format: 'uuid',
             title: 'Owner Id'
         },
         created_at: {
@@ -159,18 +1122,6 @@ export const ItemUpdateSchema = {
                 }
             ],
             title: 'Title'
-        },
-        description: {
-            anyOf: [
-                {
-                    type: 'string',
-                    maxLength: 255
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Description'
         }
     },
     type: 'object',
@@ -206,6 +1157,42 @@ export const MessageSchema = {
     type: 'object',
     required: ['message'],
     title: 'Message'
+} as const;
+
+export const MonthlySummarySchema = {
+    properties: {
+        month: {
+            type: 'integer',
+            title: 'Month'
+        },
+        year: {
+            type: 'integer',
+            title: 'Year'
+        },
+        total_income: {
+            type: 'number',
+            title: 'Total Income'
+        },
+        total_expense: {
+            type: 'number',
+            title: 'Total Expense'
+        },
+        balance: {
+            type: 'number',
+            title: 'Balance'
+        },
+        income_count: {
+            type: 'integer',
+            title: 'Income Count'
+        },
+        expense_count: {
+            type: 'integer',
+            title: 'Expense Count'
+        }
+    },
+    type: 'object',
+    required: ['month', 'year', 'total_income', 'total_expense', 'balance', 'income_count', 'expense_count'],
+    title: 'MonthlySummary'
 } as const;
 
 export const NewPasswordSchema = {
@@ -266,6 +1253,298 @@ export const TokenSchema = {
     type: 'object',
     required: ['access_token'],
     title: 'Token'
+} as const;
+
+export const TransactionCreateSchema = {
+    properties: {
+        amount: {
+            type: 'number',
+            exclusiveMinimum: 0,
+            title: 'Amount',
+            default: 0
+        },
+        type: {
+            '$ref': '#/components/schemas/TransactionType',
+            default: 'expense'
+        },
+        description: {
+            anyOf: [
+                {
+                    type: 'string',
+                    maxLength: 500
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Description'
+        },
+        transaction_date: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Transaction Date'
+        },
+        category_id: {
+            type: 'string',
+            title: 'Category Id'
+        }
+    },
+    type: 'object',
+    required: ['category_id'],
+    title: 'TransactionCreate'
+} as const;
+
+export const TransactionPublicSchema = {
+    properties: {
+        amount: {
+            type: 'number',
+            exclusiveMinimum: 0,
+            title: 'Amount',
+            default: 0
+        },
+        type: {
+            '$ref': '#/components/schemas/TransactionType',
+            default: 'expense'
+        },
+        description: {
+            anyOf: [
+                {
+                    type: 'string',
+                    maxLength: 500
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Description'
+        },
+        transaction_date: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Transaction Date'
+        },
+        id: {
+            type: 'string',
+            title: 'Id'
+        },
+        category_id: {
+            type: 'string',
+            title: 'Category Id'
+        },
+        owner_id: {
+            type: 'string',
+            title: 'Owner Id'
+        },
+        created_at: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date-time'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Created At'
+        }
+    },
+    type: 'object',
+    required: ['id', 'category_id', 'owner_id'],
+    title: 'TransactionPublic'
+} as const;
+
+export const TransactionTypeSchema = {
+    type: 'string',
+    enum: ['income', 'expense'],
+    title: 'TransactionType'
+} as const;
+
+export const TransactionUpdateSchema = {
+    properties: {
+        amount: {
+            anyOf: [
+                {
+                    type: 'number',
+                    exclusiveMinimum: 0
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Amount'
+        },
+        type: {
+            anyOf: [
+                {
+                    '$ref': '#/components/schemas/TransactionType'
+                },
+                {
+                    type: 'null'
+                }
+            ]
+        },
+        description: {
+            anyOf: [
+                {
+                    type: 'string',
+                    maxLength: 500
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Description'
+        },
+        category_id: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Category Id'
+        },
+        transaction_date: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Transaction Date'
+        }
+    },
+    type: 'object',
+    title: 'TransactionUpdate'
+} as const;
+
+export const TransactionWithCategorySchema = {
+    properties: {
+        id: {
+            type: 'string',
+            title: 'Id'
+        },
+        amount: {
+            type: 'number',
+            title: 'Amount'
+        },
+        type: {
+            '$ref': '#/components/schemas/TransactionType'
+        },
+        description: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Description'
+        },
+        transaction_date: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Transaction Date'
+        },
+        category_id: {
+            type: 'string',
+            title: 'Category Id'
+        },
+        category_name: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Category Name'
+        },
+        category_icon: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Category Icon'
+        },
+        category_color: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Category Color'
+        },
+        created_at: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date-time'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Created At'
+        }
+    },
+    type: 'object',
+    required: ['id', 'amount', 'type', 'description', 'transaction_date', 'category_id', 'category_name', 'category_icon', 'category_color', 'created_at'],
+    title: 'TransactionWithCategory'
+} as const;
+
+export const TransactionsWithCategoryPublicSchema = {
+    properties: {
+        data: {
+            items: {
+                '$ref': '#/components/schemas/TransactionWithCategory'
+            },
+            type: 'array',
+            title: 'Data'
+        },
+        count: {
+            type: 'integer',
+            title: 'Count'
+        }
+    },
+    type: 'object',
+    required: ['data', 'count'],
+    title: 'TransactionsWithCategoryPublic'
 } as const;
 
 export const UpdatePasswordSchema = {
@@ -362,7 +1641,6 @@ export const UserPublicSchema = {
         },
         id: {
             type: 'string',
-            format: 'uuid',
             title: 'Id'
         },
         created_at: {
@@ -556,4 +1834,45 @@ export const ValidationErrorSchema = {
     type: 'object',
     required: ['loc', 'msg', 'type'],
     title: 'ValidationError'
+} as const;
+
+export const YearlySummarySchema = {
+    properties: {
+        year: {
+            type: 'integer',
+            title: 'Year'
+        },
+        total_income: {
+            type: 'number',
+            title: 'Total Income'
+        },
+        total_expense: {
+            type: 'number',
+            title: 'Total Expense'
+        },
+        balance: {
+            type: 'number',
+            title: 'Balance'
+        },
+        monthly_breakdown: {
+            items: {
+                additionalProperties: {
+                    anyOf: [
+                        {
+                            type: 'number'
+                        },
+                        {
+                            type: 'integer'
+                        }
+                    ]
+                },
+                type: 'object'
+            },
+            type: 'array',
+            title: 'Monthly Breakdown'
+        }
+    },
+    type: 'object',
+    required: ['year', 'total_income', 'total_expense', 'balance', 'monthly_breakdown'],
+    title: 'YearlySummary'
 } as const;
