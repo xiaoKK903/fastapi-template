@@ -1,6 +1,6 @@
-import { useSuspenseQuery } from "@tanstack/react-query"
-import { createFileRoute, redirect } from "@tanstack/react-router"
-import { Suspense } from "react"
+import { useQuery, useSuspenseQuery } from "@tanstack/react-query"
+import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router"
+import { Suspense, useEffect } from "react"
 
 import { type UserPublic, UsersService } from "@/client"
 import AddUser from "@/components/Admin/AddUser"
@@ -16,23 +16,15 @@ function getUsersQueryOptions() {
   }
 }
 
+function getCurrentUserQueryOptions() {
+  return {
+    queryFn: () => UsersService.readUserMe(),
+    queryKey: ["currentUser"],
+  }
+}
+
 export const Route = createFileRoute("/_layout/admin")({
   component: Admin,
-  beforeLoad: async ({ context }) => {
-    try {
-      const user = await UsersService.readUserMe()
-      if (!user.is_superuser) {
-        throw redirect({
-          to: "/",
-        })
-      }
-    } catch (error) {
-      console.error("Admin page authentication error:", error)
-      throw redirect({
-        to: "/login",
-      })
-    }
-  },
   head: () => ({
     meta: [
       {
@@ -63,6 +55,32 @@ function UsersTable() {
 }
 
 function Admin() {
+  const navigate = useNavigate()
+  const { user, isSuperuser } = useAuth()
+  
+  const { data: currentUserData, isLoading, error } = useQuery({
+    queryKey: ["adminAuthCheck"],
+    queryFn: UsersService.readUserMe,
+  })
+
+  useEffect(() => {
+    if (!isLoading) {
+      if (error || !currentUserData) {
+        navigate({ to: "/login" })
+      } else if (!currentUserData.is_superuser) {
+        navigate({ to: "/" })
+      }
+    }
+  }, [isLoading, error, currentUserData, navigate])
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-muted-foreground">加载中...</div>
+      </div>
+    )
+  }
+
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">

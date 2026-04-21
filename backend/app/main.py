@@ -33,7 +33,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.add_middleware(OperationLogMiddleware)
+# 暂时禁用 OperationLogMiddleware，因为它可能会影响认证
+# app.add_middleware(OperationLogMiddleware)
 
 
 @app.on_event("startup")
