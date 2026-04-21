@@ -6,6 +6,7 @@ from starlette.middleware.cors import CORSMiddleware
 from app.api.main import api_router
 from app.core.config import settings
 from app.core.db import engine, init_db
+from app.core.middleware import OperationLogMiddleware
 from sqlmodel import SQLModel
 from sqlmodel import Session
 
@@ -31,6 +32,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.add_middleware(OperationLogMiddleware)
 
 
 @app.on_event("startup")

@@ -21,25 +21,50 @@ import {
 import useAuth from "@/hooks/useAuth"
 import { type Item, Main } from "./Main"
 import { User } from "./User"
+import { canAccessMenu, BuiltinRoles } from "@/config/permissions"
 
-const baseItems: Item[] = [
-  { icon: Home, title: "Dashboard", path: "/" },
-  { icon: Briefcase, title: "Items", path: "/items" },
-  { icon: Target, title: "习惯管理", path: "/habits" },
-  { icon: CalendarIcon, title: "打卡日历", path: "/habit-calendar" },
-  { icon: BarChart3, title: "习惯统计", path: "/habit-stats" },
-  { icon: Wallet, title: "交易记录", path: "/transactions" },
-  { icon: Tag, title: "分类管理", path: "/categories" },
-  { icon: PieChart, title: "预算管理", path: "/budgets" },
-  { icon: BarChart3, title: "财务统计", path: "/finance-stats" },
+interface MenuConfig extends Item {
+  isSuperuserOnly?: boolean
+  requiredRole?: string
+}
+
+const menuConfigs: MenuConfig[] = [
+  { icon: Home, title: "Dashboard", path: "/", requiredRole: BuiltinRoles.USER },
+  { icon: Briefcase, title: "Items", path: "/items", requiredRole: BuiltinRoles.USER },
+  { icon: Target, title: "习惯管理", path: "/habits", requiredRole: BuiltinRoles.USER },
+  { icon: CalendarIcon, title: "打卡日历", path: "/habit-calendar", requiredRole: BuiltinRoles.USER },
+  { icon: BarChart3, title: "习惯统计", path: "/habit-stats", requiredRole: BuiltinRoles.USER },
+  { icon: Wallet, title: "交易记录", path: "/transactions", requiredRole: BuiltinRoles.USER },
+  { icon: Tag, title: "分类管理", path: "/categories", requiredRole: BuiltinRoles.USER },
+  { icon: PieChart, title: "预算管理", path: "/budgets", requiredRole: BuiltinRoles.USER },
+  { icon: BarChart3, title: "财务统计", path: "/finance-stats", requiredRole: BuiltinRoles.USER },
+  { icon: Users, title: "Admin", path: "/admin", isSuperuserOnly: true },
 ]
 
 export function AppSidebar() {
-  const { user: currentUser } = useAuth()
+  const { user: currentUser, getUserRoles, isSuperuser } = useAuth()
 
-  const items = currentUser?.is_superuser
-    ? [...baseItems, { icon: Users, title: "Admin", path: "/admin" }]
-    : baseItems
+  const userIsSuperuser = isSuperuser()
+  const userRoles = getUserRoles()
+
+  const accessibleMenus = menuConfigs.filter((menu) => {
+    return canAccessMenu(
+      {
+        path: menu.path,
+        title: menu.title,
+        isSuperuserOnly: menu.isSuperuserOnly,
+        requiredRole: menu.requiredRole,
+      },
+      userIsSuperuser,
+      userRoles
+    )
+  })
+
+  const items: Item[] = accessibleMenus.map((menu) => ({
+    icon: menu.icon,
+    title: menu.title,
+    path: menu.path,
+  }))
 
   return (
     <Sidebar collapsible="icon">
