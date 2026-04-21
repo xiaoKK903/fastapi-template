@@ -68,9 +68,9 @@ export const BuiltinRoles = {
 export type BuiltinRole = (typeof BuiltinRoles)[keyof typeof BuiltinRoles]
 
 export const roleHierarchy: Record<string, string[]> = {
-  [BuiltinRoles.ADMIN]: [BuiltinRoles.ADMIN, BuiltinRoles.USER, BuiltinRoles.GUEST],
-  [BuiltinRoles.USER]: [BuiltinRoles.USER, BuiltinRoles.GUEST],
-  [BuiltinRoles.GUEST]: [BuiltinRoles.GUEST],
+  admin: ['admin', 'user', 'guest'],
+  user: ['user', 'guest'],
+  guest: ['guest'],
 }
 
 export function hasRequiredRole(
@@ -91,8 +91,13 @@ export function canAccessMenu(
   isSuperuser: boolean,
   userRoles: string[]
 ): boolean {
+  // 超级用户可以访问所有菜单
+  if (isSuperuser) {
+    return true
+  }
+
   if (menu.isSuperuserOnly) {
-    return isSuperuser
+    return false
   }
 
   if (menu.requiredRole) {

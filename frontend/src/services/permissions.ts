@@ -1,4 +1,5 @@
-import { OpenAPI, request as __request } from "@/client/core/OpenAPI"
+import { OpenAPI } from "@/client/core/OpenAPI"
+import { request as __request } from "@/client/core/request"
 import type { CancelablePromise } from "@/client/core/CancelablePromise"
 
 export interface RolePublic {

@@ -21,7 +21,7 @@ import {
 import useAuth from "@/hooks/useAuth"
 import { type Item, Main } from "./Main"
 import { User } from "./User"
-import { canAccessMenu, BuiltinRoles } from "@/config/permissions"
+import { BuiltinRoles } from "@/config/permissions"
 
 interface MenuConfig extends Item {
   isSuperuserOnly?: boolean
@@ -42,25 +42,10 @@ const menuConfigs: MenuConfig[] = [
 ]
 
 export function AppSidebar() {
-  const { user: currentUser, getUserRoles, isSuperuser } = useAuth()
+  const { user: currentUser } = useAuth()
 
-  const userIsSuperuser = isSuperuser()
-  const userRoles = getUserRoles()
-
-  const accessibleMenus = menuConfigs.filter((menu) => {
-    return canAccessMenu(
-      {
-        path: menu.path,
-        title: menu.title,
-        isSuperuserOnly: menu.isSuperuserOnly,
-        requiredRole: menu.requiredRole,
-      },
-      userIsSuperuser,
-      userRoles
-    )
-  })
-
-  const items: Item[] = accessibleMenus.map((menu) => ({
+  // 暂时硬编码显示所有菜单
+  const items: Item[] = menuConfigs.map((menu) => ({
     icon: menu.icon,
     title: menu.title,
     path: menu.path,

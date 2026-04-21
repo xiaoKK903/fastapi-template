@@ -106,6 +106,7 @@ const useAuth = () => {
     isSuperuser,
     hasRole,
     hasPermission,
+    isLoggedIn,
   }
 }
 
