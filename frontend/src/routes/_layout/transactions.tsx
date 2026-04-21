@@ -181,7 +181,7 @@ function TransactionItem({ transaction }: { transaction: any }) {
 function TransactionsList() {
   const [activeTab, setActiveTab] = useState<string>("all")
   const [search, setSearch] = useState("")
-  const [selectedCategory, setSelectedCategory] = useState<string>("")
+  const [selectedCategory, setSelectedCategory] = useState<string>("all")
 
   const { data: categories } = useQuery({
     queryKey: ["categories"],
@@ -191,7 +191,7 @@ function TransactionsList() {
   const { data: transactions } = useSuspenseQuery(
     getTransactionsQueryOptions({
       type: activeTab === "all" ? undefined : activeTab,
-      categoryId: selectedCategory || undefined,
+      categoryId: selectedCategory === "all" ? undefined : selectedCategory,
       search: search || undefined,
     })
   )
@@ -237,7 +237,7 @@ function TransactionsList() {
               <SelectValue placeholder="选择分类" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">全部分类</SelectItem>
+              <SelectItem value="all">全部分类</SelectItem>
               {categories?.data?.map((cat) => (
                 <SelectItem key={cat.id} value={cat.id}>
                   {cat.name}

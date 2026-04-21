@@ -76,7 +76,7 @@ const AddTransaction = ({ onSuccess }: AddTransactionProps) => {
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
-    mode: "onBlur",
+    mode: "onChange",
     criteriaMode: "all",
     defaultValues: {
       amount: 0,
@@ -108,7 +108,7 @@ const AddTransaction = ({ onSuccess }: AddTransactionProps) => {
     mutation.mutate({
       ...data,
       amount: Number(data.amount),
-      transaction_date: data.transaction_date ? new Date(data.transaction_date) : new Date(),
+      transaction_date: data.transaction_date,
     })
   }
 
