@@ -18,15 +18,12 @@ import {
   SidebarFooter,
   SidebarHeader,
 } from "@/components/ui/sidebar"
-import useAuth from "@/hooks/useAuth"
+import useAuth, { isLoggedIn } from "@/hooks/useAuth"
 import { type Item, Main } from "./Main"
 import { User } from "./User"
-import { BuiltinRoles } from "@/config/permissions"
+import { BuiltinRoles, canAccessMenu, type MenuPermission } from "@/config/permissions"
 
-interface MenuConfig extends Item {
-  isSuperuserOnly?: boolean
-  requiredRole?: string
-}
+interface MenuConfig extends MenuPermission, Item {}
 
 const menuConfigs: MenuConfig[] = [
   { icon: Home, title: "Dashboard", path: "/", requiredRole: BuiltinRoles.USER },
@@ -42,10 +39,19 @@ const menuConfigs: MenuConfig[] = [
 ]
 
 export function AppSidebar() {
-  const { user: currentUser } = useAuth()
+  const { user: currentUser, getUserRoles, isSuperuser } = useAuth()
 
-  // 暂时硬编码显示所有菜单
-  const items: Item[] = menuConfigs.map((menu) => ({
+  const loggedIn = isLoggedIn()
+  const userIsSuperuser = isSuperuser()
+  const userRoles = getUserRoles()
+
+  // 过滤可访问的菜单
+  const accessibleMenus = menuConfigs.filter((menu) => {
+    if (!loggedIn) return false
+    return canAccessMenu(menu, userIsSuperuser, userRoles)
+  })
+
+  const items: Item[] = accessibleMenus.map((menu) => ({
     icon: menu.icon,
     title: menu.title,
     path: menu.path,
