@@ -1,4 +1,6 @@
-import { CancelablePromise, OpenAPI, __request } from "@/client/core"
+import type { CancelablePromise } from "@/client/core/CancelablePromise"
+import { OpenAPI } from "@/client/core/OpenAPI"
+import { request as __request } from "@/client/core/request"
 
 export enum TaskPriority {
   LOW = "low",
