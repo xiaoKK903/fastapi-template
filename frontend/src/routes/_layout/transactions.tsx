@@ -180,7 +180,8 @@ function TransactionItem({ transaction }: { transaction: any }) {
 
 function TransactionsList() {
   const [activeTab, setActiveTab] = useState<string>("all")
-  const [search, setSearch] = useState("")
+  const [searchInput, setSearchInput] = useState("")
+  const [appliedSearch, setAppliedSearch] = useState<string>("")
   const [selectedCategory, setSelectedCategory] = useState<string>("all")
 
   const { data: categories } = useQuery({
@@ -192,9 +193,19 @@ function TransactionsList() {
     getTransactionsQueryOptions({
       type: activeTab === "all" ? undefined : activeTab,
       categoryId: selectedCategory === "all" ? undefined : selectedCategory,
-      search: search || undefined,
+      search: appliedSearch || undefined,
     })
   )
+
+  const handleSearch = () => {
+    setAppliedSearch(searchInput)
+  }
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      handleSearch()
+    }
+  }
 
   if (transactions.data.length === 0) {
     return (
@@ -227,11 +238,15 @@ function TransactionsList() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder="搜索交易..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              onKeyDown={handleKeyDown}
               className="pl-9"
             />
           </div>
+          <Button onClick={handleSearch} variant="secondary" size="sm">
+            搜索
+          </Button>
           <Select value={selectedCategory} onValueChange={setSelectedCategory}>
             <SelectTrigger className="w-40">
               <SelectValue placeholder="选择分类" />

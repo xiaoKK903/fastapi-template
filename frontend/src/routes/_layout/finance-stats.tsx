@@ -339,10 +339,10 @@ function CategoryPieCharts() {
                         className="w-3 h-3 rounded-full"
                         style={{ backgroundColor: item.color }}
                       />
-                      <span>{item.category_name}</span>
+                      <span>{item.name}</span>
                     </div>
                     <div className="text-right">
-                      <span className="font-medium">¥{item.total_amount.toFixed(2)}</span>
+                      <span className="font-medium">¥{item.value.toFixed(2)}</span>
                       <Badge variant="secondary" className="ml-2">
                         {item.percentage}%
                       </Badge>
@@ -394,10 +394,10 @@ function CategoryPieCharts() {
                         className="w-3 h-3 rounded-full"
                         style={{ backgroundColor: item.color }}
                       />
-                      <span>{item.category_name}</span>
+                      <span>{item.name}</span>
                     </div>
                     <div className="text-right">
-                      <span className="font-medium">¥{item.total_amount.toFixed(2)}</span>
+                      <span className="font-medium">¥{item.value.toFixed(2)}</span>
                       <Badge variant="secondary" className="ml-2">
                         {item.percentage}%
                       </Badge>
