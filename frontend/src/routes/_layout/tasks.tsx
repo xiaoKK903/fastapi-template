@@ -1,12 +1,25 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { createFileRoute } from "@tanstack/react-router"
-import { Search, Trash2 } from "lucide-react"
-import { useState } from "react"
+import { Search, Trash2, ChevronDown, ChevronRight, TrendingUp } from "lucide-react"
+import { useState, useCallback, useMemo } from "react"
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+  Cell,
+} from "recharts"
 
-import { TasksService, TaskStatus, TaskPriority, type TaskStatistics, type TasksPublic } from "@/services/TasksService"
+import { TasksService, TaskStatus, TaskPriority, type TaskStatistics, type TasksPublic, type TasksWithSubtasksPublic, type TaskWithSubtasks, type TaskTrend } from "@/services/TasksService"
 import { DataTable } from "@/components/Common/DataTable"
 import AddTask from "@/components/Tasks/AddTask"
-import { columns } from "@/components/Tasks/columns"
+import { columns, createTreeColumns } from "@/components/Tasks/columns"
 import PendingTasks from "@/components/Pending/PendingTasks"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -22,6 +35,8 @@ import { Input } from "@/components/ui/input"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import useCustomToast from "@/hooks/useCustomToast"
 import { handleError } from "@/utils"
+import type { FlatTaskWithLevel } from "@/lib/utils"
+import { flattenTaskTree, filterExpandedTasks } from "@/lib/utils"
 
 function getTasksQueryOptions({
   status,
@@ -52,10 +67,45 @@ function getTasksQueryOptions({
   }
 }
 
+function getTaskTreeQueryOptions({
+  status,
+  priority,
+  search,
+  includeArchived,
+  includeDeleted,
+}: {
+  status?: TaskStatus
+  priority?: TaskPriority
+  search?: string
+  includeArchived?: boolean
+  includeDeleted?: boolean
+} = {}) {
+  return {
+    queryFn: () =>
+      TasksService.getTaskTree({
+        status,
+        priority,
+        search: search || undefined,
+        includeArchived,
+        includeDeleted,
+      }),
+    queryKey: ["tasksTree", status, priority, search, includeArchived, includeDeleted],
+    retry: 1,
+  }
+}
+
 function getStatisticsQueryOptions() {
   return {
     queryFn: () => TasksService.getTaskStatistics(),
     queryKey: ["tasksStatistics"],
+    retry: 1,
+  }
+}
+
+function getTaskTrendQueryOptions(days: number = 7) {
+  return {
+    queryFn: () => TasksService.getTaskTrend({ days }),
+    queryKey: ["tasksTrend", days],
     retry: 1,
   }
 }
@@ -190,6 +240,170 @@ function Statistics({
   )
 }
 
+function TaskTrendChart({
+  trend,
+  isLoading,
+  error,
+}: {
+  trend: TaskTrend | undefined
+  isLoading: boolean
+  error: unknown
+}) {
+  if (isLoading) {
+    return (
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-sm font-medium">任务趋势</CardTitle>
+          <TrendingUp className="h-4 w-4 text-muted-foreground" />
+        </CardHeader>
+        <CardContent className="h-64 flex items-center justify-center">
+          <span className="text-muted-foreground">加载中...</span>
+        </CardContent>
+      </Card>
+    )
+  }
+
+  if (error || !trend || !trend.days || trend.days.length === 0) {
+    return (
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-sm font-medium">任务趋势</CardTitle>
+          <TrendingUp className="h-4 w-4 text-muted-foreground" />
+        </CardHeader>
+        <CardContent className="h-64 flex items-center justify-center">
+          <span className="text-muted-foreground">暂无数据</span>
+        </CardContent>
+      </Card>
+    )
+  }
+
+  const chartData = trend.days.map((day) => ({
+    date: day.date.slice(5),
+    新增: day.created_count,
+    完成: day.completed_count,
+    逾期: day.overdue_count,
+  }))
+
+  return (
+    <Card>
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <CardTitle className="text-sm font-medium">任务趋势（近7天）</CardTitle>
+        <TrendingUp className="h-4 w-4 text-muted-foreground" />
+      </CardHeader>
+      <CardContent className="h-64">
+        <ResponsiveContainer width="100%" height="100%">
+          <LineChart data={chartData}>
+            <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+            <XAxis
+              dataKey="date"
+              stroke="#9CA3AF"
+              tick={{ fontSize: 12 }}
+            />
+            <YAxis
+              stroke="#9CA3AF"
+              tick={{ fontSize: 12 }}
+              allowDecimals={false}
+            />
+            <Tooltip
+              contentStyle={{
+                backgroundColor: "#1F2937",
+                border: "1px solid #374151",
+                borderRadius: "0.5rem",
+              }}
+              labelStyle={{ color: "#F9FAFB" }}
+            />
+            <Legend />
+            <Line
+              type="monotone"
+              dataKey="新增"
+              stroke="#3B82F6"
+              strokeWidth={2}
+              dot={{ fill: "#3B82F6" }}
+            />
+            <Line
+              type="monotone"
+              dataKey="完成"
+              stroke="#10B981"
+              strokeWidth={2}
+              dot={{ fill: "#10B981" }}
+            />
+            <Line
+              type="monotone"
+              dataKey="逾期"
+              stroke="#EF4444"
+              strokeWidth={2}
+              dot={{ fill: "#EF4444" }}
+            />
+          </LineChart>
+        </ResponsiveContainer>
+      </CardContent>
+    </Card>
+  )
+}
+
+function StatusDistributionChart({
+  stats,
+}: {
+  stats: TaskStatistics | undefined
+}) {
+  if (!stats) {
+    return null
+  }
+
+  const chartData = [
+    { name: "待办", value: stats.todo_tasks, color: "#6B7280" },
+    { name: "进行中", value: stats.in_progress_tasks, color: "#3B82F6" },
+    { name: "已完成", value: stats.done_tasks, color: "#10B981" },
+    { name: "已暂停", value: stats.on_hold_tasks, color: "#F59E0B" },
+    { name: "已取消", value: stats.cancelled_tasks, color: "#EF4444" },
+  ].filter((item) => item.value > 0)
+
+  if (chartData.length === 0) {
+    return null
+  }
+
+  return (
+    <Card>
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <CardTitle className="text-sm font-medium">状态分布</CardTitle>
+      </CardHeader>
+      <CardContent className="h-64">
+        <ResponsiveContainer width="100%" height="100%">
+          <BarChart data={chartData} layout="vertical">
+            <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+            <XAxis
+              type="number"
+              stroke="#9CA3AF"
+              tick={{ fontSize: 12 }}
+              allowDecimals={false}
+            />
+            <YAxis
+              dataKey="name"
+              type="category"
+              stroke="#9CA3AF"
+              tick={{ fontSize: 12 }}
+              width={60}
+            />
+            <Tooltip
+              contentStyle={{
+                backgroundColor: "#1F2937",
+                border: "1px solid #374151",
+                borderRadius: "0.5rem",
+              }}
+              labelStyle={{ color: "#F9FAFB" }}
+            />
+            <Bar dataKey="value" radius={[0, 4, 4, 0]}>
+              {chartData.map((entry, index) => (
+                <Cell key={`cell-${index}`} fill={entry.color} />
+              ))}
+            </Bar>
+          </BarChart>
+        </ResponsiveContainer>
+      </CardContent>
+    </Card>
+  )
+}
+
 function TasksTableContent({
   tasks,
   isLoading,
@@ -238,12 +452,68 @@ function TasksTableContent({
   return <DataTable columns={columns} data={tasks.data} />
 }
 
+function TasksTreeTableContent({
+  tasks,
+  isLoading,
+  error,
+  expandedIds,
+  onToggleExpand,
+}: {
+  tasks: TasksWithSubtasksPublic | undefined
+  isLoading: boolean
+  error: unknown
+  expandedIds: Set<string>
+  onToggleExpand: (id: string) => void
+}) {
+  const treeColumns = useMemo(
+    () => createTreeColumns({ expandedIds, onToggleExpand }),
+    [expandedIds, onToggleExpand]
+  )
+
+  const displayData = useMemo(() => {
+    if (!tasks || !tasks.data) return []
+    const flatTasks = flattenTaskTree(tasks.data)
+    return filterExpandedTasks(flatTasks, expandedIds)
+  }, [tasks, expandedIds])
+
+  if (isLoading) {
+    return <PendingTasks />
+  }
+
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center text-center py-12">
+        <div className="rounded-full bg-destructive/10 p-4 mb-4">
+          <Trash2 className="h-8 w-8 text-destructive" />
+        </div>
+        <h3 className="text-lg font-semibold">加载失败</h3>
+        <p className="text-muted-foreground">请刷新页面重试</p>
+      </div>
+    )
+  }
+
+  if (!tasks || tasks.data.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center text-center py-12">
+        <div className="rounded-full bg-muted p-4 mb-4">
+          <Search className="h-8 w-8 text-muted-foreground" />
+        </div>
+        <h3 className="text-lg font-semibold">您还没有任何任务</h3>
+        <p className="text-muted-foreground">添加一个新任务开始您的待办之旅</p>
+      </div>
+    )
+  }
+
+  return <DataTable columns={treeColumns} data={displayData} />
+}
+
 function Tasks() {
   const [status, setStatus] = useState<TaskStatus | undefined>(undefined)
   const [priority, setPriority] = useState<TaskPriority | undefined>(undefined)
   const [search, setSearch] = useState("")
   const [searchInput, setSearchInput] = useState("")
   const [activeTab, setActiveTab] = useState("active")
+  const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set())
 
   const handleSearch = () => {
     setSearch(searchInput)
@@ -255,10 +525,23 @@ function Tasks() {
     }
   }
 
+  const toggleExpand = useCallback((id: string) => {
+    setExpandedIds((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) {
+        next.delete(id)
+      } else {
+        next.add(id)
+      }
+      return next
+    })
+  }, [])
+
   const queryClient = useQueryClient()
   const { showSuccessToast, showErrorToast } = useCustomToast()
 
   const { data: stats, isLoading: statsLoading, error: statsError } = useQuery(getStatisticsQueryOptions())
+  const { data: trend, isLoading: trendLoading, error: trendError } = useQuery(getTaskTrendQueryOptions(7))
 
   const includeArchived = activeTab === "archived"
   const includeDeleted = activeTab === "trash"
@@ -267,11 +550,16 @@ function Tasks() {
     getTasksQueryOptions({ status, priority, search, includeArchived, includeDeleted })
   )
 
+  const { data: tasksTree, isLoading: treeLoading, error: treeError } = useQuery(
+    getTaskTreeQueryOptions({ status, priority, search, includeArchived: false, includeDeleted: false })
+  )
+
   const emptyTrashMutation = useMutation({
     mutationFn: () => TasksService.emptyTrash(),
     onSuccess: () => {
       showSuccessToast("回收站已清空")
       queryClient.invalidateQueries({ queryKey: ["tasks"] })
+      queryClient.invalidateQueries({ queryKey: ["tasksTree"] })
       queryClient.invalidateQueries({ queryKey: ["tasksStatistics"] })
     },
     onError: handleError.bind(showErrorToast),
@@ -288,6 +576,11 @@ function Tasks() {
       </div>
 
       <Statistics stats={stats} isLoading={statsLoading} error={statsError} />
+
+      <div className="grid gap-4 md:grid-cols-2">
+        <TaskTrendChart trend={trend} isLoading={trendLoading} error={trendError} />
+        <StatusDistributionChart stats={stats} />
+      </div>
 
       <Tabs defaultValue="active" value={activeTab} onValueChange={setActiveTab}>
         <div className="flex items-center justify-between">
@@ -348,12 +641,12 @@ function Tasks() {
         </div>
 
         <TabsContent value="active" className="mt-4">
-          <TasksTableContent
-            tasks={tasks}
-            isLoading={tasksLoading}
-            error={tasksError}
-            includeArchived={false}
-            includeDeleted={false}
+          <TasksTreeTableContent
+            tasks={tasksTree}
+            isLoading={treeLoading}
+            error={treeError}
+            expandedIds={expandedIds}
+            onToggleExpand={toggleExpand}
           />
         </TabsContent>
 

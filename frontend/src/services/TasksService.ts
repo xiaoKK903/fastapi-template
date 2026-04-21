@@ -53,6 +53,15 @@ export interface TasksPublic {
   count: number
 }
 
+export interface TaskWithSubtasks extends TaskPublic {
+  children: TaskWithSubtasks[]
+}
+
+export interface TasksWithSubtasksPublic {
+  data: TaskWithSubtasks[]
+  count: number
+}
+
 export interface TaskCreate {
   title: string
   description?: string | null
@@ -168,7 +177,38 @@ export interface TasksGetTaskTrendData {
   days: number
 }
 
+export interface TasksGetTaskTreeData {
+  status?: TaskStatus
+  priority?: TaskPriority
+  search?: string
+  include_archived?: boolean
+  include_deleted?: boolean
+}
+
 export class TasksService {
+  /**
+   * Read Tasks Tree
+   * @param data The data for the request.
+   * @returns TasksWithSubtasksPublic Successful Response
+   * @throws ApiError
+   */
+  public static getTaskTree(data: TasksGetTaskTreeData = {}): CancelablePromise<TasksWithSubtasksPublic> {
+    return __request(OpenAPI, {
+      method: "GET",
+      url: "/api/v1/tasks/tree",
+      query: {
+        status: data.status,
+        priority: data.priority,
+        search: data.search,
+        include_archived: data.include_archived,
+        include_deleted: data.include_deleted,
+      },
+      errors: {
+        422: "Validation Error",
+      },
+    })
+  }
+
   /**
    * Read Tasks
    * @param data The data for the request.
