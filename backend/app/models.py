@@ -22,10 +22,36 @@ class Frequency(str, Enum):
     MONTHLY = "monthly"
 
 
+class BuiltinRole(str, Enum):
+    ADMIN = "admin"
+    USER = "user"
+    GUEST = "guest"
+
+
+class ResourceType(str, Enum):
+    HABIT = "habit"
+    HABIT_RECORD = "habit_record"
+    TRANSACTION = "transaction"
+    CATEGORY = "category"
+    BUDGET = "budget"
+    USER = "user"
+    ROLE = "role"
+    PERMISSION = "permission"
+    OPERATION_LOG = "operation_log"
+
+
+class ActionType(str, Enum):
+    CREATE = "create"
+    READ = "read"
+    UPDATE = "update"
+    DELETE = "delete"
+
+
 class UserBase(SQLModel):
     email: EmailStr = Field(unique=True, index=True, max_length=255)
     is_active: bool = True
     is_superuser: bool = False
+    is_banned: bool = False
     full_name: str | None = Field(default=None, max_length=255)
 
 
@@ -382,6 +408,7 @@ class User(UserBase, table=True):
     categories: list["Category"] = Relationship(back_populates="owner", cascade_delete=True)
     transactions: list["Transaction"] = Relationship(back_populates="owner", cascade_delete=True)
     budgets: list["Budget"] = Relationship(back_populates="owner", cascade_delete=True)
+    roles: list["Role"] = Relationship(back_populates="users", link_model="UserRoleLink")
 
 
 class Category(CategoryBase, table=True):
@@ -470,3 +497,144 @@ class HabitRecord(HabitRecordBase, table=True):
     )
     habit: Habit | None = Relationship(back_populates="records")
     owner: User | None = Relationship(back_populates="habit_records")
+
+
+class RoleBase(SQLModel):
+    name: str = Field(unique=True, max_length=100, index=True)
+    code: str = Field(unique=True, max_length=50, index=True)
+    description: str | None = Field(default=None, max_length=255)
+    is_builtin: bool = False
+
+
+class RoleCreate(RoleBase):
+    pass
+
+
+class RoleUpdate(SQLModel):
+    name: str | None = Field(default=None, max_length=100)
+    description: str | None = Field(default=None, max_length=255)
+
+
+class RolePublic(RoleBase):
+    id: str
+    created_at: datetime | None = None
+
+
+class RolesPublic(SQLModel):
+    data: list[RolePublic]
+    count: int
+
+
+class RoleWithPermissions(RolePublic):
+    permissions: list["PermissionPublic"] = []
+
+
+class Role(RoleBase, table=True):
+    id: str = Field(default_factory=generate_uuid, primary_key=True)
+    created_at: datetime | None = Field(
+        default_factory=get_datetime_utc,
+        sa_type=SA_DateTime(timezone=True),
+    )
+    users: list["User"] = Relationship(back_populates="roles", link_model="UserRoleLink")
+    permissions: list["Permission"] = Relationship(
+        back_populates="roles", link_model="RolePermissionLink"
+    )
+
+
+class PermissionBase(SQLModel):
+    name: str = Field(unique=True, max_length=100, index=True)
+    code: str = Field(unique=True, max_length=100, index=True)
+    resource: ResourceType
+    action: ActionType
+    description: str | None = Field(default=None, max_length=255)
+
+
+class PermissionCreate(PermissionBase):
+    pass
+
+
+class PermissionUpdate(SQLModel):
+    name: str | None = Field(default=None, max_length=100)
+    description: str | None = Field(default=None, max_length=255)
+
+
+class PermissionPublic(PermissionBase):
+    id: str
+    created_at: datetime | None = None
+
+
+class PermissionsPublic(SQLModel):
+    data: list[PermissionPublic]
+    count: int
+
+
+class Permission(PermissionBase, table=True):
+    id: str = Field(default_factory=generate_uuid, primary_key=True)
+    created_at: datetime | None = Field(
+        default_factory=get_datetime_utc,
+        sa_type=SA_DateTime(timezone=True),
+    )
+    roles: list["Role"] = Relationship(
+        back_populates="permissions", link_model="RolePermissionLink"
+    )
+
+
+class UserRoleLink(SQLModel, table=True):
+    user_id: str = Field(
+        foreign_key="user.id", primary_key=True, ondelete="CASCADE"
+    )
+    role_id: str = Field(
+        foreign_key="role.id", primary_key=True, ondelete="CASCADE"
+    )
+
+
+class RolePermissionLink(SQLModel, table=True):
+    role_id: str = Field(
+        foreign_key="role.id", primary_key=True, ondelete="CASCADE"
+    )
+    permission_id: str = Field(
+        foreign_key="permission.id", primary_key=True, ondelete="CASCADE"
+    )
+
+
+class UserWithRoles(UserPublic):
+    roles: list["RolePublic"] = []
+
+
+class OperationLogBase(SQLModel):
+    user_id: str | None = Field(default=None, index=True)
+    user_email: str | None = Field(default=None, max_length=255)
+    action: ActionType
+    resource: ResourceType
+    resource_id: str | None = None
+    resource_name: str | None = None
+    request_path: str | None = None
+    request_method: str | None = None
+    request_data: str | None = None
+    response_status: int | None = None
+    ip_address: str | None = None
+    user_agent: str | None = None
+    success: bool = True
+    error_message: str | None = None
+
+
+class OperationLogCreate(OperationLogBase):
+    pass
+
+
+class OperationLogPublic(OperationLogBase):
+    id: str
+    created_at: datetime | None = None
+
+
+class OperationLogsPublic(SQLModel):
+    data: list[OperationLogPublic]
+    count: int
+
+
+class OperationLog(OperationLogBase, table=True):
+    id: str = Field(default_factory=generate_uuid, primary_key=True)
+    created_at: datetime | None = Field(
+        default_factory=get_datetime_utc,
+        sa_type=SA_DateTime(timezone=True),
+    )

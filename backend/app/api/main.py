@@ -9,6 +9,9 @@ from app.api.routes.habit_records import router as habit_records_router
 from app.api.routes.categories import router as categories_router
 from app.api.routes.transactions import router as transactions_router
 from app.api.routes.budgets import router as budgets_router
+from app.api.routes.roles import router as roles_router
+from app.api.routes.permissions import router as permissions_router
+from app.api.routes.operation_logs import router as operation_logs_router
 from app.api.routes.private import router as private_router
 from app.core.config import settings
 
@@ -22,6 +25,9 @@ api_router.include_router(habit_records_router)
 api_router.include_router(categories_router)
 api_router.include_router(transactions_router)
 api_router.include_router(budgets_router)
+api_router.include_router(roles_router)
+api_router.include_router(permissions_router)
+api_router.include_router(operation_logs_router)
 
 
 if settings.ENVIRONMENT == "local":
