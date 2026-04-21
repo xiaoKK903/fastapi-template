@@ -104,7 +104,7 @@ function AddBudget() {
     resolver: zodResolver(formSchema),
     defaultValues: {
       amount: 0,
-      category_id: "",
+      category_id: "total",
       month: today.getMonth() + 1,
       year: today.getFullYear(),
     },
@@ -126,7 +126,7 @@ function AddBudget() {
   const onSubmit = (data: FormData) => {
     mutation.mutate({
       ...data,
-      category_id: data.category_id || null,
+      category_id: data.category_id === "total" ? null : data.category_id,
       amount: Number(data.amount),
     })
   }
@@ -207,7 +207,7 @@ function AddBudget() {
                     <Select
                       onValueChange={field.onChange}
                       defaultValue={field.value}
-                      value={field.value || undefined}
+                      value={field.value}
                     >
                       <FormControl>
                         <SelectTrigger>
@@ -215,7 +215,7 @@ function AddBudget() {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="">总预算</SelectItem>
+                        <SelectItem value="total">总预算</SelectItem>
                         {categories?.data?.map((cat) => (
                           <SelectItem key={cat.id} value={cat.id}>
                             {cat.name}

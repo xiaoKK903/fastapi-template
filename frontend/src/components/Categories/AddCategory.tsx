@@ -81,7 +81,7 @@ const AddCategory = () => {
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
-    mode: "onBlur",
+    mode: "onChange",
     criteriaMode: "all",
     defaultValues: {
       name: "",
