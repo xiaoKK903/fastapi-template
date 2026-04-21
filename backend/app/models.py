@@ -733,6 +733,11 @@ class TaskWithSubtasks(TaskPublic):
     children: list["TaskWithSubtasks"] = []
 
 
+class TasksWithSubtasksPublic(SQLModel):
+    data: list[TaskWithSubtasks]
+    count: int
+
+
 class TaskStatistics(SQLModel):
     total_tasks: int = 0
     todo_tasks: int = 0

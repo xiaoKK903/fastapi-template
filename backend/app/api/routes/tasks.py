@@ -19,6 +19,8 @@ from app.models import (
     TaskStatus,
     TaskPriority,
     Message,
+    TaskWithSubtasks,
+    TasksWithSubtasksPublic,
 )
 
 router = APIRouter(prefix="/tasks", tags=["tasks"])
@@ -40,6 +42,14 @@ def is_overdue(due_date: date | None, status: TaskStatus) -> bool:
 def enrich_task(task: Task) -> TaskPublic:
     task_public = TaskPublic.model_validate(task)
     task_public.is_overdue = is_overdue(task.due_date, task.status)
+    return task_public
+
+
+def enrich_task_with_subtasks(task: Task) -> TaskWithSubtasks:
+    task_public = TaskWithSubtasks.model_validate(task)
+    task_public.is_overdue = is_overdue(task.due_date, task.status)
+    if task.children:
+        task_public.children = [enrich_task_with_subtasks(child) for child in task.children]
     return task_public
 
 
@@ -100,7 +110,7 @@ def read_tasks(
     return TasksPublic(data=tasks_public, count=count)
 
 
-@router.get("/tree", response_model=TasksPublic)
+@router.get("/tree", response_model=TasksWithSubtasksPublic)
 def read_tasks_tree(
     session: SessionDep,
     current_user: CurrentUser,
@@ -112,11 +122,9 @@ def read_tasks_tree(
 ) -> Any:
     statement = (
         select(Task)
-        .options(selectinload(Task.children))
         .where(Task.owner_id == current_user.id)
         .where(Task.is_deleted == include_deleted)
         .where(Task.is_archived == include_archived)
-        .where(Task.parent_id == None)
     )
 
     if status is not None:
@@ -134,10 +142,23 @@ def read_tasks_tree(
         col(Task.created_at).desc()
     )
 
-    tasks = session.exec(statement).all()
+    all_tasks = session.exec(statement).all()
     
-    tasks_public = [enrich_task(task) for task in tasks]
-    return TasksPublic(data=tasks_public, count=len(tasks_public))
+    task_map: dict[str, TaskWithSubtasks] = {}
+    for task in all_tasks:
+        task_map[task.id] = enrich_task_with_subtasks(task)
+    
+    for task in all_tasks:
+        if task.parent_id and task.parent_id in task_map:
+            parent = task_map[task.parent_id]
+            child = task_map[task.id]
+            if child not in parent.children:
+                parent.children.append(child)
+    
+    root_tasks = [task for task in task_map.values() if task.parent_id is None]
+    root_tasks.sort(key=lambda t: (t.priority.value if hasattr(t.priority, 'value') else t.priority, t.created_at or ''), reverse=True)
+    
+    return TasksWithSubtasksPublic(data=root_tasks, count=len(root_tasks))
 
 
 @router.get("/trash", response_model=TasksPublic)

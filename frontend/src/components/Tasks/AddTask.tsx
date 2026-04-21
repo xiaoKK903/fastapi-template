@@ -56,12 +56,23 @@ type FormData = z.infer<typeof formSchema>
 
 interface AddTaskProps {
   parentId?: string
+  isOpen?: boolean
+  onOpenChange?: (open: boolean) => void
 }
 
-const AddTask = ({ parentId }: AddTaskProps) => {
-  const [isOpen, setIsOpen] = useState(false)
+const AddTask = ({ parentId, isOpen: externalIsOpen, onOpenChange: externalOnOpenChange }: AddTaskProps) => {
+  const [internalIsOpen, setInternalIsOpen] = useState(false)
   const queryClient = useQueryClient()
   const { showSuccessToast, showErrorToast } = useCustomToast()
+
+  const isOpen = externalIsOpen !== undefined ? externalIsOpen : internalIsOpen
+  const setIsOpen = (open: boolean) => {
+    if (externalOnOpenChange) {
+      externalOnOpenChange(open)
+    } else {
+      setInternalIsOpen(open)
+    }
+  }
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -93,6 +104,7 @@ const AddTask = ({ parentId }: AddTaskProps) => {
     onError: handleError.bind(showErrorToast),
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["tasks"] })
+      queryClient.invalidateQueries({ queryKey: ["tasksTree"] })
     },
   })
 
