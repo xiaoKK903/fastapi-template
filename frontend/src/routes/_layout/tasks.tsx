@@ -1,9 +1,9 @@
-import { useSuspenseQuery, useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { createFileRoute } from "@tanstack/react-router"
-import { Search, Archive, Trash2, RefreshCcw } from "lucide-react"
-import { Suspense, useState } from "react"
+import { Search, Trash2 } from "lucide-react"
+import { useState } from "react"
 
-import { TasksService, TaskStatus, TaskPriority, type TaskStatistics } from "@/services/TasksService"
+import { TasksService, TaskStatus, TaskPriority, type TaskStatistics, type TasksPublic } from "@/services/TasksService"
 import { DataTable } from "@/components/Common/DataTable"
 import AddTask from "@/components/Tasks/AddTask"
 import { columns } from "@/components/Tasks/columns"
@@ -48,6 +48,7 @@ function getTasksQueryOptions({
         includeDeleted,
       }),
     queryKey: ["tasks", status, priority, search, includeArchived, includeDeleted],
+    retry: 1,
   }
 }
 
@@ -55,6 +56,7 @@ function getStatisticsQueryOptions() {
   return {
     queryFn: () => TasksService.getTaskStatistics(),
     queryKey: ["tasksStatistics"],
+    retry: 1,
   }
 }
 
@@ -97,8 +99,23 @@ function StatCard({
   )
 }
 
-function StatisticsContent() {
-  const { data: stats } = useSuspenseQuery(getStatisticsQueryOptions())
+function Statistics({ stats, isLoading }: { stats: TaskStatistics | undefined; isLoading: boolean }) {
+  if (isLoading || !stats) {
+    return (
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        {[...Array(8)].map((_, i) => (
+          <Card key={i}>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <div className="text-sm font-medium">加载中...</div>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">-</div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    )
+  }
 
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -148,47 +165,36 @@ function StatisticsContent() {
   )
 }
 
-function Statistics() {
-  return (
-    <Suspense
-      fallback={
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          {[...Array(8)].map((_, i) => (
-            <Card key={i}>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <div className="text-sm font-medium">加载中...</div>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">-</div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      }
-    >
-      <StatisticsContent />
-    </Suspense>
-  )
-}
-
 function TasksTableContent({
-  status,
-  priority,
-  search,
+  tasks,
+  isLoading,
+  error,
   includeArchived,
   includeDeleted,
 }: {
-  status?: TaskStatus
-  priority?: TaskPriority
-  search?: string
+  tasks: TasksPublic | undefined
+  isLoading: boolean
+  error: unknown
   includeArchived?: boolean
   includeDeleted?: boolean
 }) {
-  const { data: tasks } = useSuspenseQuery(
-    getTasksQueryOptions({ status, priority, search, includeArchived, includeDeleted })
-  )
+  if (isLoading) {
+    return <PendingTasks />
+  }
 
-  if (tasks.data.length === 0) {
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center text-center py-12">
+        <div className="rounded-full bg-destructive/10 p-4 mb-4">
+          <Trash2 className="h-8 w-8 text-destructive" />
+        </div>
+        <h3 className="text-lg font-semibold">加载失败</h3>
+        <p className="text-muted-foreground">请刷新页面重试</p>
+      </div>
+    )
+  }
+
+  if (!tasks || tasks.data.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center text-center py-12">
         <div className="rounded-full bg-muted p-4 mb-4">
@@ -207,37 +213,12 @@ function TasksTableContent({
   return <DataTable columns={columns} data={tasks.data} />
 }
 
-function TasksTable({
-  status,
-  priority,
-  search,
-  includeArchived,
-  includeDeleted,
-}: {
-  status?: TaskStatus
-  priority?: TaskPriority
-  search?: string
-  includeArchived?: boolean
-  includeDeleted?: boolean
-}) {
-  return (
-    <Suspense fallback={<PendingTasks />}>
-      <TasksTableContent
-        status={status}
-        priority={priority}
-        search={search}
-        includeArchived={includeArchived}
-        includeDeleted={includeDeleted}
-      />
-    </Suspense>
-  )
-}
-
 function Tasks() {
   const [status, setStatus] = useState<TaskStatus | undefined>(undefined)
   const [priority, setPriority] = useState<TaskPriority | undefined>(undefined)
   const [search, setSearch] = useState("")
   const [searchInput, setSearchInput] = useState("")
+  const [activeTab, setActiveTab] = useState("active")
 
   const handleSearch = () => {
     setSearch(searchInput)
@@ -251,6 +232,15 @@ function Tasks() {
 
   const queryClient = useQueryClient()
   const { showSuccessToast, showErrorToast } = useCustomToast()
+
+  const { data: stats, isLoading: statsLoading, error: statsError } = useQuery(getStatisticsQueryOptions())
+
+  const includeArchived = activeTab === "archived"
+  const includeDeleted = activeTab === "trash"
+
+  const { data: tasks, isLoading: tasksLoading, error: tasksError } = useQuery(
+    getTasksQueryOptions({ status, priority, search, includeArchived, includeDeleted })
+  )
 
   const emptyTrashMutation = useMutation({
     mutationFn: () => TasksService.emptyTrash(),
@@ -272,9 +262,9 @@ function Tasks() {
         <AddTask />
       </div>
 
-      <Statistics />
+      <Statistics stats={stats} isLoading={statsLoading} />
 
-      <Tabs defaultValue="active">
+      <Tabs defaultValue="active" value={activeTab} onValueChange={setActiveTab}>
         <div className="flex items-center justify-between">
           <TabsList>
             <TabsTrigger value="active">进行中</TabsTrigger>
@@ -333,20 +323,20 @@ function Tasks() {
         </div>
 
         <TabsContent value="active" className="mt-4">
-          <TasksTable
-            status={status}
-            priority={priority}
-            search={search}
+          <TasksTableContent
+            tasks={tasks}
+            isLoading={tasksLoading}
+            error={tasksError}
             includeArchived={false}
             includeDeleted={false}
           />
         </TabsContent>
 
         <TabsContent value="archived" className="mt-4">
-          <TasksTable
-            status={status}
-            priority={priority}
-            search={search}
+          <TasksTableContent
+            tasks={tasks}
+            isLoading={tasksLoading}
+            error={tasksError}
             includeArchived={true}
             includeDeleted={false}
           />
@@ -367,10 +357,10 @@ function Tasks() {
               清空回收站
             </Button>
           </div>
-          <TasksTable
-            status={status}
-            priority={priority}
-            search={search}
+          <TasksTableContent
+            tasks={tasks}
+            isLoading={tasksLoading}
+            error={tasksError}
             includeArchived={false}
             includeDeleted={true}
           />
