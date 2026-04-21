@@ -1,7 +1,7 @@
 import uuid
 from datetime import date, datetime, timezone
 from enum import Enum
-from typing import Optional
+from typing import List, Optional
 
 from pydantic import EmailStr
 from sqlalchemy import DateTime as SA_DateTime
@@ -79,19 +79,6 @@ class CategoryUpdate(SQLModel):
     description: str | None = Field(default=None, max_length=255)
 
 
-class Category(CategoryBase, table=True):
-    id: str = Field(default_factory=generate_uuid, primary_key=True)
-    owner_id: str = Field(
-        foreign_key="user.id", nullable=False, ondelete="CASCADE"
-    )
-    created_at: datetime | None = Field(
-        default_factory=get_datetime_utc,
-        sa_type=SA_DateTime(timezone=True),
-    )
-    owner: User | None = Relationship(back_populates="categories")
-    transactions: list["Transaction"] = Relationship(back_populates="category")
-
-
 class CategoryPublic(CategoryBase):
     id: str
     owner_id: str
@@ -120,22 +107,6 @@ class TransactionUpdate(SQLModel):
     description: str | None = Field(default=None, max_length=500)
     category_id: str | None = None
     transaction_date: date | None = None
-
-
-class Transaction(TransactionBase, table=True):
-    id: str = Field(default_factory=generate_uuid, primary_key=True)
-    category_id: str = Field(
-        foreign_key="category.id", nullable=False, ondelete="CASCADE"
-    )
-    owner_id: str = Field(
-        foreign_key="user.id", nullable=False, ondelete="CASCADE"
-    )
-    created_at: datetime | None = Field(
-        default_factory=get_datetime_utc,
-        sa_type=SA_DateTime(timezone=True),
-    )
-    owner: User | None = Relationship(back_populates="transactions")
-    category: Category | None = Relationship(back_populates="transactions")
 
 
 class TransactionPublic(TransactionBase):
@@ -181,22 +152,6 @@ class BudgetCreate(BudgetBase):
 class BudgetUpdate(SQLModel):
     amount: float | None = Field(default=None, gt=0)
     category_id: str | None = None
-
-
-class Budget(BudgetBase, table=True):
-    id: str = Field(default_factory=generate_uuid, primary_key=True)
-    category_id: str | None = Field(
-        default=None, foreign_key="category.id", nullable=True, ondelete="CASCADE"
-    )
-    owner_id: str = Field(
-        foreign_key="user.id", nullable=False, ondelete="CASCADE"
-    )
-    created_at: datetime | None = Field(
-        default_factory=get_datetime_utc,
-        sa_type=SA_DateTime(timezone=True),
-    )
-    owner: User | None = Relationship(back_populates="budgets")
-    category: Category | None = Relationship(back_populates="budgets")
 
 
 class BudgetPublic(BudgetBase):
@@ -277,21 +232,6 @@ class YearlySummary(SQLModel):
     monthly_breakdown: list[dict[str, float | int]]
 
 
-class User(UserBase, table=True):
-    id: str = Field(default_factory=generate_uuid, primary_key=True)
-    hashed_password: str
-    created_at: datetime | None = Field(
-        default_factory=get_datetime_utc,
-        sa_type=SA_DateTime(timezone=True),
-    )
-    items: list["Item"] = Relationship(back_populates="owner", cascade_delete=True)
-    habits: list["Habit"] = Relationship(back_populates="owner", cascade_delete=True)
-    habit_records: list["HabitRecord"] = Relationship(back_populates="owner", cascade_delete=True)
-    categories: list["Category"] = Relationship(back_populates="owner", cascade_delete=True)
-    transactions: list["Transaction"] = Relationship(back_populates="owner", cascade_delete=True)
-    budgets: list["Budget"] = Relationship(back_populates="owner", cascade_delete=True)
-
-
 class UserPublic(UserBase):
     id: str
     created_at: datetime | None = None
@@ -320,19 +260,6 @@ class HabitUpdate(SQLModel):
     description: str | None = Field(default=None, max_length=500)
 
 
-class Habit(HabitBase, table=True):
-    id: str = Field(default_factory=generate_uuid, primary_key=True)
-    created_at: datetime | None = Field(
-        default_factory=get_datetime_utc,
-        sa_type=SA_DateTime(timezone=True),
-    )
-    owner_id: str = Field(
-        foreign_key="user.id", nullable=False, ondelete="CASCADE"
-    )
-    owner: User | None = Relationship(back_populates="habits")
-    records: list["HabitRecord"] = Relationship(back_populates="habit", cascade_delete=True)
-
-
 class HabitPublic(HabitBase):
     id: str
     owner_id: str
@@ -357,18 +284,6 @@ class ItemUpdate(SQLModel):
     title: str | None = Field(default=None, min_length=1, max_length=255)
 
 
-class Item(ItemBase, table=True):
-    id: str = Field(default_factory=generate_uuid, primary_key=True)
-    created_at: datetime | None = Field(
-        default_factory=get_datetime_utc,
-        sa_type=SA_DateTime(timezone=True),
-    )
-    owner_id: str = Field(
-        foreign_key="user.id", nullable=False, ondelete="CASCADE"
-    )
-    owner: User | None = Relationship(back_populates="items")
-
-
 class ItemPublic(ItemBase):
     id: str
     owner_id: str
@@ -388,23 +303,6 @@ class HabitRecordBase(SQLModel):
 class HabitRecordCreate(HabitRecordBase):
     habit_id: str
     check_date: date
-
-
-class HabitRecord(HabitRecordBase, table=True):
-    id: str = Field(default_factory=generate_uuid, primary_key=True)
-    habit_id: str = Field(
-        foreign_key="habit.id", nullable=False, ondelete="CASCADE"
-    )
-    check_date: datetime = Field(sa_column=Column(SA_DateTime, nullable=False))
-    created_at: datetime | None = Field(
-        default_factory=get_datetime_utc,
-        sa_type=SA_DateTime(timezone=True),
-    )
-    owner_id: str = Field(
-        foreign_key="user.id", nullable=False, ondelete="CASCADE"
-    )
-    habit: Habit | None = Relationship(back_populates="records")
-    owner: User | None = Relationship(back_populates="habit_records")
 
 
 class HabitRecordPublic(HabitRecordBase):
@@ -469,3 +367,106 @@ class TokenPayload(SQLModel):
 class NewPassword(SQLModel):
     token: str
     new_password: str = Field(min_length=8, max_length=128)
+
+
+class User(UserBase, table=True):
+    id: str = Field(default_factory=generate_uuid, primary_key=True)
+    hashed_password: str
+    created_at: datetime | None = Field(
+        default_factory=get_datetime_utc,
+        sa_type=SA_DateTime(timezone=True),
+    )
+    items: list["Item"] = Relationship(back_populates="owner", cascade_delete=True)
+    habits: list["Habit"] = Relationship(back_populates="owner", cascade_delete=True)
+    habit_records: list["HabitRecord"] = Relationship(back_populates="owner", cascade_delete=True)
+    categories: list["Category"] = Relationship(back_populates="owner", cascade_delete=True)
+    transactions: list["Transaction"] = Relationship(back_populates="owner", cascade_delete=True)
+    budgets: list["Budget"] = Relationship(back_populates="owner", cascade_delete=True)
+
+
+class Category(CategoryBase, table=True):
+    id: str = Field(default_factory=generate_uuid, primary_key=True)
+    owner_id: str = Field(
+        foreign_key="user.id", nullable=False, ondelete="CASCADE"
+    )
+    created_at: datetime | None = Field(
+        default_factory=get_datetime_utc,
+        sa_type=SA_DateTime(timezone=True),
+    )
+    owner: User | None = Relationship(back_populates="categories")
+    transactions: list["Transaction"] = Relationship(back_populates="category")
+    budgets: list["Budget"] = Relationship(back_populates="category")
+
+
+class Transaction(TransactionBase, table=True):
+    id: str = Field(default_factory=generate_uuid, primary_key=True)
+    category_id: str = Field(
+        foreign_key="category.id", nullable=False, ondelete="CASCADE"
+    )
+    owner_id: str = Field(
+        foreign_key="user.id", nullable=False, ondelete="CASCADE"
+    )
+    created_at: datetime | None = Field(
+        default_factory=get_datetime_utc,
+        sa_type=SA_DateTime(timezone=True),
+    )
+    owner: User | None = Relationship(back_populates="transactions")
+    category: Category | None = Relationship(back_populates="transactions")
+
+
+class Budget(BudgetBase, table=True):
+    id: str = Field(default_factory=generate_uuid, primary_key=True)
+    category_id: str | None = Field(
+        default=None, foreign_key="category.id", nullable=True, ondelete="CASCADE"
+    )
+    owner_id: str = Field(
+        foreign_key="user.id", nullable=False, ondelete="CASCADE"
+    )
+    created_at: datetime | None = Field(
+        default_factory=get_datetime_utc,
+        sa_type=SA_DateTime(timezone=True),
+    )
+    owner: User | None = Relationship(back_populates="budgets")
+    category: Category | None = Relationship(back_populates="budgets")
+
+
+class Habit(HabitBase, table=True):
+    id: str = Field(default_factory=generate_uuid, primary_key=True)
+    created_at: datetime | None = Field(
+        default_factory=get_datetime_utc,
+        sa_type=SA_DateTime(timezone=True),
+    )
+    owner_id: str = Field(
+        foreign_key="user.id", nullable=False, ondelete="CASCADE"
+    )
+    owner: User | None = Relationship(back_populates="habits")
+    records: list["HabitRecord"] = Relationship(back_populates="habit", cascade_delete=True)
+
+
+class Item(ItemBase, table=True):
+    id: str = Field(default_factory=generate_uuid, primary_key=True)
+    created_at: datetime | None = Field(
+        default_factory=get_datetime_utc,
+        sa_type=SA_DateTime(timezone=True),
+    )
+    owner_id: str = Field(
+        foreign_key="user.id", nullable=False, ondelete="CASCADE"
+    )
+    owner: User | None = Relationship(back_populates="items")
+
+
+class HabitRecord(HabitRecordBase, table=True):
+    id: str = Field(default_factory=generate_uuid, primary_key=True)
+    habit_id: str = Field(
+        foreign_key="habit.id", nullable=False, ondelete="CASCADE"
+    )
+    check_date: datetime = Field(sa_column=Column(SA_DateTime, nullable=False))
+    created_at: datetime | None = Field(
+        default_factory=get_datetime_utc,
+        sa_type=SA_DateTime(timezone=True),
+    )
+    owner_id: str = Field(
+        foreign_key="user.id", nullable=False, ondelete="CASCADE"
+    )
+    habit: Habit | None = Relationship(back_populates="records")
+    owner: User | None = Relationship(back_populates="habit_records")

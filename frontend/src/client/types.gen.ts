@@ -9,11 +9,125 @@ export type Body_login_login_access_token = {
     client_secret?: (string | null);
 };
 
-export type HTTPValidationError = {
-    detail?: Array<ValidationError>;
+export type BudgetCreate = {
+    amount?: number;
+    month: number;
+    year: number;
+    category_id?: (string | null);
+};
+
+export type BudgetPublic = {
+    amount?: number;
+    month: number;
+    year: number;
+    id: string;
+    category_id: (string | null);
+    owner_id: string;
+    created_at?: (string | null);
+};
+
+export type BudgetsWithCategoryPublic = {
+    data: Array<BudgetWithCategory>;
+    count: number;
+};
+
+export type BudgetUpdate = {
+    amount?: (number | null);
+    category_id?: (string | null);
+};
+
+export type BudgetWithCategory = {
+    id: string;
+    amount: number;
+    month: number;
+    year: number;
+    category_id: (string | null);
+    category_name: (string | null);
+    category_icon: (string | null);
+    category_color: (string | null);
+    spent: number;
+    remaining: number;
+    percentage: number;
+};
+
+export type CategoriesPublic = {
+    data: Array<CategoryPublic>;
+    count: number;
+};
+
+export type CategoryCreate = {
+    name: string;
+    type?: TransactionType;
+    icon?: (string | null);
+    color?: (string | null);
+    description?: (string | null);
+};
+
+export type CategoryMonthlySummaries = {
+    income_categories: Array<CategoryMonthlySummary>;
+    expense_categories: Array<CategoryMonthlySummary>;
+    total_income: number;
+    total_expense: number;
+};
+
+export type CategoryMonthlySummary = {
+    category_id: string;
+    category_name: string;
+    category_icon: (string | null);
+    category_color: (string | null);
+    type: TransactionType;
+    total_amount: number;
+    transaction_count: number;
+    percentage: number;
+};
+
+export type CategoryPublic = {
+    name: string;
+    type?: TransactionType;
+    icon?: (string | null);
+    color?: (string | null);
+    description?: (string | null);
+    id: string;
+    owner_id: string;
+    created_at?: (string | null);
+};
+
+export type CategoryUpdate = {
+    name?: (string | null);
+    type?: (TransactionType | null);
+    icon?: (string | null);
+    color?: (string | null);
+    description?: (string | null);
+};
+
+export type DailyTrend = {
+    date: string;
+    income: number;
+    expense: number;
+    balance: number;
+};
+
+export type DailyTrends = {
+    days: Array<DailyTrend>;
 };
 
 export type Frequency = 'daily' | 'weekly' | 'monthly';
+
+export type HabitCalendar = {
+    year: number;
+    month: number;
+    days: Array<HabitCalendarDay>;
+};
+
+export type HabitCalendarDay = {
+    date: string;
+    total_count: number;
+    completed_count: number;
+    habit_ids: Array<(string)>;
+    record_ids: {
+        [key: string]: (string);
+    };
+};
 
 export type HabitCreate = {
     name: string;
@@ -24,12 +138,34 @@ export type HabitCreate = {
 
 export type HabitPublic = {
     name: string;
-    frequency: Frequency;
-    target_count: number;
+    frequency?: Frequency;
+    target_count?: number;
     description?: (string | null);
     id: string;
     owner_id: string;
     created_at?: (string | null);
+};
+
+export type HabitRecordCreate = {
+    count?: number;
+    note?: (string | null);
+    habit_id: string;
+    check_date: string;
+};
+
+export type HabitRecordPublic = {
+    count?: number;
+    note?: (string | null);
+    id: string;
+    habit_id: string;
+    owner_id: string;
+    check_date: string;
+    created_at?: (string | null);
+};
+
+export type HabitRecordsPublic = {
+    data: Array<HabitRecordPublic>;
+    count: number;
 };
 
 export type HabitsPublic = {
@@ -37,11 +173,33 @@ export type HabitsPublic = {
     count: number;
 };
 
+export type HabitStatistics = {
+    total_habits: number;
+    total_checks_last_30_days: number;
+    average_checks_per_day: number;
+    most_active_day: (string | null);
+    streak_days: number;
+};
+
+export type HabitTrend = {
+    days: Array<HabitTrendDay>;
+};
+
+export type HabitTrendDay = {
+    date: string;
+    completed_count: number;
+    total_habits: number;
+};
+
 export type HabitUpdate = {
     name?: (string | null);
     frequency?: (Frequency | null);
     target_count?: (number | null);
     description?: (string | null);
+};
+
+export type HTTPValidationError = {
+    detail?: Array<ValidationError>;
 };
 
 export type ItemCreate = {
@@ -64,11 +222,20 @@ export type ItemsPublic = {
 
 export type ItemUpdate = {
     title?: (string | null);
-    description?: (string | null);
 };
 
 export type Message = {
     message: string;
+};
+
+export type MonthlySummary = {
+    month: number;
+    year: number;
+    total_income: number;
+    total_expense: number;
+    balance: number;
+    income_count: number;
+    expense_count: number;
 };
 
 export type NewPassword = {
@@ -86,6 +253,53 @@ export type PrivateUserCreate = {
 export type Token = {
     access_token: string;
     token_type?: string;
+};
+
+export type TransactionCreate = {
+    amount?: number;
+    type?: TransactionType;
+    description?: (string | null);
+    transaction_date?: (string | null);
+    category_id: string;
+};
+
+export type TransactionPublic = {
+    amount?: number;
+    type?: TransactionType;
+    description?: (string | null);
+    transaction_date?: (string | null);
+    id: string;
+    category_id: string;
+    owner_id: string;
+    created_at?: (string | null);
+};
+
+export type TransactionsWithCategoryPublic = {
+    data: Array<TransactionWithCategory>;
+    count: number;
+};
+
+export type TransactionType = 'income' | 'expense';
+
+export type TransactionUpdate = {
+    amount?: (number | null);
+    type?: (TransactionType | null);
+    description?: (string | null);
+    category_id?: (string | null);
+    transaction_date?: (string | null);
+};
+
+export type TransactionWithCategory = {
+    id: string;
+    amount: number;
+    type: TransactionType;
+    description: (string | null);
+    transaction_date: (string | null);
+    category_id: string;
+    category_name: (string | null);
+    category_icon: (string | null);
+    category_color: (string | null);
+    created_at: (string | null);
 };
 
 export type UpdatePassword = {
@@ -143,6 +357,157 @@ export type ValidationError = {
         [key: string]: unknown;
     };
 };
+
+export type YearlySummary = {
+    year: number;
+    total_income: number;
+    total_expense: number;
+    balance: number;
+    monthly_breakdown: Array<{
+        [key: string]: (number);
+    }>;
+};
+
+export type BudgetsReadBudgetsData = {
+    month?: (number | null);
+    year?: (number | null);
+};
+
+export type BudgetsReadBudgetsResponse = (BudgetsWithCategoryPublic);
+
+export type BudgetsCreateBudgetData = {
+    requestBody: BudgetCreate;
+};
+
+export type BudgetsCreateBudgetResponse = (BudgetPublic);
+
+export type BudgetsReadBudgetData = {
+    id: string;
+};
+
+export type BudgetsReadBudgetResponse = (BudgetWithCategory);
+
+export type BudgetsUpdateBudgetData = {
+    id: string;
+    requestBody: BudgetUpdate;
+};
+
+export type BudgetsUpdateBudgetResponse = (BudgetPublic);
+
+export type BudgetsDeleteBudgetData = {
+    id: string;
+};
+
+export type BudgetsDeleteBudgetResponse = (Message);
+
+export type BudgetsCheckOverbudgetData = {
+    month?: (number | null);
+    year?: (number | null);
+};
+
+export type BudgetsCheckOverbudgetResponse = (unknown);
+
+export type CategoriesReadCategoriesData = {
+    limit?: number;
+    skip?: number;
+    type?: (TransactionType | null);
+};
+
+export type CategoriesReadCategoriesResponse = (CategoriesPublic);
+
+export type CategoriesCreateCategoryData = {
+    requestBody: CategoryCreate;
+};
+
+export type CategoriesCreateCategoryResponse = (CategoryPublic);
+
+export type CategoriesReadCategoryData = {
+    id: string;
+};
+
+export type CategoriesReadCategoryResponse = (CategoryPublic);
+
+export type CategoriesUpdateCategoryData = {
+    id: string;
+    requestBody: CategoryUpdate;
+};
+
+export type CategoriesUpdateCategoryResponse = (CategoryPublic);
+
+export type CategoriesDeleteCategoryData = {
+    id: string;
+};
+
+export type CategoriesDeleteCategoryResponse = (Message);
+
+export type HabitRecordsReadHabitRecordsData = {
+    endDate?: (string | null);
+    habitId?: (string | null);
+    limit?: number;
+    skip?: number;
+    startDate?: (string | null);
+};
+
+export type HabitRecordsReadHabitRecordsResponse = (HabitRecordsPublic);
+
+export type HabitRecordsCreateHabitRecordData = {
+    requestBody: HabitRecordCreate;
+};
+
+export type HabitRecordsCreateHabitRecordResponse = (HabitRecordPublic);
+
+export type HabitRecordsGetHabitCalendarData = {
+    month: number;
+    year: number;
+};
+
+export type HabitRecordsGetHabitCalendarResponse = (HabitCalendar);
+
+export type HabitRecordsGetHabitTrendData = {
+    days?: number;
+};
+
+export type HabitRecordsGetHabitTrendResponse = (HabitTrend);
+
+export type HabitRecordsGetHabitStatisticsResponse = (HabitStatistics);
+
+export type HabitRecordsDeleteHabitRecordData = {
+    id: string;
+};
+
+export type HabitRecordsDeleteHabitRecordResponse = (Message);
+
+export type HabitsReadHabitsData = {
+    limit?: number;
+    skip?: number;
+};
+
+export type HabitsReadHabitsResponse = (HabitsPublic);
+
+export type HabitsCreateHabitData = {
+    requestBody: HabitCreate;
+};
+
+export type HabitsCreateHabitResponse = (HabitPublic);
+
+export type HabitsReadHabitData = {
+    id: string;
+};
+
+export type HabitsReadHabitResponse = (HabitPublic);
+
+export type HabitsUpdateHabitData = {
+    id: string;
+    requestBody: HabitUpdate;
+};
+
+export type HabitsUpdateHabitResponse = (HabitPublic);
+
+export type HabitsDeleteHabitData = {
+    id: string;
+};
+
+export type HabitsDeleteHabitResponse = (Message);
 
 export type ItemsReadItemsData = {
     limit?: number;
@@ -208,6 +573,71 @@ export type PrivateCreateUserData = {
 
 export type PrivateCreateUserResponse = (UserPublic);
 
+export type TransactionsReadTransactionsData = {
+    categoryId?: (string | null);
+    endDate?: (string | null);
+    limit?: number;
+    maxAmount?: (number | null);
+    minAmount?: (number | null);
+    search?: (string | null);
+    skip?: number;
+    startDate?: (string | null);
+    type?: (TransactionType | null);
+};
+
+export type TransactionsReadTransactionsResponse = (TransactionsWithCategoryPublic);
+
+export type TransactionsCreateTransactionData = {
+    requestBody: TransactionCreate;
+};
+
+export type TransactionsCreateTransactionResponse = (TransactionPublic);
+
+export type TransactionsReadTransactionData = {
+    id: string;
+};
+
+export type TransactionsReadTransactionResponse = (TransactionWithCategory);
+
+export type TransactionsUpdateTransactionData = {
+    id: string;
+    requestBody: TransactionUpdate;
+};
+
+export type TransactionsUpdateTransactionResponse = (TransactionPublic);
+
+export type TransactionsDeleteTransactionData = {
+    id: string;
+};
+
+export type TransactionsDeleteTransactionResponse = (Message);
+
+export type TransactionsGetMonthlySummaryData = {
+    month?: (number | null);
+    year?: (number | null);
+};
+
+export type TransactionsGetMonthlySummaryResponse = (MonthlySummary);
+
+export type TransactionsGetCategoryMonthlySummaryData = {
+    month?: (number | null);
+    year?: (number | null);
+};
+
+export type TransactionsGetCategoryMonthlySummaryResponse = (CategoryMonthlySummaries);
+
+export type TransactionsGetDailyTrendData = {
+    days?: number;
+};
+
+export type TransactionsGetDailyTrendResponse = (DailyTrends);
+
+export type TransactionsGetYearlySummaryData = {
+    year?: (number | null);
+};
+
+export type TransactionsGetYearlySummaryResponse = (YearlySummary);
+
 export type UsersReadUsersData = {
     limit?: number;
     skip?: number;
@@ -269,35 +699,3 @@ export type UtilsTestEmailData = {
 export type UtilsTestEmailResponse = (Message);
 
 export type UtilsHealthCheckResponse = (boolean);
-
-export type HabitsReadHabitsData = {
-    limit?: number;
-    skip?: number;
-};
-
-export type HabitsReadHabitsResponse = (HabitsPublic);
-
-export type HabitsCreateHabitData = {
-    requestBody: HabitCreate;
-};
-
-export type HabitsCreateHabitResponse = (HabitPublic);
-
-export type HabitsReadHabitData = {
-    id: string;
-};
-
-export type HabitsReadHabitResponse = (HabitPublic);
-
-export type HabitsUpdateHabitData = {
-    id: string;
-    requestBody: HabitUpdate;
-};
-
-export type HabitsUpdateHabitResponse = (HabitPublic);
-
-export type HabitsDeleteHabitData = {
-    id: string;
-};
-
-export type HabitsDeleteHabitResponse = (Message);

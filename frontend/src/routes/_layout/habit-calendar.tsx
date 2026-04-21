@@ -3,15 +3,16 @@ import { createFileRoute } from "@tanstack/react-router"
 import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Check, X, Trash2 } from "lucide-react"
 import { Suspense, useMemo, useState } from "react"
 
-import { HabitsService, type HabitPublic } from "@/client"
 import {
+  HabitsService,
   HabitRecordsService,
+  type HabitPublic,
   type HabitCalendar,
   type HabitCalendarDay,
   type HabitRecordCreate,
   type HabitRecordPublic,
   type HabitRecordsPublic,
-} from "@/client/habitRecords"
+} from "@/client"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
