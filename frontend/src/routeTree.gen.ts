@@ -15,11 +15,15 @@ import { Route as RecoverPasswordRouteImport } from './routes/recover-password'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as LayoutRouteImport } from './routes/_layout'
 import { Route as LayoutIndexRouteImport } from './routes/_layout/index'
+import { Route as LayoutTransactionsRouteImport } from './routes/_layout/transactions'
 import { Route as LayoutSettingsRouteImport } from './routes/_layout/settings'
 import { Route as LayoutItemsRouteImport } from './routes/_layout/items'
 import { Route as LayoutHabitsRouteImport } from './routes/_layout/habits'
 import { Route as LayoutHabitStatsRouteImport } from './routes/_layout/habit-stats'
 import { Route as LayoutHabitCalendarRouteImport } from './routes/_layout/habit-calendar'
+import { Route as LayoutFinanceStatsRouteImport } from './routes/_layout/finance-stats'
+import { Route as LayoutCategoriesRouteImport } from './routes/_layout/categories'
+import { Route as LayoutBudgetsRouteImport } from './routes/_layout/budgets'
 import { Route as LayoutAdminRouteImport } from './routes/_layout/admin'
 
 const SignupRoute = SignupRouteImport.update({
@@ -51,6 +55,11 @@ const LayoutIndexRoute = LayoutIndexRouteImport.update({
   path: '/',
   getParentRoute: () => LayoutRoute,
 } as any)
+const LayoutTransactionsRoute = LayoutTransactionsRouteImport.update({
+  id: '/transactions',
+  path: '/transactions',
+  getParentRoute: () => LayoutRoute,
+} as any)
 const LayoutSettingsRoute = LayoutSettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
@@ -76,6 +85,21 @@ const LayoutHabitCalendarRoute = LayoutHabitCalendarRouteImport.update({
   path: '/habit-calendar',
   getParentRoute: () => LayoutRoute,
 } as any)
+const LayoutFinanceStatsRoute = LayoutFinanceStatsRouteImport.update({
+  id: '/finance-stats',
+  path: '/finance-stats',
+  getParentRoute: () => LayoutRoute,
+} as any)
+const LayoutCategoriesRoute = LayoutCategoriesRouteImport.update({
+  id: '/categories',
+  path: '/categories',
+  getParentRoute: () => LayoutRoute,
+} as any)
+const LayoutBudgetsRoute = LayoutBudgetsRouteImport.update({
+  id: '/budgets',
+  path: '/budgets',
+  getParentRoute: () => LayoutRoute,
+} as any)
 const LayoutAdminRoute = LayoutAdminRouteImport.update({
   id: '/admin',
   path: '/admin',
@@ -89,11 +113,15 @@ export interface FileRoutesByFullPath {
   '/reset-password': typeof ResetPasswordRoute
   '/signup': typeof SignupRoute
   '/admin': typeof LayoutAdminRoute
+  '/budgets': typeof LayoutBudgetsRoute
+  '/categories': typeof LayoutCategoriesRoute
+  '/finance-stats': typeof LayoutFinanceStatsRoute
   '/habit-calendar': typeof LayoutHabitCalendarRoute
   '/habit-stats': typeof LayoutHabitStatsRoute
   '/habits': typeof LayoutHabitsRoute
   '/items': typeof LayoutItemsRoute
   '/settings': typeof LayoutSettingsRoute
+  '/transactions': typeof LayoutTransactionsRoute
 }
 export interface FileRoutesByTo {
   '/login': typeof LoginRoute
@@ -101,11 +129,15 @@ export interface FileRoutesByTo {
   '/reset-password': typeof ResetPasswordRoute
   '/signup': typeof SignupRoute
   '/admin': typeof LayoutAdminRoute
+  '/budgets': typeof LayoutBudgetsRoute
+  '/categories': typeof LayoutCategoriesRoute
+  '/finance-stats': typeof LayoutFinanceStatsRoute
   '/habit-calendar': typeof LayoutHabitCalendarRoute
   '/habit-stats': typeof LayoutHabitStatsRoute
   '/habits': typeof LayoutHabitsRoute
   '/items': typeof LayoutItemsRoute
   '/settings': typeof LayoutSettingsRoute
+  '/transactions': typeof LayoutTransactionsRoute
   '/': typeof LayoutIndexRoute
 }
 export interface FileRoutesById {
@@ -116,11 +148,15 @@ export interface FileRoutesById {
   '/reset-password': typeof ResetPasswordRoute
   '/signup': typeof SignupRoute
   '/_layout/admin': typeof LayoutAdminRoute
+  '/_layout/budgets': typeof LayoutBudgetsRoute
+  '/_layout/categories': typeof LayoutCategoriesRoute
+  '/_layout/finance-stats': typeof LayoutFinanceStatsRoute
   '/_layout/habit-calendar': typeof LayoutHabitCalendarRoute
   '/_layout/habit-stats': typeof LayoutHabitStatsRoute
   '/_layout/habits': typeof LayoutHabitsRoute
   '/_layout/items': typeof LayoutItemsRoute
   '/_layout/settings': typeof LayoutSettingsRoute
+  '/_layout/transactions': typeof LayoutTransactionsRoute
   '/_layout/': typeof LayoutIndexRoute
 }
 export interface FileRouteTypes {
@@ -132,11 +168,15 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/signup'
     | '/admin'
+    | '/budgets'
+    | '/categories'
+    | '/finance-stats'
     | '/habit-calendar'
     | '/habit-stats'
     | '/habits'
     | '/items'
     | '/settings'
+    | '/transactions'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/login'
@@ -144,11 +184,15 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/signup'
     | '/admin'
+    | '/budgets'
+    | '/categories'
+    | '/finance-stats'
     | '/habit-calendar'
     | '/habit-stats'
     | '/habits'
     | '/items'
     | '/settings'
+    | '/transactions'
     | '/'
   id:
     | '__root__'
@@ -158,11 +202,15 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/signup'
     | '/_layout/admin'
+    | '/_layout/budgets'
+    | '/_layout/categories'
+    | '/_layout/finance-stats'
     | '/_layout/habit-calendar'
     | '/_layout/habit-stats'
     | '/_layout/habits'
     | '/_layout/items'
     | '/_layout/settings'
+    | '/_layout/transactions'
     | '/_layout/'
   fileRoutesById: FileRoutesById
 }
@@ -218,6 +266,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LayoutIndexRouteImport
       parentRoute: typeof LayoutRoute
     }
+    '/_layout/transactions': {
+      id: '/_layout/transactions'
+      path: '/transactions'
+      fullPath: '/transactions'
+      preLoaderRoute: typeof LayoutTransactionsRouteImport
+      parentRoute: typeof LayoutRoute
+    }
     '/_layout/settings': {
       id: '/_layout/settings'
       path: '/settings'
@@ -253,6 +308,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LayoutHabitCalendarRouteImport
       parentRoute: typeof LayoutRoute
     }
+    '/_layout/finance-stats': {
+      id: '/_layout/finance-stats'
+      path: '/finance-stats'
+      fullPath: '/finance-stats'
+      preLoaderRoute: typeof LayoutFinanceStatsRouteImport
+      parentRoute: typeof LayoutRoute
+    }
+    '/_layout/categories': {
+      id: '/_layout/categories'
+      path: '/categories'
+      fullPath: '/categories'
+      preLoaderRoute: typeof LayoutCategoriesRouteImport
+      parentRoute: typeof LayoutRoute
+    }
+    '/_layout/budgets': {
+      id: '/_layout/budgets'
+      path: '/budgets'
+      fullPath: '/budgets'
+      preLoaderRoute: typeof LayoutBudgetsRouteImport
+      parentRoute: typeof LayoutRoute
+    }
     '/_layout/admin': {
       id: '/_layout/admin'
       path: '/admin'
@@ -265,21 +341,29 @@ declare module '@tanstack/react-router' {
 
 interface LayoutRouteChildren {
   LayoutAdminRoute: typeof LayoutAdminRoute
+  LayoutBudgetsRoute: typeof LayoutBudgetsRoute
+  LayoutCategoriesRoute: typeof LayoutCategoriesRoute
+  LayoutFinanceStatsRoute: typeof LayoutFinanceStatsRoute
   LayoutHabitCalendarRoute: typeof LayoutHabitCalendarRoute
   LayoutHabitStatsRoute: typeof LayoutHabitStatsRoute
   LayoutHabitsRoute: typeof LayoutHabitsRoute
   LayoutItemsRoute: typeof LayoutItemsRoute
   LayoutSettingsRoute: typeof LayoutSettingsRoute
+  LayoutTransactionsRoute: typeof LayoutTransactionsRoute
   LayoutIndexRoute: typeof LayoutIndexRoute
 }
 
 const LayoutRouteChildren: LayoutRouteChildren = {
   LayoutAdminRoute: LayoutAdminRoute,
+  LayoutBudgetsRoute: LayoutBudgetsRoute,
+  LayoutCategoriesRoute: LayoutCategoriesRoute,
+  LayoutFinanceStatsRoute: LayoutFinanceStatsRoute,
   LayoutHabitCalendarRoute: LayoutHabitCalendarRoute,
   LayoutHabitStatsRoute: LayoutHabitStatsRoute,
   LayoutHabitsRoute: LayoutHabitsRoute,
   LayoutItemsRoute: LayoutItemsRoute,
   LayoutSettingsRoute: LayoutSettingsRoute,
+  LayoutTransactionsRoute: LayoutTransactionsRoute,
   LayoutIndexRoute: LayoutIndexRoute,
 }
 
