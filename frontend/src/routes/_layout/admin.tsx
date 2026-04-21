@@ -18,11 +18,18 @@ function getUsersQueryOptions() {
 
 export const Route = createFileRoute("/_layout/admin")({
   component: Admin,
-  beforeLoad: async () => {
-    const user = await UsersService.readUserMe()
-    if (!user.is_superuser) {
+  beforeLoad: async ({ context }) => {
+    try {
+      const user = await UsersService.readUserMe()
+      if (!user.is_superuser) {
+        throw redirect({
+          to: "/",
+        })
+      }
+    } catch (error) {
+      console.error("Admin page authentication error:", error)
       throw redirect({
-        to: "/",
+        to: "/login",
       })
     }
   },
