@@ -143,33 +143,27 @@ const AddTransaction = ({ onSuccess }: AddTransactionProps) => {
                 render={({ field }) => (
                   <FormItem className="space-y-3">
                     <FormLabel>类型</FormLabel>
-                    <FormControl>
-                      <RadioGroup
-                        onValueChange={(value) => {
-                          field.onChange(value)
-                          handleTypeChange(value)
-                        }}
-                        defaultValue={field.value}
-                        className="flex flex-row space-x-4"
-                      >
-                        <FormItem className="flex items-center space-x-3 space-y-0">
-                          <FormControl>
-                            <RadioGroupItem value="income" />
-                          </FormControl>
-                          <Label className="text-green-500 font-medium text-lg">
-                            收入
-                          </Label>
-                        </FormItem>
-                        <FormItem className="flex items-center space-x-3 space-y-0">
-                          <FormControl>
-                            <RadioGroupItem value="expense" />
-                          </FormControl>
-                          <Label className="text-red-500 font-medium text-lg">
-                            支出
-                          </Label>
-                        </FormItem>
-                      </RadioGroup>
-                    </FormControl>
+                    <RadioGroup
+                      onValueChange={(value) => {
+                        field.onChange(value)
+                        handleTypeChange(value)
+                      }}
+                      value={field.value}
+                      className="flex flex-row space-x-4"
+                    >
+                      <div className="flex items-center space-x-3">
+                        <RadioGroupItem value="income" id="type-income" />
+                        <Label htmlFor="type-income" className="text-green-500 font-medium text-lg cursor-pointer">
+                          收入
+                        </Label>
+                      </div>
+                      <div className="flex items-center space-x-3">
+                        <RadioGroupItem value="expense" id="type-expense" />
+                        <Label htmlFor="type-expense" className="text-red-500 font-medium text-lg cursor-pointer">
+                          支出
+                        </Label>
+                      </div>
+                    </RadioGroup>
                     <FormMessage />
                   </FormItem>
                 )}
