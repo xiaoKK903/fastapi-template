@@ -47,6 +47,7 @@ def _init_permissions(session: Session) -> None:
         ResourceType.ROLE,
         ResourceType.PERMISSION,
         ResourceType.OPERATION_LOG,
+        ResourceType.TASK,
     ]
     all_actions = [ActionType.CREATE, ActionType.READ, ActionType.UPDATE, ActionType.DELETE]
 
@@ -87,6 +88,7 @@ def _init_roles(session: Session) -> None:
                 f"{ResourceType.TRANSACTION.value}:*",
                 f"{ResourceType.CATEGORY.value}:*",
                 f"{ResourceType.BUDGET.value}:*",
+                f"{ResourceType.TASK.value}:*",
             ],
         },
         {
@@ -99,6 +101,7 @@ def _init_roles(session: Session) -> None:
                 f"{ResourceType.TRANSACTION.value}:{ActionType.READ.value}",
                 f"{ResourceType.CATEGORY.value}:{ActionType.READ.value}",
                 f"{ResourceType.BUDGET.value}:{ActionType.READ.value}",
+                f"{ResourceType.TASK.value}:{ActionType.READ.value}",
             ],
         },
     ]

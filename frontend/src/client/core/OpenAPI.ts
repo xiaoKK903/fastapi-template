@@ -41,12 +41,12 @@ export type OpenAPIConfig = {
 };
 
 export const OpenAPI: OpenAPIConfig = {
-	BASE: import.meta.env.VITE_API_URL || 'http://localhost:8000',
+	BASE: '',
 	CREDENTIALS: 'include',
 	ENCODE_PATH: undefined,
 	HEADERS: undefined,
 	PASSWORD: undefined,
-	TOKEN: () => localStorage.getItem('access_token'),
+	TOKEN: undefined,
 	USERNAME: undefined,
 	VERSION: '0.1.0',
 	WITH_CREDENTIALS: false,

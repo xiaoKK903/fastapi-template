@@ -4,7 +4,7 @@ from enum import Enum
 from typing import List, Optional
 
 from pydantic import EmailStr
-from sqlalchemy import DateTime as SA_DateTime
+from sqlalchemy import DateTime as SA_DateTime, JSON as SA_JSON
 from sqlmodel import Column, Field, Relationship, SQLModel
 
 
@@ -28,6 +28,29 @@ class BuiltinRole(str, Enum):
     GUEST = "guest"
 
 
+class TaskPriority(str, Enum):
+    LOW = "low"
+    MEDIUM = "medium"
+    HIGH = "high"
+    URGENT = "urgent"
+
+
+class TaskStatus(str, Enum):
+    TODO = "todo"
+    IN_PROGRESS = "in_progress"
+    DONE = "done"
+    CANCELLED = "cancelled"
+    ON_HOLD = "on_hold"
+
+
+class TaskRepeatType(str, Enum):
+    NONE = "none"
+    DAILY = "daily"
+    WEEKLY = "weekly"
+    MONTHLY = "monthly"
+    YEARLY = "yearly"
+
+
 class ResourceType(str, Enum):
     HABIT = "habit"
     HABIT_RECORD = "habit_record"
@@ -38,6 +61,7 @@ class ResourceType(str, Enum):
     ROLE = "role"
     PERMISSION = "permission"
     OPERATION_LOG = "operation_log"
+    TASK = "task"
 
 
 class ActionType(str, Enum):
@@ -506,6 +530,7 @@ class User(UserBase, table=True):
     categories: list["Category"] = Relationship(back_populates="owner", cascade_delete=True)
     transactions: list["Transaction"] = Relationship(back_populates="owner", cascade_delete=True)
     budgets: list["Budget"] = Relationship(back_populates="owner", cascade_delete=True)
+    tasks: list["Task"] = Relationship(back_populates="owner", cascade_delete=True)
     roles: list["Role"] = Relationship(back_populates="users", link_model=UserRoleLink)
 
 
@@ -641,3 +666,115 @@ class OperationLog(OperationLogBase, table=True):
         default_factory=get_datetime_utc,
         sa_type=SA_DateTime(timezone=True),
     )
+
+
+class TaskBase(SQLModel):
+    title: str = Field(min_length=1, max_length=500)
+    description: str | None = Field(default=None, max_length=2000)
+    priority: TaskPriority = Field(default=TaskPriority.MEDIUM)
+    status: TaskStatus = Field(default=TaskStatus.TODO)
+    due_date: date | None = None
+    completed_at: datetime | None = None
+    progress: int = Field(default=0, ge=0, le=100)
+    tags: list[str] | None = Field(default=None, sa_column=Column(SA_JSON))
+    parent_id: str | None = Field(default=None, foreign_key="task.id", nullable=True)
+    repeat_type: TaskRepeatType = Field(default=TaskRepeatType.NONE)
+    repeat_interval: int | None = Field(default=None, ge=1)
+    repeat_days: list[int] | None = Field(default=None, sa_column=Column(SA_JSON))
+    repeat_end_date: date | None = None
+    is_deleted: bool = False
+    is_archived: bool = False
+
+
+class TaskCreate(SQLModel):
+    title: str = Field(min_length=1, max_length=500)
+    description: str | None = Field(default=None, max_length=2000)
+    priority: TaskPriority = Field(default=TaskPriority.MEDIUM)
+    status: TaskStatus = Field(default=TaskStatus.TODO)
+    due_date: date | None = None
+    progress: int = Field(default=0, ge=0, le=100)
+    tags: list[str] | None = None
+    parent_id: str | None = None
+    repeat_type: TaskRepeatType = Field(default=TaskRepeatType.NONE)
+    repeat_interval: int | None = Field(default=None, ge=1)
+    repeat_days: list[int] | None = None
+    repeat_end_date: date | None = None
+
+
+class TaskUpdate(SQLModel):
+    title: str | None = Field(default=None, min_length=1, max_length=500)
+    description: str | None = Field(default=None, max_length=2000)
+    priority: TaskPriority | None = None
+    status: TaskStatus | None = None
+    due_date: date | None = None
+    progress: int | None = Field(default=None, ge=0, le=100)
+    tags: list[str] | None = None
+    parent_id: str | None = None
+    repeat_type: TaskRepeatType | None = None
+    repeat_interval: int | None = None
+    repeat_days: list[int] | None = None
+    repeat_end_date: date | None = None
+
+
+class TaskPublic(TaskBase):
+    id: str
+    owner_id: str
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
+    is_overdue: bool | None = None
+
+
+class TasksPublic(SQLModel):
+    data: list[TaskPublic]
+    count: int
+
+
+class TaskWithSubtasks(TaskPublic):
+    children: list["TaskWithSubtasks"] = []
+
+
+class TaskStatistics(SQLModel):
+    total_tasks: int = 0
+    todo_tasks: int = 0
+    in_progress_tasks: int = 0
+    done_tasks: int = 0
+    cancelled_tasks: int = 0
+    on_hold_tasks: int = 0
+    overdue_tasks: int = 0
+    high_priority_tasks: int = 0
+    urgent_priority_tasks: int = 0
+    completion_rate: float = 0.0
+    archived_tasks: int = 0
+    deleted_tasks: int = 0
+
+
+class TaskTrendDay(SQLModel):
+    date: str
+    created_count: int
+    completed_count: int
+    overdue_count: int
+
+
+class TaskTrend(SQLModel):
+    days: list[TaskTrendDay]
+
+
+class Task(TaskBase, table=True):
+    id: str = Field(default_factory=generate_uuid, primary_key=True)
+    created_at: datetime | None = Field(
+        default_factory=get_datetime_utc,
+        sa_type=SA_DateTime(timezone=True),
+    )
+    updated_at: datetime | None = Field(
+        default_factory=get_datetime_utc,
+        sa_type=SA_DateTime(timezone=True),
+    )
+    owner_id: str = Field(
+        foreign_key="user.id", nullable=False, ondelete="CASCADE"
+    )
+    owner: "User" = Relationship(back_populates="tasks")
+    parent: Optional["Task"] = Relationship(
+        back_populates="children",
+        sa_relationship_kwargs={"remote_side": "Task.id"}
+    )
+    children: List["Task"] = Relationship(back_populates="parent", cascade_delete=True)
