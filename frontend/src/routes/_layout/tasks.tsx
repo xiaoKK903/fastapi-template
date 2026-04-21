@@ -99,8 +99,16 @@ function StatCard({
   )
 }
 
-function Statistics({ stats, isLoading }: { stats: TaskStatistics | undefined; isLoading: boolean }) {
-  if (isLoading || !stats) {
+function Statistics({
+  stats,
+  isLoading,
+  error,
+}: {
+  stats: TaskStatistics | undefined
+  isLoading: boolean
+  error: unknown
+}) {
+  if (isLoading) {
     return (
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {[...Array(8)].map((_, i) => (
@@ -110,6 +118,23 @@ function Statistics({ stats, isLoading }: { stats: TaskStatistics | undefined; i
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">-</div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    )
+  }
+
+  if (error || !stats) {
+    return (
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        {[...Array(8)].map((_, i) => (
+          <Card key={i}>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <div className="text-sm font-medium">--</div>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">--</div>
             </CardContent>
           </Card>
         ))}
@@ -262,7 +287,7 @@ function Tasks() {
         <AddTask />
       </div>
 
-      <Statistics stats={stats} isLoading={statsLoading} />
+      <Statistics stats={stats} isLoading={statsLoading} error={statsError} />
 
       <Tabs defaultValue="active" value={activeTab} onValueChange={setActiveTab}>
         <div className="flex items-center justify-between">

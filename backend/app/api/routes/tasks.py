@@ -170,6 +170,26 @@ def read_trash(
     return TasksPublic(data=tasks_public, count=count)
 
 
+@router.delete("/trash/empty", response_model=Message)
+def empty_trash(
+    session: SessionDep,
+    current_user: CurrentUser,
+) -> Message:
+    statement = select(Task).where(
+        Task.owner_id == current_user.id,
+        Task.is_deleted == True
+    )
+    
+    tasks = session.exec(statement).all()
+    
+    for task in tasks:
+        session.delete(task)
+    
+    session.commit()
+    
+    return Message(message=f"Deleted {len(tasks)} tasks from trash")
+
+
 @router.get("/archived", response_model=TasksPublic)
 def read_archived(
     session: SessionDep,
@@ -200,228 +220,6 @@ def read_archived(
     
     tasks_public = [enrich_task(task) for task in tasks]
     return TasksPublic(data=tasks_public, count=count)
-
-
-@router.get("/{id}", response_model=TaskPublic)
-def read_task(session: SessionDep, current_user: CurrentUser, id: str) -> Any:
-    task = session.get(Task, id)
-    if not task:
-        raise HTTPException(status_code=404, detail="Task not found")
-    if task.owner_id != current_user.id:
-        raise HTTPException(status_code=403, detail="Not enough permissions")
-    return enrich_task(task)
-
-
-@router.post("/", response_model=TaskPublic)
-def create_task(
-    *, session: SessionDep, current_user: CurrentUser, task_in: TaskCreate
-) -> Any:
-    if task_in.parent_id:
-        parent_task = session.get(Task, task_in.parent_id)
-        if not parent_task or parent_task.owner_id != current_user.id:
-            raise HTTPException(status_code=400, detail="Parent task not found")
-
-    task_data = task_in.model_dump(exclude_unset=True)
-    task_data["owner_id"] = current_user.id
-    task_data["created_at"] = get_datetime_now()
-    task_data["updated_at"] = get_datetime_now()
-    
-    task = Task.model_validate(task_data)
-    session.add(task)
-    session.commit()
-    session.refresh(task)
-    
-    return enrich_task(task)
-
-
-@router.patch("/{id}", response_model=TaskPublic)
-def update_task(
-    *,
-    session: SessionDep,
-    current_user: CurrentUser,
-    id: str,
-    task_in: TaskUpdate,
-) -> Any:
-    task = session.get(Task, id)
-    if not task:
-        raise HTTPException(status_code=404, detail="Task not found")
-    if task.owner_id != current_user.id:
-        raise HTTPException(status_code=403, detail="Not enough permissions")
-    
-    update_dict = task_in.model_dump(exclude_unset=True)
-    
-    if task_in.parent_id:
-        parent_task = session.get(Task, task_in.parent_id)
-        if not parent_task or parent_task.owner_id != current_user.id:
-            raise HTTPException(status_code=400, detail="Parent task not found")
-        if parent_task.id == task.id:
-            raise HTTPException(status_code=400, detail="Cannot set parent to self")
-    
-    if "status" in update_dict:
-        if update_dict["status"] == TaskStatus.DONE and task.status != TaskStatus.DONE:
-            update_dict["completed_at"] = get_datetime_now()
-        elif update_dict["status"] != TaskStatus.DONE:
-            update_dict["completed_at"] = None
-    
-    update_dict["updated_at"] = get_datetime_now()
-    task.sqlmodel_update(update_dict)
-    
-    session.add(task)
-    session.commit()
-    session.refresh(task)
-    
-    return enrich_task(task)
-
-
-@router.patch("/{id}/status/{status}", response_model=TaskPublic)
-def update_task_status(
-    *,
-    session: SessionDep,
-    current_user: CurrentUser,
-    id: str,
-    status: TaskStatus,
-) -> Any:
-    task = session.get(Task, id)
-    if not task:
-        raise HTTPException(status_code=404, detail="Task not found")
-    if task.owner_id != current_user.id:
-        raise HTTPException(status_code=403, detail="Not enough permissions")
-    
-    if status == TaskStatus.DONE and task.status != TaskStatus.DONE:
-        task.completed_at = get_datetime_now()
-    elif status != TaskStatus.DONE:
-        task.completed_at = None
-    
-    task.status = status
-    task.updated_at = get_datetime_now()
-    
-    session.add(task)
-    session.commit()
-    session.refresh(task)
-    
-    return enrich_task(task)
-
-
-@router.patch("/{id}/soft-delete", response_model=Message)
-def soft_delete_task(
-    session: SessionDep,
-    current_user: CurrentUser,
-    id: str,
-) -> Message:
-    task = session.get(Task, id)
-    if not task:
-        raise HTTPException(status_code=404, detail="Task not found")
-    if task.owner_id != current_user.id:
-        raise HTTPException(status_code=403, detail="Not enough permissions")
-    
-    task.is_deleted = True
-    task.updated_at = get_datetime_now()
-    
-    session.add(task)
-    session.commit()
-    
-    return Message(message="Task moved to trash successfully")
-
-
-@router.patch("/{id}/restore", response_model=Message)
-def restore_task(
-    session: SessionDep,
-    current_user: CurrentUser,
-    id: str,
-) -> Message:
-    task = session.get(Task, id)
-    if not task:
-        raise HTTPException(status_code=404, detail="Task not found")
-    if task.owner_id != current_user.id:
-        raise HTTPException(status_code=403, detail="Not enough permissions")
-    
-    task.is_deleted = False
-    task.updated_at = get_datetime_now()
-    
-    session.add(task)
-    session.commit()
-    
-    return Message(message="Task restored successfully")
-
-
-@router.patch("/{id}/archive", response_model=Message)
-def archive_task(
-    session: SessionDep,
-    current_user: CurrentUser,
-    id: str,
-) -> Message:
-    task = session.get(Task, id)
-    if not task:
-        raise HTTPException(status_code=404, detail="Task not found")
-    if task.owner_id != current_user.id:
-        raise HTTPException(status_code=403, detail="Not enough permissions")
-    
-    task.is_archived = True
-    task.updated_at = get_datetime_now()
-    
-    session.add(task)
-    session.commit()
-    
-    return Message(message="Task archived successfully")
-
-
-@router.patch("/{id}/unarchive", response_model=Message)
-def unarchive_task(
-    session: SessionDep,
-    current_user: CurrentUser,
-    id: str,
-) -> Message:
-    task = session.get(Task, id)
-    if not task:
-        raise HTTPException(status_code=404, detail="Task not found")
-    if task.owner_id != current_user.id:
-        raise HTTPException(status_code=403, detail="Not enough permissions")
-    
-    task.is_archived = False
-    task.updated_at = get_datetime_now()
-    
-    session.add(task)
-    session.commit()
-    
-    return Message(message="Task unarchived successfully")
-
-
-@router.delete("/{id}", response_model=Message)
-def delete_task(
-    session: SessionDep,
-    current_user: CurrentUser,
-    id: str,
-) -> Message:
-    task = session.get(Task, id)
-    if not task:
-        raise HTTPException(status_code=404, detail="Task not found")
-    if task.owner_id != current_user.id:
-        raise HTTPException(status_code=403, detail="Not enough permissions")
-    
-    session.delete(task)
-    session.commit()
-    
-    return Message(message="Task deleted permanently")
-
-
-@router.delete("/trash/empty", response_model=Message)
-def empty_trash(
-    session: SessionDep,
-    current_user: CurrentUser,
-) -> Message:
-    statement = select(Task).where(
-        Task.owner_id == current_user.id,
-        Task.is_deleted == True
-    )
-    
-    tasks = session.exec(statement).all()
-    
-    for task in tasks:
-        session.delete(task)
-    
-    session.commit()
-    
-    return Message(message=f"Deleted {len(tasks)} tasks from trash")
 
 
 @router.get("/statistics", response_model=TaskStatistics)
@@ -604,3 +402,205 @@ def get_task_trend(
         ))
     
     return TaskTrend(days=trend_days)
+
+
+@router.post("/", response_model=TaskPublic)
+def create_task(
+    *, session: SessionDep, current_user: CurrentUser, task_in: TaskCreate
+) -> Any:
+    if task_in.parent_id:
+        parent_task = session.get(Task, task_in.parent_id)
+        if not parent_task or parent_task.owner_id != current_user.id:
+            raise HTTPException(status_code=400, detail="Parent task not found")
+
+    task_data = task_in.model_dump(exclude_unset=True)
+    task_data["owner_id"] = current_user.id
+    task_data["created_at"] = get_datetime_now()
+    task_data["updated_at"] = get_datetime_now()
+    
+    task = Task.model_validate(task_data)
+    session.add(task)
+    session.commit()
+    session.refresh(task)
+    
+    return enrich_task(task)
+
+
+@router.get("/{id}", response_model=TaskPublic)
+def read_task(session: SessionDep, current_user: CurrentUser, id: str) -> Any:
+    task = session.get(Task, id)
+    if not task:
+        raise HTTPException(status_code=404, detail="Task not found")
+    if task.owner_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Not enough permissions")
+    return enrich_task(task)
+
+
+@router.patch("/{id}", response_model=TaskPublic)
+def update_task(
+    *,
+    session: SessionDep,
+    current_user: CurrentUser,
+    id: str,
+    task_in: TaskUpdate,
+) -> Any:
+    task = session.get(Task, id)
+    if not task:
+        raise HTTPException(status_code=404, detail="Task not found")
+    if task.owner_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Not enough permissions")
+    
+    update_dict = task_in.model_dump(exclude_unset=True)
+    
+    if task_in.parent_id:
+        parent_task = session.get(Task, task_in.parent_id)
+        if not parent_task or parent_task.owner_id != current_user.id:
+            raise HTTPException(status_code=400, detail="Parent task not found")
+        if parent_task.id == task.id:
+            raise HTTPException(status_code=400, detail="Cannot set parent to self")
+    
+    if "status" in update_dict:
+        if update_dict["status"] == TaskStatus.DONE and task.status != TaskStatus.DONE:
+            update_dict["completed_at"] = get_datetime_now()
+        elif update_dict["status"] != TaskStatus.DONE:
+            update_dict["completed_at"] = None
+    
+    update_dict["updated_at"] = get_datetime_now()
+    task.sqlmodel_update(update_dict)
+    
+    session.add(task)
+    session.commit()
+    session.refresh(task)
+    
+    return enrich_task(task)
+
+
+@router.patch("/{id}/status/{status}", response_model=TaskPublic)
+def update_task_status(
+    *,
+    session: SessionDep,
+    current_user: CurrentUser,
+    id: str,
+    status: TaskStatus,
+) -> Any:
+    task = session.get(Task, id)
+    if not task:
+        raise HTTPException(status_code=404, detail="Task not found")
+    if task.owner_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Not enough permissions")
+    
+    if status == TaskStatus.DONE and task.status != TaskStatus.DONE:
+        task.completed_at = get_datetime_now()
+    elif status != TaskStatus.DONE:
+        task.completed_at = None
+    
+    task.status = status
+    task.updated_at = get_datetime_now()
+    
+    session.add(task)
+    session.commit()
+    session.refresh(task)
+    
+    return enrich_task(task)
+
+
+@router.patch("/{id}/soft-delete", response_model=Message)
+def soft_delete_task(
+    session: SessionDep,
+    current_user: CurrentUser,
+    id: str,
+) -> Message:
+    task = session.get(Task, id)
+    if not task:
+        raise HTTPException(status_code=404, detail="Task not found")
+    if task.owner_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Not enough permissions")
+    
+    task.is_deleted = True
+    task.updated_at = get_datetime_now()
+    
+    session.add(task)
+    session.commit()
+    
+    return Message(message="Task moved to trash successfully")
+
+
+@router.patch("/{id}/restore", response_model=Message)
+def restore_task(
+    session: SessionDep,
+    current_user: CurrentUser,
+    id: str,
+) -> Message:
+    task = session.get(Task, id)
+    if not task:
+        raise HTTPException(status_code=404, detail="Task not found")
+    if task.owner_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Not enough permissions")
+    
+    task.is_deleted = False
+    task.updated_at = get_datetime_now()
+    
+    session.add(task)
+    session.commit()
+    
+    return Message(message="Task restored successfully")
+
+
+@router.patch("/{id}/archive", response_model=Message)
+def archive_task(
+    session: SessionDep,
+    current_user: CurrentUser,
+    id: str,
+) -> Message:
+    task = session.get(Task, id)
+    if not task:
+        raise HTTPException(status_code=404, detail="Task not found")
+    if task.owner_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Not enough permissions")
+    
+    task.is_archived = True
+    task.updated_at = get_datetime_now()
+    
+    session.add(task)
+    session.commit()
+    
+    return Message(message="Task archived successfully")
+
+
+@router.patch("/{id}/unarchive", response_model=Message)
+def unarchive_task(
+    session: SessionDep,
+    current_user: CurrentUser,
+    id: str,
+) -> Message:
+    task = session.get(Task, id)
+    if not task:
+        raise HTTPException(status_code=404, detail="Task not found")
+    if task.owner_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Not enough permissions")
+    
+    task.is_archived = False
+    task.updated_at = get_datetime_now()
+    
+    session.add(task)
+    session.commit()
+    
+    return Message(message="Task unarchived successfully")
+
+
+@router.delete("/{id}", response_model=Message)
+def delete_task(
+    session: SessionDep,
+    current_user: CurrentUser,
+    id: str,
+) -> Message:
+    task = session.get(Task, id)
+    if not task:
+        raise HTTPException(status_code=404, detail="Task not found")
+    if task.owner_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Not enough permissions")
+    
+    session.delete(task)
+    session.commit()
+    
+    return Message(message="Task deleted permanently")
