@@ -62,6 +62,10 @@ class ResourceType(str, Enum):
     PERMISSION = "permission"
     OPERATION_LOG = "operation_log"
     TASK = "task"
+    FILE = "file"
+    FOLDER = "folder"
+    FILE_TAG = "file_tag"
+    FILE_SHARE = "file_share"
 
 
 class ActionType(str, Enum):
@@ -783,3 +787,294 @@ class Task(TaskBase, table=True):
         sa_relationship_kwargs={"remote_side": "Task.id"}
     )
     children: List["Task"] = Relationship(back_populates="parent", cascade_delete=True)
+
+
+class FileAccessType(str, Enum):
+    PRIVATE = "private"
+    PUBLIC = "public"
+    SHARED = "shared"
+
+
+class FileSharePermission(str, Enum):
+    VIEW = "view"
+    EDIT = "edit"
+    DOWNLOAD = "download"
+
+
+class FolderBase(SQLModel):
+    name: str = Field(min_length=1, max_length=255)
+    parent_id: str | None = Field(default=None, foreign_key="folder.id", nullable=True)
+    description: str | None = Field(default=None, max_length=500)
+    color: str | None = Field(default=None, max_length=20)
+
+
+class FolderCreate(SQLModel):
+    name: str = Field(min_length=1, max_length=255)
+    parent_id: str | None = None
+    description: str | None = Field(default=None, max_length=500)
+    color: str | None = Field(default=None, max_length=20)
+
+
+class FolderUpdate(SQLModel):
+    name: str | None = Field(default=None, min_length=1, max_length=255)
+    parent_id: str | None = None
+    description: str | None = Field(default=None, max_length=500)
+    color: str | None = Field(default=None, max_length=20)
+
+
+class FolderPublic(FolderBase):
+    id: str
+    owner_id: str
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
+
+
+class FoldersPublic(SQLModel):
+    data: list[FolderPublic]
+    count: int
+
+
+class FolderTreeItem(FolderPublic):
+    children: list["FolderTreeItem"] = []
+    file_count: int = 0
+
+
+class FolderWithPath(FolderPublic):
+    path: list[FolderPublic] = []
+
+
+class Folder(FolderBase, table=True):
+    id: str = Field(default_factory=generate_uuid, primary_key=True)
+    owner_id: str = Field(
+        foreign_key="user.id", nullable=False, ondelete="CASCADE"
+    )
+    created_at: datetime | None = Field(
+        default_factory=get_datetime_utc,
+        sa_type=SA_DateTime(timezone=True),
+    )
+    updated_at: datetime | None = Field(
+        default_factory=get_datetime_utc,
+        sa_type=SA_DateTime(timezone=True),
+    )
+    owner: User | None = Relationship(back_populates="folders")
+    files: list["File"] = Relationship(back_populates="folder", cascade_delete=True)
+    parent: Optional["Folder"] = Relationship(
+        back_populates="children",
+        sa_relationship_kwargs={"remote_side": "Folder.id"}
+    )
+    children: List["Folder"] = Relationship(back_populates="parent", cascade_delete=True)
+
+
+class FileBase(SQLModel):
+    name: str = Field(min_length=1, max_length=255)
+    original_name: str | None = Field(default=None, max_length=255)
+    size: int = Field(default=0, ge=0)
+    file_type: str | None = Field(default=None, max_length=100)
+    extension: str | None = Field(default=None, max_length=20)
+    mime_type: str | None = Field(default=None, max_length=100)
+    folder_id: str | None = Field(default=None, foreign_key="folder.id", nullable=True)
+    access_type: FileAccessType = Field(default=FileAccessType.PRIVATE)
+    description: str | None = Field(default=None, max_length=500)
+    is_favorite: bool = False
+
+
+class FileCreate(SQLModel):
+    name: str | None = Field(default=None, max_length=255)
+    folder_id: str | None = None
+    description: str | None = Field(default=None, max_length=500)
+    tags: list[str] = []
+
+
+class FileUpdate(SQLModel):
+    name: str | None = Field(default=None, max_length=255)
+    folder_id: str | None = None
+    description: str | None = Field(default=None, max_length=500)
+    access_type: FileAccessType | None = None
+    is_favorite: bool | None = None
+
+
+class FilePublic(FileBase):
+    id: str
+    owner_id: str
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
+    folder_name: str | None = None
+    tags: list[str] = []
+
+
+class FilesPublic(SQLModel):
+    data: list[FilePublic]
+    count: int
+
+
+class FileWithFolder(FilePublic):
+    folder: FolderPublic | None = None
+
+
+class FileUploadResponse(SQLModel):
+    id: str
+    name: str
+    original_name: str | None
+    size: int
+    file_type: str | None
+    mime_type: str | None
+    folder_id: str | None
+
+
+class File(FileBase, table=True):
+    id: str = Field(default_factory=generate_uuid, primary_key=True)
+    owner_id: str = Field(
+        foreign_key="user.id", nullable=False, ondelete="CASCADE"
+    )
+    file_path: str = Field(max_length=500)
+    created_at: datetime | None = Field(
+        default_factory=get_datetime_utc,
+        sa_type=SA_DateTime(timezone=True),
+    )
+    updated_at: datetime | None = Field(
+        default_factory=get_datetime_utc,
+        sa_type=SA_DateTime(timezone=True),
+    )
+    deleted_at: datetime | None = Field(
+        default=None,
+        sa_type=SA_DateTime(timezone=True),
+    )
+    is_deleted: bool = False
+    owner: User | None = Relationship(back_populates="files")
+    folder: Folder | None = Relationship(back_populates="files")
+    shares: list["FileShare"] = Relationship(back_populates="file", cascade_delete=True)
+
+
+class FileTagBase(SQLModel):
+    name: str = Field(min_length=1, max_length=50)
+    color: str | None = Field(default=None, max_length=20)
+
+
+class FileTagCreate(FileTagBase):
+    pass
+
+
+class FileTagPublic(FileTagBase):
+    id: str
+    owner_id: str
+    file_count: int = 0
+
+
+class FileTagsPublic(SQLModel):
+    data: list[FileTagPublic]
+    count: int
+
+
+class FileTag(FileTagBase, table=True):
+    id: str = Field(default_factory=generate_uuid, primary_key=True)
+    owner_id: str = Field(
+        foreign_key="user.id", nullable=False, ondelete="CASCADE"
+    )
+    created_at: datetime | None = Field(
+        default_factory=get_datetime_utc,
+        sa_type=SA_DateTime(timezone=True),
+    )
+
+
+class FileTagLink(SQLModel, table=True):
+    file_id: str = Field(
+        foreign_key="file.id", primary_key=True, ondelete="CASCADE"
+    )
+    tag_id: str = Field(
+        foreign_key="filetag.id", primary_key=True, ondelete="CASCADE"
+    )
+
+
+class FileShareBase(SQLModel):
+    file_id: str
+    permission: FileSharePermission = FileSharePermission.VIEW
+    password: str | None = Field(default=None, max_length=128)
+    expire_at: datetime | None = None
+    max_downloads: int | None = None
+    download_count: int = 0
+    is_active: bool = True
+
+
+class FileShareCreate(SQLModel):
+    file_id: str
+    permission: FileSharePermission = FileSharePermission.VIEW
+    password: str | None = Field(default=None, max_length=128)
+    expire_hours: int | None = None
+    max_downloads: int | None = None
+
+
+class FileShareUpdate(SQLModel):
+    permission: FileSharePermission | None = None
+    password: str | None = Field(default=None, max_length=128)
+    expire_hours: int | None = None
+    max_downloads: int | None = None
+    is_active: bool | None = None
+
+
+class FileSharePublic(SQLModel):
+    id: str
+    file_id: str
+    file_name: str | None
+    file_size: int | None
+    permission: FileSharePermission
+    password: str | None
+    expire_at: datetime | None
+    max_downloads: int | None
+    download_count: int
+    is_active: bool
+    share_url: str | None
+    created_at: datetime | None
+    owner_id: str
+
+
+class FileSharesPublic(SQLModel):
+    data: list[FileSharePublic]
+    count: int
+
+
+class FileShare(FileShareBase, table=True):
+    id: str = Field(default_factory=generate_uuid, primary_key=True)
+    owner_id: str = Field(
+        foreign_key="user.id", nullable=False, ondelete="CASCADE"
+    )
+    share_token: str = Field(unique=True, max_length=64)
+    created_at: datetime | None = Field(
+        default_factory=get_datetime_utc,
+        sa_type=SA_DateTime(timezone=True),
+    )
+    owner: User | None = Relationship(back_populates="file_shares")
+    file: File | None = Relationship(back_populates="shares")
+
+
+class StorageQuotaBase(SQLModel):
+    user_id: str
+    total_quota: int = Field(default=2 * 1024 * 1024 * 1024, ge=0)
+    used_storage: int = Field(default=0, ge=0)
+
+
+class StorageQuotaPublic(SQLModel):
+    user_id: str
+    total_quota: int
+    used_storage: int
+    remaining_storage: int
+    usage_percentage: float
+    formatted_total: str
+    formatted_used: str
+    formatted_remaining: str
+
+
+class StorageQuota(StorageQuotaBase, table=True):
+    id: str = Field(default_factory=generate_uuid, primary_key=True)
+    created_at: datetime | None = Field(
+        default_factory=get_datetime_utc,
+        sa_type=SA_DateTime(timezone=True),
+    )
+    updated_at: datetime | None = Field(
+        default_factory=get_datetime_utc,
+        sa_type=SA_DateTime(timezone=True),
+    )
+
+
+User.folders = Relationship(back_populates="owner", cascade_delete=True)
+User.files = Relationship(back_populates="owner", cascade_delete=True)
+User.file_shares = Relationship(back_populates="owner", cascade_delete=True)
