@@ -44,8 +44,8 @@ const menuConfigs: MenuConfig[] = [
   { icon: Tag, title: "分类管理", path: "/categories" },
   { icon: PieChart, title: "预算管理", path: "/budgets" },
   { icon: BarChart3, title: "财务统计", path: "/finance-stats" },
-  { icon: Activity, title: "日志管理", path: "/logs", isSuperuserOnly: true },
-  { icon: Users, title: "Admin", path: "/admin", isSuperuserOnly: true },
+  { icon: Users, title: "Admin", path: "/admin" },
+  { icon: Activity, title: "操作日志", path: "/logs", isSuperuserOnly: true },
 ]
 
 export function AppSidebar() {
