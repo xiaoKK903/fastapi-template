@@ -17,3 +17,4 @@ export function clearAuthToken(): void {
 }
 
 export { useAuth, AuthProvider } from "@/contexts/AuthContext"
+export default useAuth
