@@ -226,12 +226,13 @@ function RecyclePage() {
       </div>
 
       <div className="flex items-center gap-4">
-        <div className="flex-1">
+        <div className="flex-1 relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
           <Input
             placeholder="搜索已删除的文件..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            prefix={<Search className="h-4 w-4 text-muted-foreground" />}
+            className="pl-9"
           />
         </div>
         <Button variant="outline" onClick={() => refetch()}>
