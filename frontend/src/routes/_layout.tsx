@@ -1,17 +1,16 @@
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router"
 import { LogOut } from "lucide-react"
-
+import { useEffect } from "react"
 import { Footer } from "@/components/Common/Footer"
 import AppSidebar from "@/components/Sidebar/AppSidebar"
+import { Button } from "@/components/ui/button"
 import {
   SidebarInset,
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar"
-import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import useAuth, { isLoggedIn } from "@/hooks/useAuth"
-import { useEffect } from "react"
 
 export const Route = createFileRoute("/_layout")({
   component: Layout,

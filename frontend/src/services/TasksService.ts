@@ -192,7 +192,9 @@ export class TasksService {
    * @returns TasksWithSubtasksPublic Successful Response
    * @throws ApiError
    */
-  public static getTaskTree(data: TasksGetTaskTreeData = {}): CancelablePromise<TasksWithSubtasksPublic> {
+  public static getTaskTree(
+    data: TasksGetTaskTreeData = {},
+  ): CancelablePromise<TasksWithSubtasksPublic> {
     return __request(OpenAPI, {
       method: "GET",
       url: "/api/v1/tasks/tree",
@@ -215,7 +217,9 @@ export class TasksService {
    * @returns TasksPublic Successful Response
    * @throws ApiError
    */
-  public static readTasks(data: TasksReadTasksData = {}): CancelablePromise<TasksPublic> {
+  public static readTasks(
+    data: TasksReadTasksData = {},
+  ): CancelablePromise<TasksPublic> {
     return __request(OpenAPI, {
       method: "GET",
       url: "/api/v1/tasks/",
@@ -243,7 +247,9 @@ export class TasksService {
    * @returns TaskPublic Successful Response
    * @throws ApiError
    */
-  public static createTask(data: TasksCreateTaskData): CancelablePromise<TaskPublic> {
+  public static createTask(
+    data: TasksCreateTaskData,
+  ): CancelablePromise<TaskPublic> {
     return __request(OpenAPI, {
       method: "POST",
       url: "/api/v1/tasks/",
@@ -261,7 +267,9 @@ export class TasksService {
    * @returns TaskPublic Successful Response
    * @throws ApiError
    */
-  public static readTask(data: TasksReadTaskData): CancelablePromise<TaskPublic> {
+  public static readTask(
+    data: TasksReadTaskData,
+  ): CancelablePromise<TaskPublic> {
     return __request(OpenAPI, {
       method: "GET",
       url: "/api/v1/tasks/{id}",
@@ -280,7 +288,9 @@ export class TasksService {
    * @returns TaskPublic Successful Response
    * @throws ApiError
    */
-  public static updateTask(data: TasksUpdateTaskData): CancelablePromise<TaskPublic> {
+  public static updateTask(
+    data: TasksUpdateTaskData,
+  ): CancelablePromise<TaskPublic> {
     return __request(OpenAPI, {
       method: "PATCH",
       url: "/api/v1/tasks/{id}",
@@ -301,7 +311,9 @@ export class TasksService {
    * @returns Message Successful Response
    * @throws ApiError
    */
-  public static deleteTask(data: TasksDeleteTaskData): CancelablePromise<Message> {
+  public static deleteTask(
+    data: TasksDeleteTaskData,
+  ): CancelablePromise<Message> {
     return __request(OpenAPI, {
       method: "DELETE",
       url: "/api/v1/tasks/{id}",
@@ -320,7 +332,9 @@ export class TasksService {
    * @returns TaskPublic Successful Response
    * @throws ApiError
    */
-  public static updateTaskStatus(data: TasksUpdateTaskStatusData): CancelablePromise<TaskPublic> {
+  public static updateTaskStatus(
+    data: TasksUpdateTaskStatusData,
+  ): CancelablePromise<TaskPublic> {
     return __request(OpenAPI, {
       method: "PATCH",
       url: "/api/v1/tasks/{id}/status/{status}",
@@ -340,7 +354,9 @@ export class TasksService {
    * @returns Message Successful Response
    * @throws ApiError
    */
-  public static softDeleteTask(data: TasksSoftDeleteTaskData): CancelablePromise<Message> {
+  public static softDeleteTask(
+    data: TasksSoftDeleteTaskData,
+  ): CancelablePromise<Message> {
     return __request(OpenAPI, {
       method: "PATCH",
       url: "/api/v1/tasks/{id}/soft-delete",
@@ -359,7 +375,9 @@ export class TasksService {
    * @returns Message Successful Response
    * @throws ApiError
    */
-  public static restoreTask(data: TasksRestoreTaskData): CancelablePromise<Message> {
+  public static restoreTask(
+    data: TasksRestoreTaskData,
+  ): CancelablePromise<Message> {
     return __request(OpenAPI, {
       method: "PATCH",
       url: "/api/v1/tasks/{id}/restore",
@@ -378,7 +396,9 @@ export class TasksService {
    * @returns Message Successful Response
    * @throws ApiError
    */
-  public static archiveTask(data: TasksArchiveTaskData): CancelablePromise<Message> {
+  public static archiveTask(
+    data: TasksArchiveTaskData,
+  ): CancelablePromise<Message> {
     return __request(OpenAPI, {
       method: "PATCH",
       url: "/api/v1/tasks/{id}/archive",
@@ -397,7 +417,9 @@ export class TasksService {
    * @returns Message Successful Response
    * @throws ApiError
    */
-  public static unarchiveTask(data: TasksUnarchiveTaskData): CancelablePromise<Message> {
+  public static unarchiveTask(
+    data: TasksUnarchiveTaskData,
+  ): CancelablePromise<Message> {
     return __request(OpenAPI, {
       method: "PATCH",
       url: "/api/v1/tasks/{id}/unarchive",
@@ -446,7 +468,9 @@ export class TasksService {
    * @returns TaskTrend Successful Response
    * @throws ApiError
    */
-  public static getTaskTrend(data: TasksGetTaskTrendData): CancelablePromise<TaskTrend> {
+  public static getTaskTrend(
+    data: TasksGetTaskTrendData,
+  ): CancelablePromise<TaskTrend> {
     return __request(OpenAPI, {
       method: "GET",
       url: "/api/v1/tasks/trend/{days}",
@@ -465,7 +489,9 @@ export class TasksService {
    * @returns TasksPublic Successful Response
    * @throws ApiError
    */
-  public static readTrash(data: { skip?: number; limit?: number } = {}): CancelablePromise<TasksPublic> {
+  public static readTrash(
+    data: { skip?: number; limit?: number } = {},
+  ): CancelablePromise<TasksPublic> {
     return __request(OpenAPI, {
       method: "GET",
       url: "/api/v1/tasks/trash",
@@ -485,7 +511,9 @@ export class TasksService {
    * @returns TasksPublic Successful Response
    * @throws ApiError
    */
-  public static readArchived(data: { skip?: number; limit?: number } = {}): CancelablePromise<TasksPublic> {
+  public static readArchived(
+    data: { skip?: number; limit?: number } = {},
+  ): CancelablePromise<TasksPublic> {
     return __request(OpenAPI, {
       method: "GET",
       url: "/api/v1/tasks/archived",

@@ -4,8 +4,6 @@ import { Plus } from "lucide-react"
 import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
-
-import { type TaskCreate, TasksService, TaskPriority, TaskStatus, TaskRepeatType } from "@/services/TasksService"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -26,7 +24,7 @@ import {
   FormMessage,
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
+import { LoadingButton } from "@/components/ui/loading-button"
 import {
   Select,
   SelectContent,
@@ -34,19 +32,30 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { LoadingButton } from "@/components/ui/loading-button"
+import { Textarea } from "@/components/ui/textarea"
 import useCustomToast from "@/hooks/useCustomToast"
+import {
+  type TaskCreate,
+  type TaskPriority,
+  type TaskRepeatType,
+  type TaskStatus,
+  TasksService,
+} from "@/services/TasksService"
 import { handleError } from "@/utils"
 
 const formSchema = z.object({
   title: z.string().min(1, { message: "任务标题是必填项" }),
   description: z.string().optional(),
   priority: z.enum(["low", "medium", "high", "urgent"]).default("medium"),
-  status: z.enum(["todo", "in_progress", "done", "cancelled", "on_hold"]).default("todo"),
+  status: z
+    .enum(["todo", "in_progress", "done", "cancelled", "on_hold"])
+    .default("todo"),
   due_date: z.string().optional(),
   progress: z.coerce.number().int().min(0).max(100).default(0),
   parent_id: z.string().optional(),
-  repeat_type: z.enum(["none", "daily", "weekly", "monthly", "yearly"]).default("none"),
+  repeat_type: z
+    .enum(["none", "daily", "weekly", "monthly", "yearly"])
+    .default("none"),
   repeat_interval: z.coerce.number().int().min(1).optional(),
   repeat_days: z.array(z.coerce.number().int().min(1).max(7)).optional(),
   repeat_end_date: z.string().optional(),
@@ -60,7 +69,11 @@ interface AddTaskProps {
   onOpenChange?: (open: boolean) => void
 }
 
-const AddTask = ({ parentId, isOpen: externalIsOpen, onOpenChange: externalOnOpenChange }: AddTaskProps) => {
+const AddTask = ({
+  parentId,
+  isOpen: externalIsOpen,
+  onOpenChange: externalOnOpenChange,
+}: AddTaskProps) => {
   const [internalIsOpen, setInternalIsOpen] = useState(false)
   const queryClient = useQueryClient()
   const { showSuccessToast, showErrorToast } = useCustomToast()
@@ -120,7 +133,9 @@ const AddTask = ({ parentId, isOpen: externalIsOpen, onOpenChange: externalOnOpe
       repeat_type: data.repeat_type as TaskRepeatType,
       repeat_interval: data.repeat_interval,
       repeat_days: data.repeat_days,
-      repeat_end_date: data.repeat_end_date ? new Date(data.repeat_end_date) : undefined,
+      repeat_end_date: data.repeat_end_date
+        ? new Date(data.repeat_end_date)
+        : undefined,
     }
 
     mutation.mutate(taskData)
@@ -136,12 +151,8 @@ const AddTask = ({ parentId, isOpen: externalIsOpen, onOpenChange: externalOnOpe
       </DialogTrigger>
       <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>
-            {parentId ? "添加子任务" : "添加任务"}
-          </DialogTitle>
-          <DialogDescription>
-            填写详情来添加一个新任务。
-          </DialogDescription>
+          <DialogTitle>{parentId ? "添加子任务" : "添加任务"}</DialogTitle>
+          <DialogDescription>填写详情来添加一个新任务。</DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)}>
@@ -275,7 +286,9 @@ const AddTask = ({ parentId, isOpen: externalIsOpen, onOpenChange: externalOnOpe
                           max={100}
                           placeholder="例如：50"
                           {...field}
-                          onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
+                          onChange={(e) =>
+                            field.onChange(parseInt(e.target.value, 10) || 0)
+                          }
                         />
                       </FormControl>
                       <FormMessage />
@@ -348,7 +361,13 @@ const AddTask = ({ parentId, isOpen: externalIsOpen, onOpenChange: externalOnOpe
                               placeholder="例如：1"
                               {...field}
                               value={field.value || ""}
-                              onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value) : undefined)}
+                              onChange={(e) =>
+                                field.onChange(
+                                  e.target.value
+                                    ? parseInt(e.target.value, 10)
+                                    : undefined,
+                                )
+                              }
                             />
                           </FormControl>
                           <FormMessage />

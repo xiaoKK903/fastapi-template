@@ -1,53 +1,44 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { createFileRoute } from "@tanstack/react-router"
 import {
-  Trash2,
-  RefreshCw,
-  MoreHorizontal,
-  Search,
+  AlertTriangle,
   File,
+  FileArchive,
+  FileAudio,
   FileImage,
   FileText,
-  FileArchive,
   FileVideo,
-  FileAudio,
-  AlertTriangle,
+  MoreHorizontal,
+  RefreshCw,
+  Search,
+  Trash2,
 } from "lucide-react"
 import { useState } from "react"
-
 import {
-  RecycleService,
-  type FilePublic,
-} from "@/services/FilesService"
-import { handleError } from "@/utils"
-import useCustomToast from "@/hooks/useCustomToast"
-import {
+  Alert,
+  AlertDescription,
+  AlertTitle,
   Button,
-  Input,
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-  Skeleton,
   Dialog,
   DialogContent,
   DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
-  Alert,
-  AlertDescription,
-  AlertTitle,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  Input,
+  Skeleton,
 } from "@/components/ui"
+import useCustomToast from "@/hooks/useCustomToast"
+import { RecycleService } from "@/services/FilesService"
+import { handleError } from "@/utils"
 
 export const Route = createFileRoute("/_layout/recycle")({
   component: RecyclePage,
@@ -82,7 +73,7 @@ function formatSize(bytes: number): string {
   const k = 1024
   const sizes = ["B", "KB", "MB", "GB"]
   const i = Math.floor(Math.log(bytes) / Math.log(k))
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i]
+  return `${parseFloat((bytes / k ** i).toFixed(2))} ${sizes[i]}`
 }
 
 function RecyclePage() {
@@ -93,7 +84,11 @@ function RecyclePage() {
   const [showEmptyDialog, setShowEmptyDialog] = useState(false)
   const [showRestoreAllDialog, setShowRestoreAllDialog] = useState(false)
 
-  const { data: files, isLoading, refetch } = useQuery({
+  const {
+    data: files,
+    isLoading,
+    refetch,
+  } = useQuery({
     queryKey: ["trashFiles"],
     queryFn: () => RecycleService.getTrashFiles(0, 1000),
   })
@@ -148,10 +143,12 @@ function RecyclePage() {
     onError: handleError,
   })
 
-  const filteredFiles = files?.data?.filter(file =>
-    file.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (file.original_name && file.original_name.toLowerCase().includes(searchTerm.toLowerCase()))
-  ) || []
+  const filteredFiles =
+    files?.data?.filter(
+      (file) =>
+        file.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        file.original_name?.toLowerCase().includes(searchTerm.toLowerCase()),
+    ) || []
 
   const isEmpty = !isLoading && (!files?.data || files.data.length === 0)
 
@@ -186,7 +183,8 @@ function RecyclePage() {
         <AlertTriangle className="h-4 w-4" />
         <AlertTitle>注意</AlertTitle>
         <AlertDescription>
-          文件在回收站中保留 30 天后将被自动永久删除。已删除的文件可以恢复或永久删除。
+          文件在回收站中保留 30
+          天后将被自动永久删除。已删除的文件可以恢复或永久删除。
         </AlertDescription>
       </Alert>
 
@@ -343,7 +341,10 @@ function RecyclePage() {
         </DialogContent>
       </Dialog>
 
-      <Dialog open={showRestoreAllDialog} onOpenChange={setShowRestoreAllDialog}>
+      <Dialog
+        open={showRestoreAllDialog}
+        onOpenChange={setShowRestoreAllDialog}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>恢复所有文件</DialogTitle>
@@ -359,7 +360,10 @@ function RecyclePage() {
             >
               取消
             </Button>
-            <Button onClick={() => restoreAllMutation.mutate()} disabled={restoreAllMutation.isPending}>
+            <Button
+              onClick={() => restoreAllMutation.mutate()}
+              disabled={restoreAllMutation.isPending}
+            >
               {restoreAllMutation.isPending ? "恢复中..." : "恢复"}
             </Button>
           </DialogFooter>

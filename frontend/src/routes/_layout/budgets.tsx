@@ -1,36 +1,27 @@
-import { useMutation, useQuery, useQueryClient, useSuspenseQuery } from "@tanstack/react-query"
+import { zodResolver } from "@hookform/resolvers/zod"
+import {
+  useMutation,
+  useQuery,
+  useQueryClient,
+  useSuspenseQuery,
+} from "@tanstack/react-query"
 import { createFileRoute } from "@tanstack/react-router"
-import { PieChart, Plus, AlertTriangle, CheckCircle, XCircle } from "lucide-react"
+import { AlertTriangle, PieChart, Plus, XCircle } from "lucide-react"
 import { Suspense, useState } from "react"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
-import { zodResolver } from "@hookform/resolvers/zod"
 
-import {
-  BudgetsService,
-  CategoriesService,
-  TransactionsService,
-} from "@/client"
+import { BudgetsService, CategoriesService } from "@/client"
 import PendingBudgets from "@/components/Pending/PendingBudgets"
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
 import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Progress } from "@/components/ui/progress"
 import {
   Dialog,
   DialogClose,
@@ -49,10 +40,19 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form"
+import { Input } from "@/components/ui/input"
 import { LoadingButton } from "@/components/ui/loading-button"
+import { Progress } from "@/components/ui/progress"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import useCustomToast from "@/hooks/useCustomToast"
-import { handleError } from "@/utils"
 import { cn } from "@/lib/utils"
+import { handleError } from "@/utils"
 
 const formSchema = z.object({
   amount: z.coerce.number().positive({ message: "预算金额必须大于0" }),
@@ -96,7 +96,8 @@ function AddBudget() {
 
   const { data: categories } = useQuery({
     queryKey: ["categories", "expense"],
-    queryFn: () => CategoriesService.readCategories({ type: "expense" as any, limit: 100 }),
+    queryFn: () =>
+      CategoriesService.readCategories({ type: "expense" as any, limit: 100 }),
     enabled: isOpen,
   })
 
@@ -111,7 +112,8 @@ function AddBudget() {
   })
 
   const mutation = useMutation({
-    mutationFn: (data: any) => BudgetsService.createBudget({ requestBody: data }),
+    mutationFn: (data: any) =>
+      BudgetsService.createBudget({ requestBody: data }),
     onSuccess: () => {
       showSuccessToast("预算创建成功")
       form.reset()
@@ -142,9 +144,7 @@ function AddBudget() {
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>添加预算</DialogTitle>
-          <DialogDescription>
-            设置您的月度支出预算。
-          </DialogDescription>
+          <DialogDescription>设置您的月度支出预算。</DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)}>
@@ -162,7 +162,9 @@ function AddBudget() {
                           min={2020}
                           max={2100}
                           {...field}
-                          onChange={(e) => field.onChange(parseInt(e.target.value) || 2026)}
+                          onChange={(e) =>
+                            field.onChange(parseInt(e.target.value, 10) || 2026)
+                          }
                         />
                       </FormControl>
                       <FormMessage />
@@ -176,7 +178,7 @@ function AddBudget() {
                     <FormItem>
                       <FormLabel>月份</FormLabel>
                       <Select
-                        onValueChange={(v) => field.onChange(parseInt(v))}
+                        onValueChange={(v) => field.onChange(parseInt(v, 10))}
                         defaultValue={field.value.toString()}
                       >
                         <FormControl>
@@ -246,7 +248,9 @@ function AddBudget() {
                           className="pl-8"
                           placeholder="0.00"
                           {...field}
-                          onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                          onChange={(e) =>
+                            field.onChange(parseFloat(e.target.value) || 0)
+                          }
                         />
                       </div>
                     </FormControl>
@@ -276,7 +280,7 @@ function AddBudget() {
 function BudgetCard({ budget }: { budget: any }) {
   const isOverBudget = budget.remaining < 0
   const isNearBudget = budget.percentage >= 80 && budget.percentage < 100
-  const isCategoryBudget = !!budget.category_id
+  const _isCategoryBudget = !!budget.category_id
 
   return (
     <Card>
@@ -324,7 +328,7 @@ function BudgetCard({ budget }: { budget: any }) {
             <span
               className={cn(
                 "font-semibold",
-                isOverBudget ? "text-red-500" : "text-green-500"
+                isOverBudget ? "text-red-500" : "text-green-500",
               )}
             >
               {isOverBudget ? "-" : ""}¥{Math.abs(budget.remaining).toFixed(2)}
@@ -337,8 +341,8 @@ function BudgetCard({ budget }: { budget: any }) {
               isOverBudget
                 ? "bg-red-200"
                 : isNearBudget
-                ? "bg-yellow-200"
-                : "bg-green-200"
+                  ? "bg-yellow-200"
+                  : "bg-green-200",
             )}
           />
           <p className="text-xs text-muted-foreground text-right">
@@ -353,7 +357,7 @@ function BudgetCard({ budget }: { budget: any }) {
 function BudgetAlerts() {
   const today = new Date()
   const { data: overbudget } = useSuspenseQuery(
-    getOverbudgetQueryOptions(today.getFullYear(), today.getMonth() + 1)
+    getOverbudgetQueryOptions(today.getFullYear(), today.getMonth() + 1),
   )
 
   if (!overbudget.overbudget_items?.length) {
@@ -368,7 +372,7 @@ function BudgetAlerts() {
           className={cn(
             item.is_overbudget
               ? "border-red-200 bg-red-50 dark:bg-red-950/20"
-              : "border-yellow-200 bg-yellow-50 dark:bg-yellow-950/20"
+              : "border-yellow-200 bg-yellow-50 dark:bg-yellow-950/20",
           )}
         >
           <CardContent className="py-4">
@@ -380,10 +384,12 @@ function BudgetAlerts() {
               )}
               <div className="flex-1">
                 <p className="font-medium">
-                  {item.category_name || "总预算"} {item.is_overbudget ? "已超支" : "接近限额"}
+                  {item.category_name || "总预算"}{" "}
+                  {item.is_overbudget ? "已超支" : "接近限额"}
                 </p>
                 <p className="text-sm text-muted-foreground">
-                  预算 ¥{item.amount.toFixed(2)}，已支出 ¥{item.spent.toFixed(2)}，{item.percentage.toFixed(1)}%
+                  预算 ¥{item.amount.toFixed(2)}，已支出 ¥
+                  {item.spent.toFixed(2)}，{item.percentage.toFixed(1)}%
                 </p>
               </div>
             </div>
@@ -400,7 +406,7 @@ function BudgetList() {
   const [selectedMonth, setSelectedMonth] = useState(today.getMonth() + 1)
 
   const { data: budgets } = useSuspenseQuery(
-    getBudgetsQueryOptions(selectedYear, selectedMonth)
+    getBudgetsQueryOptions(selectedYear, selectedMonth),
   )
 
   if (budgets.data.length === 0) {
@@ -420,7 +426,7 @@ function BudgetList() {
       <div className="flex items-center gap-4">
         <Select
           value={selectedYear.toString()}
-          onValueChange={(v) => setSelectedYear(parseInt(v))}
+          onValueChange={(v) => setSelectedYear(parseInt(v, 10))}
         >
           <SelectTrigger className="w-32">
             <SelectValue />
@@ -435,7 +441,7 @@ function BudgetList() {
         </Select>
         <Select
           value={selectedMonth.toString()}
-          onValueChange={(v) => setSelectedMonth(parseInt(v))}
+          onValueChange={(v) => setSelectedMonth(parseInt(v, 10))}
         >
           <SelectTrigger className="w-24">
             <SelectValue />

@@ -1,6 +1,6 @@
+import type { CancelablePromise } from "@/client/core/CancelablePromise"
 import { OpenAPI } from "@/client/core/OpenAPI"
 import { request as __request } from "@/client/core/request"
-import type { CancelablePromise } from "@/client/core/CancelablePromise"
 
 export interface Folder {
   id: string
@@ -13,8 +13,7 @@ export interface Folder {
   updated_at?: string
 }
 
-export interface FolderPublic extends Folder {
-}
+export interface FolderPublic extends Folder {}
 
 export interface FoldersPublic {
   data: FolderPublic[]
@@ -157,7 +156,7 @@ export class FilesService {
     skip: number = 0,
     limit: number = 100,
     sort_by: string = "created_at",
-    sort_order: string = "desc"
+    sort_order: string = "desc",
   ): CancelablePromise<FilesPublic> {
     return __request(OpenAPI, {
       method: "GET",
@@ -197,14 +196,18 @@ export class FilesService {
     folder_id?: string,
     name?: string,
     description?: string,
-    tags?: string[]
+    tags?: string[],
   ): CancelablePromise<FileUploadResponse> {
     const formData = new FormData()
     formData.append("file", file)
     if (folder_id) formData.append("folder_id", folder_id)
     if (name) formData.append("name", name)
     if (description) formData.append("description", description)
-    if (tags && tags.length > 0) tags.forEach(tag => formData.append("tags", tag))
+    if (tags && tags.length > 0) {
+      tags.forEach((tag) => {
+        formData.append("tags", tag)
+      })
+    }
 
     return __request(OpenAPI, {
       method: "POST",
@@ -217,7 +220,10 @@ export class FilesService {
     })
   }
 
-  public static updateFile(file_id: string, data: FileUpdate): CancelablePromise<FilePublic> {
+  public static updateFile(
+    file_id: string,
+    data: FileUpdate,
+  ): CancelablePromise<FilePublic> {
     return __request(OpenAPI, {
       method: "PUT",
       url: "/api/v1/files/{file_id}",
@@ -257,7 +263,10 @@ export class FilesService {
     })
   }
 
-  public static addTag(file_id: string, tag_name: string): CancelablePromise<FilePublic> {
+  public static addTag(
+    file_id: string,
+    tag_name: string,
+  ): CancelablePromise<FilePublic> {
     return __request(OpenAPI, {
       method: "POST",
       url: "/api/v1/files/{file_id}/tags/{tag_name}",
@@ -271,7 +280,10 @@ export class FilesService {
     })
   }
 
-  public static removeTag(file_id: string, tag_name: string): CancelablePromise<FilePublic> {
+  public static removeTag(
+    file_id: string,
+    tag_name: string,
+  ): CancelablePromise<FilePublic> {
     return __request(OpenAPI, {
       method: "DELETE",
       url: "/api/v1/files/{file_id}/tags/{tag_name}",
@@ -300,7 +312,7 @@ export class FoldersService {
   public static readFolders(
     parent_id?: string,
     skip: number = 0,
-    limit: number = 100
+    limit: number = 100,
   ): CancelablePromise<FoldersPublic> {
     return __request(OpenAPI, {
       method: "GET",
@@ -339,7 +351,9 @@ export class FoldersService {
     })
   }
 
-  public static createFolder(data: FolderCreate): CancelablePromise<FolderPublic> {
+  public static createFolder(
+    data: FolderCreate,
+  ): CancelablePromise<FolderPublic> {
     return __request(OpenAPI, {
       method: "POST",
       url: "/api/v1/folders/",
@@ -350,7 +364,10 @@ export class FoldersService {
     })
   }
 
-  public static updateFolder(folder_id: string, data: FolderUpdate): CancelablePromise<FolderPublic> {
+  public static updateFolder(
+    folder_id: string,
+    data: FolderUpdate,
+  ): CancelablePromise<FolderPublic> {
     return __request(OpenAPI, {
       method: "PUT",
       url: "/api/v1/folders/{folder_id}",
@@ -381,7 +398,7 @@ export class FoldersService {
 export class RecycleService {
   public static getTrashFiles(
     skip: number = 0,
-    limit: number = 100
+    limit: number = 100,
   ): CancelablePromise<FilesPublic> {
     return __request(OpenAPI, {
       method: "GET",
@@ -458,7 +475,7 @@ export class SharesService {
     file_id?: string,
     is_active?: boolean,
     skip: number = 0,
-    limit: number = 100
+    limit: number = 100,
   ): CancelablePromise<FileSharesPublic> {
     return __request(OpenAPI, {
       method: "GET",
@@ -475,7 +492,9 @@ export class SharesService {
     })
   }
 
-  public static readShare(share_id: string): CancelablePromise<FileSharePublic> {
+  public static readShare(
+    share_id: string,
+  ): CancelablePromise<FileSharePublic> {
     return __request(OpenAPI, {
       method: "GET",
       url: "/api/v1/shares/{share_id}",
@@ -488,7 +507,9 @@ export class SharesService {
     })
   }
 
-  public static createShare(data: FileShareCreate): CancelablePromise<FileSharePublic> {
+  public static createShare(
+    data: FileShareCreate,
+  ): CancelablePromise<FileSharePublic> {
     return __request(OpenAPI, {
       method: "POST",
       url: "/api/v1/shares/",
@@ -499,7 +520,10 @@ export class SharesService {
     })
   }
 
-  public static updateShare(share_id: string, data: FileShareUpdate): CancelablePromise<FileSharePublic> {
+  public static updateShare(
+    share_id: string,
+    data: FileShareUpdate,
+  ): CancelablePromise<FileSharePublic> {
     return __request(OpenAPI, {
       method: "PUT",
       url: "/api/v1/shares/{share_id}",
@@ -556,7 +580,7 @@ export class SharesService {
 export class TagsService {
   public static listTags(
     skip: number = 0,
-    limit: number = 100
+    limit: number = 100,
   ): CancelablePromise<FileTagsPublic> {
     return __request(OpenAPI, {
       method: "GET",
@@ -584,7 +608,10 @@ export class TagsService {
     })
   }
 
-  public static searchTags(tag_name: string, limit: number = 20): CancelablePromise<FileTagsPublic> {
+  public static searchTags(
+    tag_name: string,
+    limit: number = 20,
+  ): CancelablePromise<FileTagsPublic> {
     return __request(OpenAPI, {
       method: "GET",
       url: "/api/v1/tags/search/{tag_name}",
@@ -600,7 +627,9 @@ export class TagsService {
     })
   }
 
-  public static getPopularTags(limit: number = 10): CancelablePromise<FileTagsPublic> {
+  public static getPopularTags(
+    limit: number = 10,
+  ): CancelablePromise<FileTagsPublic> {
     return __request(OpenAPI, {
       method: "GET",
       url: "/api/v1/tags/popular/{limit}",

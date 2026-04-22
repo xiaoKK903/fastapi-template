@@ -1,71 +1,60 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { createFileRoute, useNavigate } from "@tanstack/react-router"
 import {
-  Plus,
-  Upload,
-  FolderPlus,
-  Trash2,
-  Download,
-  Share2,
-  Star,
-  Search,
-  MoreHorizontal,
+  ChevronLeft,
   ChevronRight,
-  Folder,
   File,
+  FileArchive,
+  FileAudio,
   FileImage,
   FileText,
-  FileArchive,
   FileVideo,
-  FileAudio,
-  ChevronLeft,
+  Folder,
+  FolderPlus,
+  MoreHorizontal,
   RefreshCw,
+  Search,
+  Share2,
+  Star,
+  Trash2,
+  Upload,
 } from "lucide-react"
-import { useState, useCallback } from "react"
-
+import { useState } from "react"
 import {
-  FilesService,
-  FoldersService,
-  TagsService,
-  type FilePublic,
-  type FolderPublic,
-  type FolderTreeItem,
-  type StorageQuota,
-} from "@/services/FilesService"
-import { handleError } from "@/utils"
-import useCustomToast from "@/hooks/useCustomToast"
-import {
-  Button,
-  Input,
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
   Badge,
+  Button,
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
   Dialog,
   DialogContent,
   DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  Input,
   Label,
   Progress,
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
   Skeleton,
 } from "@/components/ui"
+import useCustomToast from "@/hooks/useCustomToast"
+import {
+  type FilePublic,
+  FilesService,
+  type FolderPublic,
+  FoldersService,
+} from "@/services/FilesService"
+import { handleError } from "@/utils"
 
 export const Route = createFileRoute("/_layout/files")({
   component: FilesPage,
@@ -100,7 +89,7 @@ function formatSize(bytes: number): string {
   const k = 1024
   const sizes = ["B", "KB", "MB", "GB"]
   const i = Math.floor(Math.log(bytes) / Math.log(k))
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i]
+  return `${parseFloat((bytes / k ** i).toFixed(2))} ${sizes[i]}`
 }
 
 function QuotaCard() {
@@ -137,14 +126,20 @@ function QuotaCard() {
       <CardContent>
         <div className="flex justify-between text-sm mb-2">
           <span>{quota.formatted_used}</span>
-          <span className="text-muted-foreground">/ {quota.formatted_total}</span>
+          <span className="text-muted-foreground">
+            / {quota.formatted_total}
+          </span>
         </div>
         <Progress
           value={percentage}
           className={isWarning ? "bg-destructive/20" : ""}
         />
-        <p className={`text-xs mt-2 ${isWarning ? "text-destructive" : "text-muted-foreground"}`}>
-          {isWarning ? "存储空间即将用完！" : `剩余 ${quota.formatted_remaining}`}
+        <p
+          className={`text-xs mt-2 ${isWarning ? "text-destructive" : "text-muted-foreground"}`}
+        >
+          {isWarning
+            ? "存储空间即将用完！"
+            : `剩余 ${quota.formatted_remaining}`}
         </p>
       </CardContent>
     </Card>
@@ -170,11 +165,11 @@ function UploadDialog({
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFiles = Array.from(e.target.files || [])
-    setFiles(prev => [...prev, ...selectedFiles])
+    setFiles((prev) => [...prev, ...selectedFiles])
   }
 
   const removeFile = (index: number) => {
-    setFiles(prev => prev.filter((_, i) => i !== index))
+    setFiles((prev) => prev.filter((_, i) => i !== index))
   }
 
   const uploadFiles = async () => {
@@ -214,13 +209,16 @@ function UploadDialog({
         </DialogHeader>
 
         <div className="grid gap-4 py-4">
-          <div
-            className="border-2 border-dashed rounded-lg p-8 text-center cursor-pointer hover:border-primary transition-colors"
+          <button
+            type="button"
+            className="border-2 border-dashed rounded-lg p-8 text-center cursor-pointer hover:border-primary transition-colors w-full"
             onClick={() => document.getElementById("file-input")?.click()}
           >
             <Upload className="h-10 w-10 mx-auto mb-2 text-muted-foreground" />
             <p className="text-sm font-medium">点击或拖拽文件到这里</p>
-            <p className="text-xs text-muted-foreground mt-1">支持常见格式，单文件最大 100MB</p>
+            <p className="text-xs text-muted-foreground mt-1">
+              支持常见格式，单文件最大 100MB
+            </p>
             <input
               id="file-input"
               type="file"
@@ -228,11 +226,13 @@ function UploadDialog({
               className="hidden"
               onChange={handleFileSelect}
             />
-          </div>
+          </button>
 
           {files.length > 0 && (
             <div className="space-y-2">
-              <p className="text-sm font-medium">已选择 {files.length} 个文件</p>
+              <p className="text-sm font-medium">
+                已选择 {files.length} 个文件
+              </p>
               <div className="max-h-40 overflow-y-auto space-y-1">
                 {files.map((file, index) => (
                   <div
@@ -240,7 +240,9 @@ function UploadDialog({
                     className="flex items-center justify-between p-2 bg-muted rounded text-sm"
                   >
                     <span className="truncate flex-1">{file.name}</span>
-                    <span className="text-muted-foreground mr-2">{formatSize(file.size)}</span>
+                    <span className="text-muted-foreground mr-2">
+                      {formatSize(file.size)}
+                    </span>
                     <Button
                       variant="ghost"
                       size="sm"
@@ -267,10 +269,17 @@ function UploadDialog({
         </div>
 
         <DialogFooter>
-          <Button variant="ghost" onClick={() => onOpenChange(false)} disabled={uploading}>
+          <Button
+            variant="ghost"
+            onClick={() => onOpenChange(false)}
+            disabled={uploading}
+          >
             取消
           </Button>
-          <Button onClick={uploadFiles} disabled={files.length === 0 || uploading}>
+          <Button
+            onClick={uploadFiles}
+            disabled={files.length === 0 || uploading}
+          >
             {uploading ? "上传中..." : "上传"}
           </Button>
         </DialogFooter>
@@ -320,9 +329,7 @@ function NewFolderDialog({
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>新建文件夹</DialogTitle>
-          <DialogDescription>
-            输入文件夹名称创建新文件夹
-          </DialogDescription>
+          <DialogDescription>输入文件夹名称创建新文件夹</DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
           <div className="grid gap-2">
@@ -341,10 +348,17 @@ function NewFolderDialog({
           </div>
         </div>
         <DialogFooter>
-          <Button variant="ghost" onClick={() => onOpenChange(false)} disabled={creating}>
+          <Button
+            variant="ghost"
+            onClick={() => onOpenChange(false)}
+            disabled={creating}
+          >
             取消
           </Button>
-          <Button onClick={createFolder} disabled={!folderName.trim() || creating}>
+          <Button
+            onClick={createFolder}
+            disabled={!folderName.trim() || creating}
+          >
             {creating ? "创建中..." : "创建"}
           </Button>
         </DialogFooter>
@@ -379,8 +393,8 @@ function ShareDialog({
         file_id: file.id,
         permission: permission,
         password: password || undefined,
-        expire_hours: expireHours ? parseInt(expireHours) : undefined,
-        max_downloads: maxDownloads ? parseInt(maxDownloads) : undefined,
+        expire_hours: expireHours ? parseInt(expireHours, 10) : undefined,
+        max_downloads: maxDownloads ? parseInt(maxDownloads, 10) : undefined,
       })
       setShareUrl(result.share_url || null)
       showSuccessToast("分享链接已生成")
@@ -400,19 +414,20 @@ function ShareDialog({
   }
 
   return (
-    <Dialog open={open} onOpenChange={(open) => {
-      onOpenChange(open)
-      if (!open) {
-        setShareUrl(null)
-        setPassword("")
-      }
-    }}>
+    <Dialog
+      open={open}
+      onOpenChange={(open) => {
+        onOpenChange(open)
+        if (!open) {
+          setShareUrl(null)
+          setPassword("")
+        }
+      }}
+    >
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>分享文件</DialogTitle>
-          <DialogDescription>
-            配置分享选项生成分享链接
-          </DialogDescription>
+          <DialogDescription>配置分享选项生成分享链接</DialogDescription>
         </DialogHeader>
 
         {shareUrl ? (
@@ -495,16 +510,20 @@ function ShareDialog({
 
 function FilesPage() {
   const queryClient = useQueryClient()
-  const navigate = useNavigate()
+  const _navigate = useNavigate()
   const { showSuccessToast, showErrorToast } = useCustomToast()
 
-  const [currentFolderId, setCurrentFolderId] = useState<string | undefined>(undefined)
+  const [currentFolderId, setCurrentFolderId] = useState<string | undefined>(
+    undefined,
+  )
   const [folderPath, setFolderPath] = useState<FolderPublic[]>([])
   const [searchTerm, setSearchTerm] = useState("")
   const [fileType, setFileType] = useState<string>("")
   const [showUploadDialog, setShowUploadDialog] = useState(false)
   const [showNewFolderDialog, setShowNewFolderDialog] = useState(false)
-  const [shareDialogFile, setShareDialogFile] = useState<FilePublic | undefined>(undefined)
+  const [shareDialogFile, setShareDialogFile] = useState<
+    FilePublic | undefined
+  >(undefined)
 
   const { data: folders, isLoading: foldersLoading } = useQuery({
     queryKey: ["folders", currentFolderId],
@@ -512,13 +531,18 @@ function FilesPage() {
     enabled: !searchTerm,
   })
 
-  const { data: files, isLoading: filesLoading, refetch } = useQuery({
+  const {
+    data: files,
+    isLoading: filesLoading,
+    refetch,
+  } = useQuery({
     queryKey: ["files", currentFolderId, searchTerm, fileType],
-    queryFn: () => FilesService.readFiles(
-      currentFolderId,
-      searchTerm || undefined,
-      fileType || undefined,
-    ),
+    queryFn: () =>
+      FilesService.readFiles(
+        currentFolderId,
+        searchTerm || undefined,
+        fileType || undefined,
+      ),
   })
 
   const { data: folderTree } = useQuery({
@@ -556,7 +580,7 @@ function FilesPage() {
   const isLoading = foldersLoading || filesLoading
 
   const navigateToFolder = (folder: FolderPublic) => {
-    setFolderPath(prev => [...prev, folder])
+    setFolderPath((prev) => [...prev, folder])
     setCurrentFolderId(folder.id)
   }
 
@@ -564,7 +588,9 @@ function FilesPage() {
     if (folderPath.length > 0) {
       const newPath = folderPath.slice(0, -1)
       setFolderPath(newPath)
-      setCurrentFolderId(newPath.length > 0 ? newPath[newPath.length - 1].id : undefined)
+      setCurrentFolderId(
+        newPath.length > 0 ? newPath[newPath.length - 1].id : undefined,
+      )
     }
   }
 
@@ -581,7 +607,10 @@ function FilesPage() {
           <p className="text-muted-foreground">管理您的个人文件和文件夹</p>
         </div>
         <div className="flex items-center gap-2">
-          <Button onClick={() => setShowNewFolderDialog(true)} variant="outline">
+          <Button
+            onClick={() => setShowNewFolderDialog(true)}
+            variant="outline"
+          >
             <FolderPlus className="h-4 w-4 mr-2" />
             新建文件夹
           </Button>
@@ -679,7 +708,9 @@ function FilesPage() {
             <div className="space-y-4">
               {folders?.data && folders.data.length > 0 && (
                 <div>
-                  <h3 className="text-sm font-medium text-muted-foreground mb-2">文件夹</h3>
+                  <h3 className="text-sm font-medium text-muted-foreground mb-2">
+                    文件夹
+                  </h3>
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     {folders.data.map((folder) => (
                       <Card
@@ -693,8 +724,12 @@ function FilesPage() {
                               <Folder className="h-8 w-8 text-blue-500" />
                             </div>
                             <div className="flex-1 min-w-0">
-                              <p className="font-medium truncate">{folder.name}</p>
-                              <p className="text-sm text-muted-foreground">文件夹</p>
+                              <p className="font-medium truncate">
+                                {folder.name}
+                              </p>
+                              <p className="text-sm text-muted-foreground">
+                                文件夹
+                              </p>
                             </div>
                             <DropdownMenu>
                               <DropdownMenuTrigger asChild>
@@ -731,7 +766,10 @@ function FilesPage() {
               {files?.data && files.data.length > 0 && (
                 <div>
                   <h3 className="text-sm font-medium text-muted-foreground mb-2">
-                    文件 {folders?.data && folders.data.length > 0 ? `(${files.data.length})` : ""}
+                    文件{" "}
+                    {folders?.data && folders.data.length > 0
+                      ? `(${files.data.length})`
+                      : ""}
                   </h3>
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     {files.data.map((file) => (
@@ -742,19 +780,28 @@ function FilesPage() {
                               {getFileIcon(file.file_type)}
                             </div>
                             <div className="flex-1 min-w-0">
-                              <p className="font-medium truncate">{file.name}</p>
+                              <p className="font-medium truncate">
+                                {file.name}
+                              </p>
                               <p className="text-sm text-muted-foreground">
                                 {formatSize(file.size)}
                               </p>
                               {file.tags && file.tags.length > 0 && (
                                 <div className="flex flex-wrap gap-1 mt-1">
                                   {file.tags.slice(0, 3).map((tag) => (
-                                    <Badge key={tag} variant="outline" className="text-xs">
+                                    <Badge
+                                      key={tag}
+                                      variant="outline"
+                                      className="text-xs"
+                                    >
                                       {tag}
                                     </Badge>
                                   ))}
                                   {file.tags.length > 3 && (
-                                    <Badge variant="outline" className="text-xs">
+                                    <Badge
+                                      variant="outline"
+                                      className="text-xs"
+                                    >
                                       +{file.tags.length - 3}
                                     </Badge>
                                   )}
@@ -763,15 +810,23 @@ function FilesPage() {
                             </div>
                             <DropdownMenu>
                               <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-8 w-8 p-0"
+                                >
                                   <MoreHorizontal className="h-4 w-4" />
                                 </Button>
                               </DropdownMenuTrigger>
                               <DropdownMenuContent align="end">
                                 <DropdownMenuItem
-                                  onClick={() => toggleFavoriteMutation.mutate(file.id)}
+                                  onClick={() =>
+                                    toggleFavoriteMutation.mutate(file.id)
+                                  }
                                 >
-                                  <Star className={`h-4 w-4 mr-2 ${file.is_favorite ? "fill-yellow-500 text-yellow-500" : ""}`} />
+                                  <Star
+                                    className={`h-4 w-4 mr-2 ${file.is_favorite ? "fill-yellow-500 text-yellow-500" : ""}`}
+                                  />
                                   {file.is_favorite ? "取消收藏" : "收藏"}
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
@@ -781,7 +836,9 @@ function FilesPage() {
                                   分享
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
-                                  onClick={() => deleteFileMutation.mutate(file.id)}
+                                  onClick={() =>
+                                    deleteFileMutation.mutate(file.id)
+                                  }
                                   className="text-destructive"
                                 >
                                   <Trash2 className="h-4 w-4 mr-2" />
@@ -797,15 +854,18 @@ function FilesPage() {
                 </div>
               )}
 
-              {(!folders?.data || folders.data.length === 0) && (!files?.data || files.data.length === 0) && (
-                <div className="flex flex-col items-center justify-center text-center py-12">
-                  <div className="rounded-full bg-muted p-4 mb-4">
-                    <Search className="h-8 w-8 text-muted-foreground" />
+              {(!folders?.data || folders.data.length === 0) &&
+                (!files?.data || files.data.length === 0) && (
+                  <div className="flex flex-col items-center justify-center text-center py-12">
+                    <div className="rounded-full bg-muted p-4 mb-4">
+                      <Search className="h-8 w-8 text-muted-foreground" />
+                    </div>
+                    <h3 className="text-lg font-semibold">暂无文件</h3>
+                    <p className="text-muted-foreground">
+                      上传文件或创建文件夹开始使用
+                    </p>
                   </div>
-                  <h3 className="text-lg font-semibold">暂无文件</h3>
-                  <p className="text-muted-foreground">上传文件或创建文件夹开始使用</p>
-                </div>
-              )}
+                )}
             </div>
           )}
         </div>
@@ -816,7 +876,9 @@ function FilesPage() {
           {folderTree && folderTree.length > 0 && (
             <Card>
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium">文件夹目录</CardTitle>
+                <CardTitle className="text-sm font-medium">
+                  文件夹目录
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-1">
@@ -854,7 +916,9 @@ function FilesPage() {
         open={showNewFolderDialog}
         onOpenChange={setShowNewFolderDialog}
         parentId={currentFolderId}
-        onCreateComplete={() => queryClient.invalidateQueries({ queryKey: ["folders"] })}
+        onCreateComplete={() =>
+          queryClient.invalidateQueries({ queryKey: ["folders"] })
+        }
       />
 
       <ShareDialog

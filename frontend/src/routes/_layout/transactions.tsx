@@ -1,12 +1,20 @@
 import { useQuery, useSuspenseQuery } from "@tanstack/react-query"
 import { createFileRoute } from "@tanstack/react-router"
-import { Wallet, Plus, Search, Filter } from "lucide-react"
+import { Search, Wallet } from "lucide-react"
 import { Suspense, useState } from "react"
 
-import { TransactionsService, CategoriesService } from "@/client"
+import { CategoriesService, TransactionsService } from "@/client"
 import PendingTransactions from "@/components/Pending/PendingTransactions"
 import AddTransaction from "@/components/Transactions/AddTransaction"
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import {
   Select,
@@ -15,14 +23,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { cn } from "@/lib/utils"
 
@@ -85,7 +85,9 @@ function SummaryCards() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-xs text-muted-foreground">共 {summary.income_count} 笔</p>
+          <p className="text-xs text-muted-foreground">
+            共 {summary.income_count} 笔
+          </p>
         </CardContent>
       </Card>
       <Card>
@@ -96,7 +98,9 @@ function SummaryCards() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-xs text-muted-foreground">共 {summary.expense_count} 笔</p>
+          <p className="text-xs text-muted-foreground">
+            共 {summary.expense_count} 笔
+          </p>
         </CardContent>
       </Card>
       <Card>
@@ -105,16 +109,14 @@ function SummaryCards() {
           <CardTitle
             className={cn(
               "text-2xl",
-              summary.balance >= 0 ? "text-green-500" : "text-red-500"
+              summary.balance >= 0 ? "text-green-500" : "text-red-500",
             )}
           >
             {summary.balance >= 0 ? "+" : ""}¥{summary.balance.toFixed(2)}
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-xs text-muted-foreground">
-            收入 - 支出
-          </p>
+          <p className="text-xs text-muted-foreground">收入 - 支出</p>
         </CardContent>
       </Card>
       <Card>
@@ -149,7 +151,8 @@ function TransactionItem({ transaction }: { transaction: any }) {
           <div
             className="w-4 h-4 rounded-full"
             style={{
-              backgroundColor: transaction.category_color || "hsl(var(--muted-foreground))",
+              backgroundColor:
+                transaction.category_color || "hsl(var(--muted-foreground))",
             }}
           />
         </div>
@@ -165,7 +168,7 @@ function TransactionItem({ transaction }: { transaction: any }) {
         <p
           className={cn(
             "font-semibold",
-            isIncome ? "text-green-500" : "text-red-500"
+            isIncome ? "text-green-500" : "text-red-500",
           )}
         >
           {isIncome ? "+" : "-"}¥{transaction.amount.toFixed(2)}
@@ -194,7 +197,7 @@ function TransactionsList() {
       type: activeTab === "all" ? undefined : activeTab,
       categoryId: selectedCategory === "all" ? undefined : selectedCategory,
       search: appliedSearch || undefined,
-    })
+    }),
   )
 
   const handleSearch = () => {
@@ -222,11 +225,7 @@ function TransactionsList() {
   return (
     <div className="space-y-4">
       <div className="flex flex-col gap-4 md:flex-row md:items-center">
-        <Tabs
-          defaultValue="all"
-          value={activeTab}
-          onValueChange={setActiveTab}
-        >
+        <Tabs defaultValue="all" value={activeTab} onValueChange={setActiveTab}>
           <TabsList>
             <TabsTrigger value="all">全部</TabsTrigger>
             <TabsTrigger value="income">收入</TabsTrigger>

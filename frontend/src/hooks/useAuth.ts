@@ -1,6 +1,6 @@
-import { useCallback } from "react"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { useNavigate } from "@tanstack/react-router"
-import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query"
+import { useCallback } from "react"
 
 import {
   type Body_login_login_access_token as AccessToken,
@@ -9,9 +9,9 @@ import {
   type UserRegister,
   UsersService,
 } from "@/client"
+import useCustomToast from "@/hooks/useCustomToast"
 import { PermissionsService, type UserWithRoles } from "@/services/permissions"
 import { handleError } from "@/utils"
-import useCustomToast from "@/hooks/useCustomToast"
 
 const AUTH_TOKEN_KEY = "access_token"
 
@@ -56,10 +56,10 @@ const useAuth = () => {
     refetchOnWindowFocus: false,
   })
 
-  const {
-    data: userFullInfo,
-    isLoading: userInfoLoading,
-  } = useQuery<UserWithRoles | null, Error>({
+  const { data: userFullInfo, isLoading: userInfoLoading } = useQuery<
+    UserWithRoles | null,
+    Error
+  >({
     queryKey: ["userFullInfo"],
     queryFn: PermissionsService.readMyFullInfo,
     enabled: isLoggedIn(),
@@ -67,10 +67,10 @@ const useAuth = () => {
     refetchOnWindowFocus: false,
   })
 
-  const {
-    data: userPermissions,
-    isLoading: permissionsLoading,
-  } = useQuery<string[], Error>({
+  const { data: userPermissions, isLoading: permissionsLoading } = useQuery<
+    string[],
+    Error
+  >({
     queryKey: ["userPermissions"],
     queryFn: PermissionsService.readMyPermissions,
     enabled: isLoggedIn(),
@@ -80,7 +80,11 @@ const useAuth = () => {
 
   const isLoading = userLoading || userInfoLoading || permissionsLoading
   const isAuthenticated = isLoggedIn() && !isUserError
-  const status = isAuthenticated ? "authenticated" : isLoading ? "loading" : "unauthenticated"
+  const status = isAuthenticated
+    ? "authenticated"
+    : isLoading
+      ? "loading"
+      : "unauthenticated"
 
   const login = useCallback(async (data: AccessToken) => {
     const response = await LoginService.loginAccessToken({
@@ -137,7 +141,7 @@ const useAuth = () => {
     (roleCode: string): boolean => {
       return getUserRoles().includes(roleCode)
     },
-    [getUserRoles]
+    [getUserRoles],
   )
 
   const hasPermission = useCallback(
@@ -146,7 +150,7 @@ const useAuth = () => {
       if (userPermissions.includes("*:*")) return true
       return userPermissions.includes(permissionCode)
     },
-    [userPermissions]
+    [userPermissions],
   )
 
   return {

@@ -1,8 +1,17 @@
+import { useMutation, useQueryClient } from "@tanstack/react-query"
+import {
+  Archive,
+  CheckCircle,
+  Clock,
+  Edit2,
+  FileText,
+  MoreHorizontal,
+  Pause,
+  RotateCcw,
+  Trash2,
+  XCircle,
+} from "lucide-react"
 import { useState } from "react"
-import { Edit2, Trash2, MoreHorizontal, Archive, FileText, RotateCcw, CheckCircle, Clock, XCircle, Pause } from "lucide-react"
-
-import type { TaskPublic, TaskStatus } from "@/services/TasksService"
-import { TasksService } from "@/services/TasksService"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -11,11 +20,12 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { useMutation, useQueryClient } from "@tanstack/react-query"
 import useCustomToast from "@/hooks/useCustomToast"
+import type { TaskPublic, TaskStatus } from "@/services/TasksService"
+import { TasksService } from "@/services/TasksService"
 import { handleError } from "@/utils"
-import EditTask from "./EditTask"
 import DeleteTask from "./DeleteTask"
+import EditTask from "./EditTask"
 
 interface TaskActionsMenuProps {
   task: TaskPublic
@@ -137,7 +147,9 @@ export function TaskActionsMenu({ task }: TaskActionsMenuProps) {
                 <Archive className="mr-2 size-4" />
                 归档
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => softDeleteMutation.mutate(task.id)}>
+              <DropdownMenuItem
+                onClick={() => softDeleteMutation.mutate(task.id)}
+              >
                 <Trash2 className="mr-2 size-4" />
                 移至回收站
               </DropdownMenuItem>
@@ -157,11 +169,15 @@ export function TaskActionsMenu({ task }: TaskActionsMenuProps) {
           )}
           {task.is_archived && !task.is_deleted && (
             <>
-              <DropdownMenuItem onClick={() => unarchiveMutation.mutate(task.id)}>
+              <DropdownMenuItem
+                onClick={() => unarchiveMutation.mutate(task.id)}
+              >
                 <FileText className="mr-2 size-4" />
                 取消归档
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => softDeleteMutation.mutate(task.id)}>
+              <DropdownMenuItem
+                onClick={() => softDeleteMutation.mutate(task.id)}
+              >
                 <Trash2 className="mr-2 size-4" />
                 移至回收站
               </DropdownMenuItem>
@@ -170,8 +186,16 @@ export function TaskActionsMenu({ task }: TaskActionsMenuProps) {
         </DropdownMenuContent>
       </DropdownMenu>
 
-      <EditTask task={task} open={showEditDialog} onOpenChange={setShowEditDialog} />
-      <DeleteTask task={task} open={showDeleteDialog} onOpenChange={setShowDeleteDialog} />
+      <EditTask
+        task={task}
+        open={showEditDialog}
+        onOpenChange={setShowEditDialog}
+      />
+      <DeleteTask
+        task={task}
+        open={showDeleteDialog}
+        onOpenChange={setShowDeleteDialog}
+      />
     </>
   )
 }

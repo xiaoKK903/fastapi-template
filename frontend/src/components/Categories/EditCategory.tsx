@@ -4,8 +4,11 @@ import { Edit2 } from "lucide-react"
 import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
-
-import { type CategoryPublic, type CategoryUpdate } from "@/client"
+import {
+  CategoriesService,
+  type CategoryPublic,
+  type CategoryUpdate,
+} from "@/client"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -26,17 +29,11 @@ import {
   FormMessage,
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
-import {
-  RadioGroup,
-  RadioGroupItem,
-} from "@/components/ui/radio-group"
 import { Label } from "@/components/ui/label"
 import { LoadingButton } from "@/components/ui/loading-button"
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import useCustomToast from "@/hooks/useCustomToast"
 import { handleError } from "@/utils"
-import {
-  CategoriesService,
-} from "@/client"
 
 interface EditCategoryProps {
   category: CategoryPublic
@@ -98,7 +95,10 @@ const EditCategory = ({ category }: EditCategoryProps) => {
 
   const mutation = useMutation({
     mutationFn: (data: { id: string; category: CategoryUpdate }) =>
-      CategoriesService.updateCategory({ id: data.id, requestBody: data.category }),
+      CategoriesService.updateCategory({
+        id: data.id,
+        requestBody: data.category,
+      }),
     onSuccess: () => {
       showSuccessToast("分类更新成功")
       setIsOpen(false)
@@ -124,9 +124,7 @@ const EditCategory = ({ category }: EditCategoryProps) => {
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>编辑分类</DialogTitle>
-          <DialogDescription>
-            修改分类的详细信息。
-          </DialogDescription>
+          <DialogDescription>修改分类的详细信息。</DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)}>
@@ -144,11 +142,21 @@ const EditCategory = ({ category }: EditCategoryProps) => {
                     >
                       <div className="flex items-center space-x-3">
                         <RadioGroupItem value="income" id="edit-cat-income" />
-                        <Label htmlFor="edit-cat-income" className="text-green-500 font-medium cursor-pointer">收入</Label>
+                        <Label
+                          htmlFor="edit-cat-income"
+                          className="text-green-500 font-medium cursor-pointer"
+                        >
+                          收入
+                        </Label>
                       </div>
                       <div className="flex items-center space-x-3">
                         <RadioGroupItem value="expense" id="edit-cat-expense" />
-                        <Label htmlFor="edit-cat-expense" className="text-red-500 font-medium cursor-pointer">支出</Label>
+                        <Label
+                          htmlFor="edit-cat-expense"
+                          className="text-red-500 font-medium cursor-pointer"
+                        >
+                          支出
+                        </Label>
                       </div>
                     </RadioGroup>
                     <FormMessage />
@@ -194,7 +202,11 @@ const EditCategory = ({ category }: EditCategoryProps) => {
                                 ? "border-primary bg-primary/10"
                                 : "border-muted hover:border-primary/50"
                             }`}
-                            onClick={() => field.onChange(field.value === icon.value ? "" : icon.value)}
+                            onClick={() =>
+                              field.onChange(
+                                field.value === icon.value ? "" : icon.value,
+                              )
+                            }
                           >
                             {icon.label}
                           </button>
@@ -224,7 +236,11 @@ const EditCategory = ({ category }: EditCategoryProps) => {
                                 : "border-transparent hover:scale-105"
                             }`}
                             style={{ backgroundColor: color.value }}
-                            onClick={() => field.onChange(field.value === color.value ? "" : color.value)}
+                            onClick={() =>
+                              field.onChange(
+                                field.value === color.value ? "" : color.value,
+                              )
+                            }
                             title={color.label}
                           />
                         ))}
@@ -242,7 +258,11 @@ const EditCategory = ({ category }: EditCategoryProps) => {
                   <FormItem>
                     <FormLabel>描述</FormLabel>
                     <FormControl>
-                      <Input placeholder="分类描述（可选）" type="text" {...field} />
+                      <Input
+                        placeholder="分类描述（可选）"
+                        type="text"
+                        {...field}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

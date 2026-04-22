@@ -1,7 +1,7 @@
+import type { Row } from "@tanstack/react-table"
 import { MoreHorizontal } from "lucide-react"
-import { Row } from "@tanstack/react-table"
 
-import { type CategoryPublic } from "@/client"
+import type { CategoryPublic } from "@/client"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -9,8 +9,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import EditCategory from "./EditCategory"
 import DeleteCategory from "./DeleteCategory"
+import EditCategory from "./EditCategory"
 
 interface CategoryActionsMenuProps {
   category: CategoryPublic
@@ -37,11 +37,9 @@ export function CategoryActionsMenu({ category }: CategoryActionsMenuProps) {
   )
 }
 
-export function DataTableCategoryActions<TData extends { id: string; name: string }>({
-  row,
-}: {
-  row: Row<TData>
-}) {
+export function DataTableCategoryActions<
+  TData extends { id: string; name: string },
+>({ row }: { row: Row<TData> }) {
   return (
     <CategoryActionsMenu category={row.original as unknown as CategoryPublic} />
   )

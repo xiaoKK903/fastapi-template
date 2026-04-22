@@ -1,38 +1,28 @@
 import { useQuery } from "@tanstack/react-query"
 import { createFileRoute } from "@tanstack/react-router"
-import {
-  BarChart,
-  Bar,
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  Legend,
-  Cell,
-  PieChart,
-  Pie,
-} from "recharts"
+import { Calendar, Flame, Target, TrendingUp, Trophy } from "lucide-react"
 import { Suspense } from "react"
 import {
-  Calendar,
-  Target,
-  Flame,
-  Trophy,
-  TrendingUp,
-} from "lucide-react"
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Cell,
+  Legend,
+  Line,
+  LineChart,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts"
 
-import {
-  HabitRecordsService,
-  type HabitStatistics,
-  type HabitTrend,
-} from "@/client"
+import { HabitRecordsService } from "@/client"
+import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Badge } from "@/components/ui/badge"
 
 export const Route = createFileRoute("/_layout/habit-stats")({
   component: HabitStatsPage,
@@ -137,13 +127,13 @@ function LoadingSkeleton() {
 
 function HabitStatsContent() {
   const { data: statistics, isLoading: isStatsLoading } = useQuery(
-    getStatisticsQueryOptions()
+    getStatisticsQueryOptions(),
   )
   const { data: trend30, isLoading: isTrend30Loading } = useQuery(
-    getTrendQueryOptions(30)
+    getTrendQueryOptions(30),
   )
   const { data: trend7, isLoading: isTrend7Loading } = useQuery(
-    getTrendQueryOptions(7)
+    getTrendQueryOptions(7),
   )
 
   const isLoading = isStatsLoading || isTrend30Loading || isTrend7Loading
@@ -155,16 +145,19 @@ function HabitStatsContent() {
   const trendData = trend30?.days || []
   const trendData7 = trend7?.days || []
 
-  const completionByDay = trendData.reduce((acc, day) => {
-    const weekDay = new Date(day.date).getDay()
-    if (!acc[weekDay]) {
-      acc[weekDay] = { total: 0, completed: 0, count: 0 }
-    }
-    acc[weekDay].total += day.total_habits
-    acc[weekDay].completed += day.completed_count
-    acc[weekDay].count += 1
-    return acc
-  }, {} as Record<number, { total: number; completed: number; count: number }>)
+  const completionByDay = trendData.reduce(
+    (acc, day) => {
+      const weekDay = new Date(day.date).getDay()
+      if (!acc[weekDay]) {
+        acc[weekDay] = { total: 0, completed: 0, count: 0 }
+      }
+      acc[weekDay].total += day.total_habits
+      acc[weekDay].completed += day.completed_count
+      acc[weekDay].count += 1
+      return acc
+    },
+    {} as Record<number, { total: number; completed: number; count: number }>,
+  )
 
   const weekDayNames = ["日", "一", "二", "三", "四", "五", "六"]
   const weekDayData = weekDayNames.map((name, index) => {
@@ -179,13 +172,24 @@ function HabitStatsContent() {
     }
   })
 
-  const monthlyCompletionRate = trendData.length > 0
-    ? Math.round((trendData.filter(d => d.completed_count > 0).length / trendData.length) * 100)
-    : 0
+  const monthlyCompletionRate =
+    trendData.length > 0
+      ? Math.round(
+          (trendData.filter((d) => d.completed_count > 0).length /
+            trendData.length) *
+            100,
+        )
+      : 0
 
   const pieData = [
-    { name: "完成天数", value: trendData.filter(d => d.completed_count > 0).length },
-    { name: "未完成天数", value: trendData.filter(d => d.completed_count === 0).length },
+    {
+      name: "完成天数",
+      value: trendData.filter((d) => d.completed_count > 0).length,
+    },
+    {
+      name: "未完成天数",
+      value: trendData.filter((d) => d.completed_count === 0).length,
+    },
   ]
 
   return (
@@ -321,7 +325,15 @@ function HabitStatsContent() {
                       dataKey="date"
                       tickFormatter={(date) => {
                         const d = new Date(date)
-                        const weekDays = ["日", "一", "二", "三", "四", "五", "六"]
+                        const weekDays = [
+                          "日",
+                          "一",
+                          "二",
+                          "三",
+                          "四",
+                          "五",
+                          "六",
+                        ]
                         return `周${weekDays[d.getDay()]}`
                       }}
                       tick={{ fontSize: 12 }}
@@ -441,12 +453,8 @@ function HabitStatsContent() {
                       }}
                       formatter={(value) => [`${value}%`, "完成率"]}
                     />
-                    <Bar
-                      dataKey="rate"
-                      name="完成率"
-                      radius={[4, 4, 0, 0]}
-                    >
-                      {weekDayData.map((entry, index) => (
+                    <Bar dataKey="rate" name="完成率" radius={[4, 4, 0, 0]}>
+                      {weekDayData.map((_entry, index) => (
                         <Cell
                           key={`cell-${index}`}
                           fill={COLORS[index % COLORS.length]}
@@ -478,12 +486,14 @@ function HabitStatsContent() {
                         cx="50%"
                         cy="50%"
                         labelLine={false}
-                        label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                        label={({ name, percent }) =>
+                          `${name} ${(percent * 100).toFixed(0)}%`
+                        }
                         outerRadius={80}
                         fill="#8884d8"
                         dataKey="value"
                       >
-                        {pieData.map((entry, index) => (
+                        {pieData.map((_entry, index) => (
                           <Cell
                             key={`cell-${index}`}
                             fill={index === 0 ? "#10b981" : "#ef4444"}
@@ -515,41 +525,66 @@ function HabitStatsContent() {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm text-muted-foreground">总习惯数</p>
-                      <p className="text-2xl font-bold">{statistics?.total_habits || 0}</p>
+                      <p className="text-2xl font-bold">
+                        {statistics?.total_habits || 0}
+                      </p>
                     </div>
                     <Badge variant="outline">习惯管理</Badge>
                   </div>
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm text-muted-foreground">近30天打卡次数</p>
-                      <p className="text-2xl font-bold">{statistics?.total_checks_last_30_days || 0}</p>
+                      <p className="text-sm text-muted-foreground">
+                        近30天打卡次数
+                      </p>
+                      <p className="text-2xl font-bold">
+                        {statistics?.total_checks_last_30_days || 0}
+                      </p>
                     </div>
-                    <Badge variant="outline" className="text-green-600 border-green-200 dark:text-green-400 dark:border-green-800">
+                    <Badge
+                      variant="outline"
+                      className="text-green-600 border-green-200 dark:text-green-400 dark:border-green-800"
+                    >
                       打卡记录
                     </Badge>
                   </div>
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm text-muted-foreground">日均打卡</p>
-                      <p className="text-2xl font-bold">{(statistics?.average_checks_per_day || 0).toFixed(1)}</p>
+                      <p className="text-2xl font-bold">
+                        {(statistics?.average_checks_per_day || 0).toFixed(1)}
+                      </p>
                     </div>
                     <Badge variant="outline">平均值</Badge>
                   </div>
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm text-muted-foreground">连续打卡天数</p>
-                      <p className="text-2xl font-bold text-orange-600">{statistics?.streak_days || 0}</p>
+                      <p className="text-sm text-muted-foreground">
+                        连续打卡天数
+                      </p>
+                      <p className="text-2xl font-bold text-orange-600">
+                        {statistics?.streak_days || 0}
+                      </p>
                     </div>
-                    <Badge variant="outline" className="text-orange-600 border-orange-200 dark:text-orange-400 dark:border-orange-800">
+                    <Badge
+                      variant="outline"
+                      className="text-orange-600 border-orange-200 dark:text-orange-400 dark:border-orange-800"
+                    >
                       🔥 连续
                     </Badge>
                   </div>
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm text-muted-foreground">月度打卡率</p>
-                      <p className="text-2xl font-bold text-emerald-600">{monthlyCompletionRate}%</p>
+                      <p className="text-sm text-muted-foreground">
+                        月度打卡率
+                      </p>
+                      <p className="text-2xl font-bold text-emerald-600">
+                        {monthlyCompletionRate}%
+                      </p>
                     </div>
-                    <Badge variant="outline" className="text-emerald-600 border-emerald-200 dark:text-emerald-400 dark:border-emerald-800">
+                    <Badge
+                      variant="outline"
+                      className="text-emerald-600 border-emerald-200 dark:text-emerald-400 dark:border-emerald-800"
+                    >
                       完成率
                     </Badge>
                   </div>

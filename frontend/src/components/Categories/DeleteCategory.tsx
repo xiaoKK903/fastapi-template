@@ -1,8 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { Trash2 } from "lucide-react"
 import { useState } from "react"
-
-import { type CategoryPublic } from "@/client"
+import { CategoriesService, type CategoryPublic } from "@/client"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -17,9 +16,6 @@ import {
 import { LoadingButton } from "@/components/ui/loading-button"
 import useCustomToast from "@/hooks/useCustomToast"
 import { handleError } from "@/utils"
-import {
-  CategoriesService,
-} from "@/client"
 
 interface DeleteCategoryProps {
   category: CategoryPublic
@@ -54,7 +50,8 @@ const DeleteCategory = ({ category }: DeleteCategoryProps) => {
         <DialogHeader>
           <DialogTitle>确认删除</DialogTitle>
           <DialogDescription>
-            您确定要删除分类 "{category.name}" 吗？如果该分类下已有交易记录，将无法删除。
+            您确定要删除分类 "{category.name}"
+            吗？如果该分类下已有交易记录，将无法删除。
           </DialogDescription>
         </DialogHeader>
         <DialogFooter className="mt-6">

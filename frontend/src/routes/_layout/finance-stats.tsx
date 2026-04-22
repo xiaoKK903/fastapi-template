@@ -1,24 +1,25 @@
 import { useSuspenseQuery } from "@tanstack/react-query"
 import { createFileRoute } from "@tanstack/react-router"
+import { TrendingDown, TrendingUp } from "lucide-react"
+import { useState } from "react"
 import {
-  BarChart,
   Bar,
-  LineChart,
-  Line,
-  PieChart,
-  Pie,
+  BarChart,
+  CartesianGrid,
   Cell,
+  Legend,
+  Line,
+  LineChart,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
   XAxis,
   YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
 } from "recharts"
-import { useState } from "react"
-import { TrendingUp, TrendingDown, PieChart as PieChartIcon } from "lucide-react"
 
 import { TransactionsService } from "@/client"
+import { Badge } from "@/components/ui/badge"
 import {
   Card,
   CardContent,
@@ -34,7 +35,6 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
 
 function getTrendQueryOptions(days: number = 30) {
@@ -46,7 +46,8 @@ function getTrendQueryOptions(days: number = 30) {
 
 function getCategorySummaryQueryOptions(year: number, month: number) {
   return {
-    queryFn: () => TransactionsService.getCategoryMonthlySummary({ year, month }),
+    queryFn: () =>
+      TransactionsService.getCategoryMonthlySummary({ year, month }),
     queryKey: ["transaction-category-summary", year, month],
   }
 }
@@ -92,7 +93,7 @@ export const Route = createFileRoute("/_layout/finance-stats")({
 function SummaryCards() {
   const today = new Date()
   const { data: summary } = useSuspenseQuery(
-    getMonthlySummaryQueryOptions(today.getFullYear(), today.getMonth() + 1)
+    getMonthlySummaryQueryOptions(today.getFullYear(), today.getMonth() + 1),
   )
 
   return (
@@ -106,7 +107,9 @@ function SummaryCards() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-xs text-muted-foreground">共 {summary.income_count} 笔</p>
+          <p className="text-xs text-muted-foreground">
+            共 {summary.income_count} 笔
+          </p>
         </CardContent>
       </Card>
       <Card>
@@ -118,7 +121,9 @@ function SummaryCards() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-xs text-muted-foreground">共 {summary.expense_count} 笔</p>
+          <p className="text-xs text-muted-foreground">
+            共 {summary.expense_count} 笔
+          </p>
         </CardContent>
       </Card>
       <Card>
@@ -127,16 +132,14 @@ function SummaryCards() {
           <CardTitle
             className={cn(
               "text-2xl",
-              summary.balance >= 0 ? "text-green-500" : "text-red-500"
+              summary.balance >= 0 ? "text-green-500" : "text-red-500",
             )}
           >
             {summary.balance >= 0 ? "+" : ""}¥{summary.balance.toFixed(2)}
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-xs text-muted-foreground">
-            收入 - 支出
-          </p>
+          <p className="text-xs text-muted-foreground">收入 - 支出</p>
         </CardContent>
       </Card>
       <Card>
@@ -173,7 +176,10 @@ function TrendChart() {
             <CardTitle>收支趋势</CardTitle>
             <CardDescription>查看最近 {days} 天的收支情况</CardDescription>
           </div>
-          <Select value={days.toString()} onValueChange={(v) => setDays(parseInt(v))}>
+          <Select
+            value={days.toString()}
+            onValueChange={(v) => setDays(parseInt(v, 10))}
+          >
             <SelectTrigger className="w-24">
               <SelectValue />
             </SelectTrigger>
@@ -193,9 +199,7 @@ function TrendChart() {
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="name" />
               <YAxis />
-              <Tooltip
-                formatter={(value: number) => `¥${value.toFixed(2)}`}
-              />
+              <Tooltip formatter={(value: number) => `¥${value.toFixed(2)}`} />
               <Legend />
               <Line
                 type="monotone"
@@ -232,22 +236,26 @@ function CategoryPieCharts() {
   const [selectedMonth, setSelectedMonth] = useState(today.getMonth() + 1)
 
   const { data: categorySummary } = useSuspenseQuery(
-    getCategorySummaryQueryOptions(selectedYear, selectedMonth)
+    getCategorySummaryQueryOptions(selectedYear, selectedMonth),
   )
 
-  const incomeData = categorySummary.income_categories.map((cat: any, index: number) => ({
-    name: cat.category_name,
-    value: cat.total_amount,
-    percentage: cat.percentage,
-    color: COLORS[index % COLORS.length],
-  }))
+  const incomeData = categorySummary.income_categories.map(
+    (cat: any, index: number) => ({
+      name: cat.category_name,
+      value: cat.total_amount,
+      percentage: cat.percentage,
+      color: COLORS[index % COLORS.length],
+    }),
+  )
 
-  const expenseData = categorySummary.expense_categories.map((cat: any, index: number) => ({
-    name: cat.category_name,
-    value: cat.total_amount,
-    percentage: cat.percentage,
-    color: COLORS[index % COLORS.length],
-  }))
+  const expenseData = categorySummary.expense_categories.map(
+    (cat: any, index: number) => ({
+      name: cat.category_name,
+      value: cat.total_amount,
+      percentage: cat.percentage,
+      color: COLORS[index % COLORS.length],
+    }),
+  )
 
   return (
     <Card className="col-span-full">
@@ -260,7 +268,7 @@ function CategoryPieCharts() {
           <div className="flex items-center gap-2">
             <Select
               value={selectedYear.toString()}
-              onValueChange={(v) => setSelectedYear(parseInt(v))}
+              onValueChange={(v) => setSelectedYear(parseInt(v, 10))}
             >
               <SelectTrigger className="w-24">
                 <SelectValue />
@@ -275,7 +283,7 @@ function CategoryPieCharts() {
             </Select>
             <Select
               value={selectedMonth.toString()}
-              onValueChange={(v) => setSelectedMonth(parseInt(v))}
+              onValueChange={(v) => setSelectedMonth(parseInt(v, 10))}
             >
               <SelectTrigger className="w-20">
                 <SelectValue />
@@ -333,7 +341,10 @@ function CategoryPieCharts() {
               </div>
               <div className="space-y-2">
                 {expenseData.map((item: any) => (
-                  <div key={item.name} className="flex items-center justify-between">
+                  <div
+                    key={item.name}
+                    className="flex items-center justify-between"
+                  >
                     <div className="flex items-center gap-2">
                       <div
                         className="w-3 h-3 rounded-full"
@@ -342,7 +353,9 @@ function CategoryPieCharts() {
                       <span>{item.name}</span>
                     </div>
                     <div className="text-right">
-                      <span className="font-medium">¥{item.value.toFixed(2)}</span>
+                      <span className="font-medium">
+                        ¥{item.value.toFixed(2)}
+                      </span>
                       <Badge variant="secondary" className="ml-2">
                         {item.percentage}%
                       </Badge>
@@ -388,7 +401,10 @@ function CategoryPieCharts() {
               </div>
               <div className="space-y-2">
                 {incomeData.map((item: any) => (
-                  <div key={item.name} className="flex items-center justify-between">
+                  <div
+                    key={item.name}
+                    className="flex items-center justify-between"
+                  >
                     <div className="flex items-center gap-2">
                       <div
                         className="w-3 h-3 rounded-full"
@@ -397,7 +413,9 @@ function CategoryPieCharts() {
                       <span>{item.name}</span>
                     </div>
                     <div className="text-right">
-                      <span className="font-medium">¥{item.value.toFixed(2)}</span>
+                      <span className="font-medium">
+                        ¥{item.value.toFixed(2)}
+                      </span>
                       <Badge variant="secondary" className="ml-2">
                         {item.percentage}%
                       </Badge>
@@ -418,7 +436,7 @@ function YearlySummary() {
   const [selectedYear, setSelectedYear] = useState(today.getFullYear())
 
   const { data: yearlySummary } = useSuspenseQuery(
-    getYearlySummaryQueryOptions(selectedYear)
+    getYearlySummaryQueryOptions(selectedYear),
   )
 
   const monthlyData = yearlySummary.monthly_breakdown.map((item: any) => ({
@@ -435,10 +453,15 @@ function YearlySummary() {
           <div>
             <CardTitle>年度汇总</CardTitle>
             <CardDescription>
-              {selectedYear}年总收入 ¥{yearlySummary.total_income.toFixed(2)}，总支出 ¥{yearlySummary.total_expense.toFixed(2)}，结余 ¥{yearlySummary.balance.toFixed(2)}
+              {selectedYear}年总收入 ¥{yearlySummary.total_income.toFixed(2)}
+              ，总支出 ¥{yearlySummary.total_expense.toFixed(2)}，结余 ¥
+              {yearlySummary.balance.toFixed(2)}
             </CardDescription>
           </div>
-          <Select value={selectedYear.toString()} onValueChange={(v) => setSelectedYear(parseInt(v))}>
+          <Select
+            value={selectedYear.toString()}
+            onValueChange={(v) => setSelectedYear(parseInt(v, 10))}
+          >
             <SelectTrigger className="w-24">
               <SelectValue />
             </SelectTrigger>
@@ -459,9 +482,7 @@ function YearlySummary() {
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="name" />
               <YAxis />
-              <Tooltip
-                formatter={(value: number) => `¥${value.toFixed(2)}`}
-              />
+              <Tooltip formatter={(value: number) => `¥${value.toFixed(2)}`} />
               <Legend />
               <Bar dataKey="收入" fill="#22c55e" radius={[4, 4, 0, 0]} />
               <Bar dataKey="支出" fill="#ef4444" radius={[4, 4, 0, 0]} />

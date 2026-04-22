@@ -3,8 +3,6 @@ import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { useEffect } from "react"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
-
-import { type TaskPublic, type TaskUpdate, TasksService, TaskStatus, TaskPriority, TaskRepeatType } from "@/services/TasksService"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -24,7 +22,7 @@ import {
   FormMessage,
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
+import { LoadingButton } from "@/components/ui/loading-button"
 import {
   Select,
   SelectContent,
@@ -32,18 +30,30 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { LoadingButton } from "@/components/ui/loading-button"
+import { Textarea } from "@/components/ui/textarea"
 import useCustomToast from "@/hooks/useCustomToast"
+import {
+  type TaskPriority,
+  type TaskPublic,
+  type TaskRepeatType,
+  type TaskStatus,
+  TasksService,
+  type TaskUpdate,
+} from "@/services/TasksService"
 import { handleError } from "@/utils"
 
 const formSchema = z.object({
   title: z.string().min(1, { message: "任务标题是必填项" }),
   description: z.string().optional(),
   priority: z.enum(["low", "medium", "high", "urgent"]).default("medium"),
-  status: z.enum(["todo", "in_progress", "done", "cancelled", "on_hold"]).default("todo"),
+  status: z
+    .enum(["todo", "in_progress", "done", "cancelled", "on_hold"])
+    .default("todo"),
   due_date: z.string().optional(),
   progress: z.coerce.number().int().min(0).max(100).default(0),
-  repeat_type: z.enum(["none", "daily", "weekly", "monthly", "yearly"]).default("none"),
+  repeat_type: z
+    .enum(["none", "daily", "weekly", "monthly", "yearly"])
+    .default("none"),
   repeat_interval: z.coerce.number().int().min(1).optional(),
   repeat_end_date: z.string().optional(),
 })
@@ -116,7 +126,9 @@ const EditTask = ({ task, open, onOpenChange }: EditTaskProps) => {
       progress: data.progress,
       repeat_type: data.repeat_type,
       repeat_interval: data.repeat_interval,
-      repeat_end_date: data.repeat_end_date ? new Date(data.repeat_end_date) : undefined,
+      repeat_end_date: data.repeat_end_date
+        ? new Date(data.repeat_end_date)
+        : undefined,
     }
 
     mutation.mutate({ id: task.id, data: updateData })
@@ -127,9 +139,7 @@ const EditTask = ({ task, open, onOpenChange }: EditTaskProps) => {
       <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>编辑任务</DialogTitle>
-          <DialogDescription>
-            修改任务的详细信息。
-          </DialogDescription>
+          <DialogDescription>修改任务的详细信息。</DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)}>
@@ -264,7 +274,9 @@ const EditTask = ({ task, open, onOpenChange }: EditTaskProps) => {
                           min={0}
                           max={100}
                           {...field}
-                          onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
+                          onChange={(e) =>
+                            field.onChange(parseInt(e.target.value, 10) || 0)
+                          }
                         />
                       </FormControl>
                       <FormMessage />
@@ -318,7 +330,13 @@ const EditTask = ({ task, open, onOpenChange }: EditTaskProps) => {
                               placeholder="例如：1"
                               {...field}
                               value={field.value || ""}
-                              onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value) : undefined)}
+                              onChange={(e) =>
+                                field.onChange(
+                                  e.target.value
+                                    ? parseInt(e.target.value, 10)
+                                    : undefined,
+                                )
+                              }
                             />
                           </FormControl>
                           <FormMessage />

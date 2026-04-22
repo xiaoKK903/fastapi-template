@@ -1,11 +1,15 @@
 import { zodResolver } from "@hookform/resolvers/zod"
-import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { Plus } from "lucide-react"
 import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
-
-import { type TransactionCreate, type TransactionType } from "@/client"
+import {
+  CategoriesService,
+  type TransactionCreate,
+  TransactionsService,
+  type TransactionType,
+} from "@/client"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -26,11 +30,9 @@ import {
   FormMessage,
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
-import {
-  RadioGroup,
-  RadioGroupItem,
-} from "@/components/ui/radio-group"
 import { Label } from "@/components/ui/label"
+import { LoadingButton } from "@/components/ui/loading-button"
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import {
   Select,
   SelectContent,
@@ -39,13 +41,8 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
-import { LoadingButton } from "@/components/ui/loading-button"
 import useCustomToast from "@/hooks/useCustomToast"
 import { handleError } from "@/utils"
-import {
-  TransactionsService,
-  CategoriesService,
-} from "@/client"
 
 interface AddTransactionProps {
   onSuccess?: () => void
@@ -55,7 +52,9 @@ const formSchema = z.object({
   amount: z.coerce.number().positive({ message: "金额必须大于0" }),
   type: z.enum(["income", "expense"]).default("expense"),
   category_id: z.string().min(1, { message: "请选择分类" }),
-  transaction_date: z.string().default(() => new Date().toISOString().split("T")[0]),
+  transaction_date: z
+    .string()
+    .default(() => new Date().toISOString().split("T")[0]),
   description: z.string().optional(),
 })
 
@@ -70,7 +69,8 @@ const AddTransaction = ({ onSuccess }: AddTransactionProps) => {
 
   const { data: categories } = useQuery({
     queryKey: ["categories", selectedType],
-    queryFn: () => CategoriesService.readCategories({ type: selectedType, limit: 100 }),
+    queryFn: () =>
+      CategoriesService.readCategories({ type: selectedType, limit: 100 }),
     enabled: isOpen,
   })
 
@@ -112,7 +112,7 @@ const AddTransaction = ({ onSuccess }: AddTransactionProps) => {
     })
   }
 
-  const watchType = form.watch("type")
+  const _watchType = form.watch("type")
 
   const handleTypeChange = (type: string) => {
     setSelectedType(type as TransactionType)
@@ -130,9 +130,7 @@ const AddTransaction = ({ onSuccess }: AddTransactionProps) => {
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>记一笔</DialogTitle>
-          <DialogDescription>
-            记录一笔收入或支出。
-          </DialogDescription>
+          <DialogDescription>记录一笔收入或支出。</DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)}>
@@ -153,13 +151,19 @@ const AddTransaction = ({ onSuccess }: AddTransactionProps) => {
                     >
                       <div className="flex items-center space-x-3">
                         <RadioGroupItem value="income" id="type-income" />
-                        <Label htmlFor="type-income" className="text-green-500 font-medium text-lg cursor-pointer">
+                        <Label
+                          htmlFor="type-income"
+                          className="text-green-500 font-medium text-lg cursor-pointer"
+                        >
                           收入
                         </Label>
                       </div>
                       <div className="flex items-center space-x-3">
                         <RadioGroupItem value="expense" id="type-expense" />
-                        <Label htmlFor="type-expense" className="text-red-500 font-medium text-lg cursor-pointer">
+                        <Label
+                          htmlFor="type-expense"
+                          className="text-red-500 font-medium text-lg cursor-pointer"
+                        >
                           支出
                         </Label>
                       </div>
@@ -189,7 +193,9 @@ const AddTransaction = ({ onSuccess }: AddTransactionProps) => {
                           className="pl-8 text-xl font-semibold"
                           placeholder="0.00"
                           {...field}
-                          onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                          onChange={(e) =>
+                            field.onChange(parseFloat(e.target.value) || 0)
+                          }
                           required
                         />
                       </div>
@@ -250,10 +256,7 @@ const AddTransaction = ({ onSuccess }: AddTransactionProps) => {
                   <FormItem>
                     <FormLabel>日期</FormLabel>
                     <FormControl>
-                      <Input
-                        type="date"
-                        {...field}
-                      />
+                      <Input type="date" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

@@ -1,5 +1,5 @@
 import { useQuery, useSuspenseQuery } from "@tanstack/react-query"
-import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router"
+import { createFileRoute, useNavigate } from "@tanstack/react-router"
 import { Suspense, useEffect } from "react"
 
 import { type UserPublic, UsersService } from "@/client"
@@ -16,7 +16,7 @@ function getUsersQueryOptions() {
   }
 }
 
-function getCurrentUserQueryOptions() {
+function _getCurrentUserQueryOptions() {
   return {
     queryFn: () => UsersService.readUserMe(),
     queryKey: ["currentUser"],
@@ -57,8 +57,12 @@ function UsersTable() {
 function Admin() {
   const navigate = useNavigate()
   const { user, isSuperuser } = useAuth()
-  
-  const { data: currentUserData, isLoading, error } = useQuery({
+
+  const {
+    data: currentUserData,
+    isLoading,
+    error,
+  } = useQuery({
     queryKey: ["adminAuthCheck"],
     queryFn: UsersService.readUserMe,
   })

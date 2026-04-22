@@ -1,17 +1,16 @@
 import {
-  Briefcase,
-  Home,
-  Target,
-  Users,
-  Calendar as CalendarIcon,
   BarChart3,
-  Wallet,
-  PieChart,
-  Tag,
+  Briefcase,
+  Calendar as CalendarIcon,
   CheckSquare,
   FolderOpen,
+  Home,
+  PieChart,
+  Tag,
+  Target,
   Trash2,
-  Share2,
+  Users,
+  Wallet,
 } from "lucide-react"
 
 import { SidebarAppearance } from "@/components/Common/Appearance"

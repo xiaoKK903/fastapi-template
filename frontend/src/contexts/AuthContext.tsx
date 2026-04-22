@@ -1,13 +1,13 @@
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { useNavigate } from "@tanstack/react-router"
 import {
   createContext,
-  useContext,
-  useState,
-  useEffect,
-  ReactNode,
+  type ReactNode,
   useCallback,
+  useContext,
+  useEffect,
+  useState,
 } from "react"
-import { useNavigate } from "@tanstack/react-router"
-import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query"
 
 import {
   type Body_login_login_access_token as AccessToken,
@@ -16,11 +16,15 @@ import {
   type UserRegister,
   UsersService,
 } from "@/client"
+import useCustomToast from "@/hooks/useCustomToast"
 import { PermissionsService, type UserWithRoles } from "@/services/permissions"
 import { handleError } from "@/utils"
-import useCustomToast from "@/hooks/useCustomToast"
 
-export type AuthStatus = "idle" | "loading" | "authenticated" | "unauthenticated"
+export type AuthStatus =
+  | "idle"
+  | "loading"
+  | "authenticated"
+  | "unauthenticated"
 
 interface AuthContextType {
   user: UserPublic | null | undefined
@@ -90,10 +94,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     refetchOnWindowFocus: false,
   })
 
-  const {
-    data: userFullInfo,
-    isLoading: userInfoLoading,
-  } = useQuery<UserWithRoles | null, Error>({
+  const { data: userFullInfo, isLoading: userInfoLoading } = useQuery<
+    UserWithRoles | null,
+    Error
+  >({
     queryKey: ["userFullInfo"],
     queryFn: PermissionsService.readMyFullInfo,
     enabled: isLoggedIn(),
@@ -101,10 +105,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     refetchOnWindowFocus: false,
   })
 
-  const {
-    data: userPermissions,
-    isLoading: permissionsLoading,
-  } = useQuery<string[], Error>({
+  const { data: userPermissions, isLoading: permissionsLoading } = useQuery<
+    string[],
+    Error
+  >({
     queryKey: ["userPermissions"],
     queryFn: PermissionsService.readMyPermissions,
     enabled: isLoggedIn(),
@@ -188,7 +192,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     (roleCode: string): boolean => {
       return getUserRoles().includes(roleCode)
     },
-    [getUserRoles]
+    [getUserRoles],
   )
 
   const hasPermission = useCallback(
@@ -197,7 +201,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (userPermissions.includes("*:*")) return true
       return userPermissions.includes(permissionCode)
     },
-    [userPermissions]
+    [userPermissions],
   )
 
   const value: AuthContextType = {

@@ -26,6 +26,7 @@ import {
   FormMessage,
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
+import { LoadingButton } from "@/components/ui/loading-button"
 import {
   Select,
   SelectContent,
@@ -33,14 +34,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { LoadingButton } from "@/components/ui/loading-button"
 import useCustomToast from "@/hooks/useCustomToast"
 import { handleError } from "@/utils"
 
 const formSchema = z.object({
   name: z.string().min(1, { message: "习惯名称是必填项" }),
   frequency: z.enum(["daily", "weekly", "monthly"]).default("daily"),
-  target_count: z.coerce.number().int().min(1, { message: "目标次数至少为1" }).default(1),
+  target_count: z.coerce
+    .number()
+    .int()
+    .min(1, { message: "目标次数至少为1" })
+    .default(1),
   description: z.string().optional(),
 })
 
@@ -92,9 +96,7 @@ const AddHabit = () => {
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>添加习惯</DialogTitle>
-          <DialogDescription>
-            填写详情来添加一个新习惯。
-          </DialogDescription>
+          <DialogDescription>填写详情来添加一个新习惯。</DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)}>
@@ -158,7 +160,9 @@ const AddHabit = () => {
                           type="number"
                           min={1}
                           {...field}
-                          onChange={(e) => field.onChange(parseInt(e.target.value) || 1)}
+                          onChange={(e) =>
+                            field.onChange(parseInt(e.target.value, 10) || 1)
+                          }
                         />
                       </FormControl>
                       <FormMessage />
@@ -174,7 +178,11 @@ const AddHabit = () => {
                   <FormItem>
                     <FormLabel>描述</FormLabel>
                     <FormControl>
-                      <Input placeholder="习惯描述（可选）" type="text" {...field} />
+                      <Input
+                        placeholder="习惯描述（可选）"
+                        type="text"
+                        {...field}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

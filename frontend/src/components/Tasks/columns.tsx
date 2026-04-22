@@ -1,15 +1,26 @@
 import type { ColumnDef } from "@tanstack/react-table"
-import { Check, Copy, ChevronRight, ChevronDown, FolderPlus, Repeat } from "lucide-react"
-
-import type { TaskPublic, TaskStatus, TaskPriority, TaskRepeatType } from "@/services/TasksService"
-import type { FlatTaskWithLevel } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { useCopyToClipboard } from "@/hooks/useCopyToClipboard"
-import { cn } from "@/lib/utils"
-import { TaskActionsMenu } from "./TaskActionsMenu"
-import AddTask from "./AddTask"
+import {
+  Check,
+  ChevronDown,
+  ChevronRight,
+  Copy,
+  FolderPlus,
+  Repeat,
+} from "lucide-react"
 import { useState } from "react"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { useCopyToClipboard } from "@/hooks/useCopyToClipboard"
+import type { FlatTaskWithLevel } from "@/lib/utils"
+import { cn } from "@/lib/utils"
+import type {
+  TaskPriority,
+  TaskPublic,
+  TaskRepeatType,
+  TaskStatus,
+} from "@/services/TasksService"
+import AddTask from "./AddTask"
+import { TaskActionsMenu } from "./TaskActionsMenu"
 
 function CopyId({ id }: { id: string }) {
   const [copiedText, copy] = useCopyToClipboard()
@@ -47,7 +58,10 @@ function getStatusLabel(status: TaskStatus) {
 }
 
 function getStatusVariant(status: TaskStatus) {
-  const variants: Record<TaskStatus, "default" | "secondary" | "destructive" | "outline"> = {
+  const variants: Record<
+    TaskStatus,
+    "default" | "secondary" | "destructive" | "outline"
+  > = {
     todo: "outline",
     in_progress: "default",
     done: "secondary",
@@ -68,7 +82,10 @@ function getPriorityLabel(priority: TaskPriority) {
 }
 
 function getPriorityVariant(priority: TaskPriority) {
-  const variants: Record<TaskPriority, "default" | "secondary" | "destructive" | "outline"> = {
+  const variants: Record<
+    TaskPriority,
+    "default" | "secondary" | "destructive" | "outline"
+  > = {
     low: "outline",
     medium: "default",
     high: "destructive",
@@ -138,10 +155,12 @@ export function createTreeColumns({
               <div className="w-6" />
             )}
             <div className="flex items-center gap-2 flex-1">
-              <span className={cn(
-                "font-medium",
-                task.is_overdue && "text-destructive",
-              )}>
+              <span
+                className={cn(
+                  "font-medium",
+                  task.is_overdue && "text-destructive",
+                )}
+              >
                 {task.title}
               </span>
               {task.is_overdue && (
@@ -181,9 +200,11 @@ export function createTreeColumns({
       accessorKey: "due_date",
       header: "截止时间",
       cell: ({ row }) => (
-        <span className={cn(
-          row.original.is_overdue && "text-destructive font-medium",
-        )}>
+        <span
+          className={cn(
+            row.original.is_overdue && "text-destructive font-medium",
+          )}
+        >
           {formatDate(row.original.due_date)}
         </span>
       ),
@@ -210,9 +231,13 @@ export function createTreeColumns({
               {getRepeatTypeLabel(repeatType)}
               {row.original.repeat_interval && row.original.repeat_interval > 1
                 ? ` (每${row.original.repeat_interval}${
-                    repeatType === "daily" ? "天" :
-                    repeatType === "weekly" ? "周" :
-                    repeatType === "monthly" ? "月" : "年"
+                    repeatType === "daily"
+                      ? "天"
+                      : repeatType === "weekly"
+                        ? "周"
+                        : repeatType === "monthly"
+                          ? "月"
+                          : "年"
                   })`
                 : ""}
             </Badge>
@@ -286,10 +311,12 @@ export const columns: ColumnDef<TaskPublic>[] = [
     header: "任务标题",
     cell: ({ row }) => (
       <div className="flex items-center gap-2">
-        <span className={cn(
-          "font-medium",
-          row.original.is_overdue && "text-destructive",
-        )}>
+        <span
+          className={cn(
+            "font-medium",
+            row.original.is_overdue && "text-destructive",
+          )}
+        >
           {row.original.title}
         </span>
         {row.original.is_overdue && (
@@ -322,9 +349,11 @@ export const columns: ColumnDef<TaskPublic>[] = [
     accessorKey: "due_date",
     header: "截止时间",
     cell: ({ row }) => (
-      <span className={cn(
-        row.original.is_overdue && "text-destructive font-medium",
-      )}>
+      <span
+        className={cn(
+          row.original.is_overdue && "text-destructive font-medium",
+        )}
+      >
         {formatDate(row.original.due_date)}
       </span>
     ),
@@ -351,9 +380,13 @@ export const columns: ColumnDef<TaskPublic>[] = [
             {getRepeatTypeLabel(repeatType)}
             {row.original.repeat_interval && row.original.repeat_interval > 1
               ? ` (每${row.original.repeat_interval}${
-                  repeatType === "daily" ? "天" :
-                  repeatType === "weekly" ? "周" :
-                  repeatType === "monthly" ? "月" : "年"
+                  repeatType === "daily"
+                    ? "天"
+                    : repeatType === "weekly"
+                      ? "周"
+                      : repeatType === "monthly"
+                        ? "月"
+                        : "年"
                 })`
               : ""}
           </Badge>
