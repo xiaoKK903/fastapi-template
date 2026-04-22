@@ -4,7 +4,7 @@ import {
   QueryClient,
   QueryClientProvider,
 } from "@tanstack/react-query"
-import { createRouter, RouterProvider, Outlet } from "@tanstack/react-router"
+import { createRouter, RouterProvider } from "@tanstack/react-router"
 import { StrictMode } from "react"
 import ReactDOM from "react-dom/client"
 import { ApiError, OpenAPI } from "./client"
@@ -12,7 +12,7 @@ import { ThemeProvider } from "./components/theme-provider"
 import { Toaster } from "./components/ui/sonner"
 import "./index.css"
 import { routeTree } from "./routeTree.gen"
-import { AuthProvider, getAuthToken, clearAuthToken } from "./contexts/AuthContext"
+import { clearAuthToken, getAuthToken } from "./hooks/useAuth"
 
 OpenAPI.BASE = import.meta.env.VITE_API_URL
 OpenAPI.TOKEN = async () => {
@@ -25,6 +25,7 @@ const handleApiError = (error: Error) => {
     window.location.href = "/login"
   }
 }
+
 const queryClient = new QueryClient({
   queryCache: new QueryCache({
     onError: handleApiError,
@@ -41,21 +42,11 @@ declare module "@tanstack/react-router" {
   }
 }
 
-function AppWithAuth() {
-  return (
-    <AuthProvider>
-      <Outlet />
-    </AuthProvider>
-  )
-}
-
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
       <QueryClientProvider client={queryClient}>
-        <RouterProvider router={router}>
-          <AppWithAuth />
-        </RouterProvider>
+        <RouterProvider router={router} />
         <Toaster richColors closeButton />
       </QueryClientProvider>
     </ThemeProvider>
