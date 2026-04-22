@@ -9,7 +9,9 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar"
 import { Button } from "@/components/ui/button"
+import { Skeleton } from "@/components/ui/skeleton"
 import useAuth, { isLoggedIn } from "@/hooks/useAuth"
+import { useEffect } from "react"
 
 export const Route = createFileRoute("/_layout")({
   component: Layout,
@@ -23,13 +25,36 @@ export const Route = createFileRoute("/_layout")({
 })
 
 function Layout() {
-  const { logout, user, isLoading, status } = useAuth()
+  const { logout, user, isLoading, isAuthenticated } = useAuth()
+
+  useEffect(() => {
+    if (isLoggedIn() && !isAuthenticated && !isLoading) {
+      window.location.href = "/login"
+    }
+  }, [isAuthenticated, isLoading])
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="flex flex-col gap-4 w-full max-w-md p-8">
+          <Skeleton className="h-12 w-32" />
+          <Skeleton className="h-4 w-full" />
+          <Skeleton className="h-4 w-3/4" />
+          <Skeleton className="h-4 w-1/2" />
+        </div>
+      </div>
+    )
+  }
+
+  if (!isAuthenticated) {
+    return null
+  }
 
   return (
     <SidebarProvider>
       <AppSidebar />
       <SidebarInset>
-        <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center justify-between gap-2 border-b px-4">
+        <header className="sticky top-0 z-1 flex h-16 shrink-0 items-center justify-between gap-2 border-b px-4">
           <SidebarTrigger className="-ml-1 text-muted-foreground" />
           <div className="flex items-center gap-2">
             <Button

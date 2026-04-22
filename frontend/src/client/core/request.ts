@@ -183,7 +183,9 @@ export const getHeaders = async <T>(config: OpenAPIConfig, options: ApiRequestOp
 			headers['Content-Type'] = 'application/json';
 		}
 	} else if (options.formData !== undefined) {
-		if (options.mediaType) {
+		// 对于 application/x-www-form-urlencoded，让 axios 自动处理 Content-Type
+		// 对于 FormData，浏览器会自动设置 Content-Type 为 multipart/form-data
+		if (options.mediaType && options.mediaType !== 'application/x-www-form-urlencoded') {
 			headers['Content-Type'] = options.mediaType;
 		}
 	}
@@ -203,7 +205,7 @@ export const sendRequest = async <T>(
 	options: ApiRequestOptions<T>,
 	url: string,
 	body: unknown,
-	formData: FormData | undefined,
+	formData: FormData | URLSearchParams | undefined,
 	headers: Record<string, string>,
 	onCancel: OnCancel,
 	axiosClient: AxiosInstance
