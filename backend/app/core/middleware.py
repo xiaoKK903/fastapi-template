@@ -11,6 +11,7 @@ from sqlmodel import Session, select
 from app.core import security
 from app.core.config import settings
 from app.core.db import engine
+from app.core.logging import log_request, log_error
 from app.models import ActionType, OperationLog, ResourceType, User
 
 IGNORED_PATHS = [
@@ -84,9 +85,7 @@ class OperationLogMiddleware(BaseHTTPMiddleware):
                 return await call_next(request)
 
         resource_type = get_resource_type_from_path(request.url.path)
-
-        if resource_type == ResourceType.OPERATION_LOG:
-            return await call_next(request)
+        is_operation_log = resource_type == ResourceType.OPERATION_LOG
 
         request.state.operation_log_data = {
             "resource_name": None,
@@ -128,7 +127,29 @@ class OperationLogMiddleware(BaseHTTPMiddleware):
             resource_id = request.state.operation_log_data.get("resource_id")
             error_message = request.state.operation_log_data.get("error_message")
 
-            if resource_type != ResourceType.OPERATION_LOG:
+            should_log_to_file = True
+            should_log_to_db = False
+            if is_operation_log:
+                if not success:
+                    should_log_to_db = True
+            else:
+                should_log_to_db = True
+
+            if should_log_to_file:
+                try:
+                    log_request(
+                        method=request.method,
+                        path=request.url.path,
+                        status_code=response.status_code,
+                        duration_ms=duration_ms,
+                        user_id=user_id,
+                        user_email=user_email,
+                        error_message=error_message,
+                    )
+                except Exception:
+                    pass
+
+            if should_log_to_db:
                 try:
                     with Session(engine) as session:
                         log = OperationLog(
@@ -150,8 +171,18 @@ class OperationLogMiddleware(BaseHTTPMiddleware):
                         )
                         session.add(log)
                         session.commit()
-                except Exception:
-                    pass
+                except Exception as e:
+                    try:
+                        log_error(
+                            f"Failed to save operation log to database: {str(e)}",
+                            extra={
+                                "path": request.url.path,
+                                "method": request.method,
+                                "user_email": user_email,
+                            },
+                        )
+                    except Exception:
+                        pass
 
         return response
 

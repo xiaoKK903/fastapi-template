@@ -1,0 +1,8 @@
+2026-04-23 07:48:29,585 - fastapi_template - ERROR - [GET] /api/v1/operation-logs -> 403 (69ms) user=aaawhz@ddde11.com | error: The user doesn't have enough privileges
+2026-04-23 07:48:29,608 - fastapi_template - ERROR - [GET] /api/v1/operation-logs/stats -> 403 (91ms) user=aaawhz@ddde11.com | error: The user doesn't have enough privileges
+2026-04-23 07:48:30,715 - fastapi_template - ERROR - [GET] /api/v1/operation-logs -> 403 (6ms) user=aaawhz@ddde11.com | error: The user doesn't have enough privileges
+2026-04-23 07:48:30,734 - fastapi_template - ERROR - [GET] /api/v1/operation-logs/stats -> 403 (24ms) user=aaawhz@ddde11.com | error: The user doesn't have enough privileges
+2026-04-23 07:48:32,748 - fastapi_template - ERROR - [GET] /api/v1/operation-logs -> 403 (3ms) user=aaawhz@ddde11.com | error: The user doesn't have enough privileges
+2026-04-23 07:48:32,776 - fastapi_template - ERROR - [GET] /api/v1/operation-logs/stats -> 403 (4ms) user=aaawhz@ddde11.com | error: The user doesn't have enough privileges
+2026-04-23 07:49:07,797 - fastapi_template - ERROR - [GET] /api/v1/operation-logs -> 403 (6ms) user=aaawhz@ddde11.com | error: The user doesn't have enough privileges
+2026-04-23 07:49:07,816 - fastapi_template - ERROR - [GET] /api/v1/operation-logs/stats -> 403 (24ms) user=aaawhz@ddde11.com | error: The user doesn't have enough privileges
