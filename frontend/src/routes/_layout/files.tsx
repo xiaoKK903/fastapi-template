@@ -19,7 +19,7 @@ import {
   Trash2,
   Upload,
 } from "lucide-react"
-import { useState } from "react"
+import React, { useState } from "react"
 import {
   Badge,
   Button,
@@ -53,6 +53,7 @@ import {
   FilesService,
   type FolderPublic,
   FoldersService,
+  SharesService,
 } from "@/services/FilesService"
 import { handleError } from "@/utils"
 
@@ -518,7 +519,7 @@ function FilesPage() {
   )
   const [folderPath, setFolderPath] = useState<FolderPublic[]>([])
   const [searchTerm, setSearchTerm] = useState("")
-  const [fileType, setFileType] = useState<string>("")
+  const [fileType, setFileType] = useState<string | undefined>(undefined)
   const [showUploadDialog, setShowUploadDialog] = useState(false)
   const [showNewFolderDialog, setShowNewFolderDialog] = useState(false)
   const [shareDialogFile, setShareDialogFile] = useState<
@@ -662,12 +663,13 @@ function FilesPage() {
           </div>
 
           <div className="flex flex-col sm:flex-row gap-4">
-            <div className="flex-1">
+            <div className="flex-1 relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
               <Input
                 placeholder="搜索文件..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                prefix={<Search className="h-4 w-4 text-muted-foreground" />}
+                className="pl-9"
               />
             </div>
             <Select value={fileType} onValueChange={setFileType}>
@@ -675,7 +677,6 @@ function FilesPage() {
                 <SelectValue placeholder="所有类型" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">所有类型</SelectItem>
                 <SelectItem value="image">图片</SelectItem>
                 <SelectItem value="document">文档</SelectItem>
                 <SelectItem value="archive">压缩包</SelectItem>

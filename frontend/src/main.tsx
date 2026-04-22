@@ -11,8 +11,8 @@ import { ApiError, OpenAPI } from "./client"
 import { ThemeProvider } from "./components/theme-provider"
 import { Toaster } from "./components/ui/sonner"
 import "./index.css"
-import { clearAuthToken, getAuthToken } from "./hooks/useAuth"
 import { routeTree } from "./routeTree.gen"
+import { clearAuthToken, getAuthToken } from "./hooks/useAuth"
 
 OpenAPI.BASE = import.meta.env.VITE_API_URL
 OpenAPI.TOKEN = async () => {
