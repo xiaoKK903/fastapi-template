@@ -140,9 +140,9 @@ function LogsPage() {
   const [currentPage, setCurrentPage] = useState(1)
   const [pageSize, setPageSize] = useState(20)
   const [searchTerm, setSearchTerm] = useState("")
-  const [filterAction, setFilterAction] = useState<ActionType | "">("")
-  const [filterResource, setFilterResource] = useState<ResourceType | "">("")
-  const [filterSuccess, setFilterSuccess] = useState<boolean | "">("")
+  const [filterAction, setFilterAction] = useState<ActionType | undefined>(undefined)
+  const [filterResource, setFilterResource] = useState<ResourceType | undefined>(undefined)
+  const [filterSuccess, setFilterSuccess] = useState<boolean | undefined>(undefined)
   const [selectedLog, setSelectedLog] = useState<OperationLogPublic | null>(null)
   const [detailDialogOpen, setDetailDialogOpen] = useState(false)
   const [confirmCleanDays, setConfirmCleanDays] = useState(30)
@@ -160,9 +160,9 @@ function LogsPage() {
         (currentPage - 1) * pageSize,
         pageSize,
         undefined,
-        filterAction || undefined,
-        filterResource || undefined,
-        filterSuccess === "" ? undefined : filterSuccess,
+        filterAction,
+        filterResource,
+        filterSuccess,
       ),
     enabled: !!isSuperuser,
   })
@@ -585,13 +585,12 @@ function LogsPage() {
 
             <Select
               value={filterAction}
-              onValueChange={(v) => setFilterAction(v as ActionType | "")}
+              onValueChange={(v) => setFilterAction(v as ActionType | undefined)}
             >
               <SelectTrigger className="w-32">
                 <SelectValue placeholder="操作类型" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">全部</SelectItem>
                 <SelectItem value="create">创建</SelectItem>
                 <SelectItem value="read">读取</SelectItem>
                 <SelectItem value="update">更新</SelectItem>
@@ -601,13 +600,12 @@ function LogsPage() {
 
             <Select
               value={filterResource}
-              onValueChange={(v) => setFilterResource(v as ResourceType | "")}
+              onValueChange={(v) => setFilterResource(v as ResourceType | undefined)}
             >
               <SelectTrigger className="w-32">
                 <SelectValue placeholder="资源类型" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">全部</SelectItem>
                 <SelectItem value="habit">习惯</SelectItem>
                 <SelectItem value="transaction">交易</SelectItem>
                 <SelectItem value="user">用户</SelectItem>
@@ -618,9 +616,9 @@ function LogsPage() {
             </Select>
 
             <Select
-              value={filterSuccess === "" ? "all" : filterSuccess ? "success" : "error"}
+              value={filterSuccess === undefined ? "all" : filterSuccess ? "success" : "error"}
               onValueChange={(v) => {
-                if (v === "all") setFilterSuccess("")
+                if (v === "all") setFilterSuccess(undefined)
                 else setFilterSuccess(v === "success")
               }}
             >

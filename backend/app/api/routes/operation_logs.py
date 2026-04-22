@@ -25,19 +25,21 @@ def read_operation_logs(
     success: bool | None = None,
 ) -> OperationLogsPublic:
     statement = select(OperationLog)
+    count_statement = select(func.count(OperationLog.id))
 
     if user_id:
         statement = statement.where(OperationLog.user_id == user_id)
+        count_statement = count_statement.where(OperationLog.user_id == user_id)
     if action:
         statement = statement.where(OperationLog.action == action)
+        count_statement = count_statement.where(OperationLog.action == action)
     if resource:
         statement = statement.where(OperationLog.resource == resource)
+        count_statement = count_statement.where(OperationLog.resource == resource)
     if success is not None:
         statement = statement.where(OperationLog.success == success)
+        count_statement = count_statement.where(OperationLog.success == success)
 
-    count_statement = select(func.count(OperationLog.id)).where(
-        statement.whereclause
-    )
     count = session.exec(count_statement).one()
 
     statement = (
