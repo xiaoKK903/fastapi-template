@@ -536,6 +536,9 @@ class User(UserBase, table=True):
     budgets: list["Budget"] = Relationship(back_populates="owner", cascade_delete=True)
     tasks: list["Task"] = Relationship(back_populates="owner", cascade_delete=True)
     roles: list["Role"] = Relationship(back_populates="users", link_model=UserRoleLink)
+    folders: list["Folder"] = Relationship(back_populates="owner", cascade_delete=True)
+    files: list["File"] = Relationship(back_populates="owner", cascade_delete=True)
+    file_shares: list["FileShare"] = Relationship(back_populates="owner", cascade_delete=True)
 
 
 class Category(CategoryBase, table=True):
@@ -1034,6 +1037,7 @@ class FileSharesPublic(SQLModel):
 
 class FileShare(FileShareBase, table=True):
     id: str = Field(default_factory=generate_uuid, primary_key=True)
+    file_id: str = Field(foreign_key="file.id", nullable=False, ondelete="CASCADE")
     owner_id: str = Field(
         foreign_key="user.id", nullable=False, ondelete="CASCADE"
     )

@@ -24,7 +24,7 @@ class EmailData:
 
 def render_email_template(*, template_name: str, context: dict[str, Any]) -> str:
     template_str = (
-        Path(__file__).parent / "email-templates" / "build" / template_name
+        Path(__file__).parent.parent / "email-templates" / "build" / template_name
     ).read_text()
     html_content = Template(template_str).render(context)
     return html_content
@@ -121,3 +121,15 @@ def verify_password_reset_token(token: str) -> str | None:
         return str(decoded_token["sub"])
     except InvalidTokenError:
         return None
+
+
+__all__ = [
+    "EmailData",
+    "render_email_template",
+    "send_email",
+    "generate_test_email",
+    "generate_reset_password_email",
+    "generate_new_account_email",
+    "generate_password_reset_token",
+    "verify_password_reset_token",
+]
