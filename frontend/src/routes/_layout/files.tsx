@@ -163,10 +163,40 @@ function UploadDialog({
   const [files, setFiles] = useState<File[]>([])
   const [uploading, setUploading] = useState(false)
   const [progress, setProgress] = useState(0)
+  const [isDragging, setIsDragging] = useState(false)
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFiles = Array.from(e.target.files || [])
     setFiles((prev) => [...prev, ...selectedFiles])
+  }
+
+  const handleDragEnter = (e: React.DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setIsDragging(true)
+  }
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    if (!isDragging) setIsDragging(true)
+  }
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setIsDragging(false)
+  }
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setIsDragging(false)
+
+    const droppedFiles = Array.from(e.dataTransfer.files || [])
+    if (droppedFiles.length > 0) {
+      setFiles((prev) => [...prev, ...droppedFiles])
+    }
   }
 
   const removeFile = (index: number) => {
@@ -183,7 +213,9 @@ function UploadDialog({
         await FilesService.uploadFile(files[i], currentFolderId)
         successCount++
       } catch (error) {
-        handleError(error)
+        showErrorToast(
+          error instanceof Error ? error.message : `上传 ${files[i].name} 失败`,
+        )
       }
       setProgress(((i + 1) / files.length) * 100)
     }
@@ -210,13 +242,22 @@ function UploadDialog({
         </DialogHeader>
 
         <div className="grid gap-4 py-4">
-          <button
-            type="button"
-            className="border-2 border-dashed rounded-lg p-8 text-center cursor-pointer hover:border-primary transition-colors w-full"
+          <div
+            className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors w-full ${
+              isDragging
+                ? "border-primary bg-primary/10"
+                : "hover:border-primary"
+            }`}
+            onDragEnter={handleDragEnter}
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
             onClick={() => document.getElementById("file-input")?.click()}
           >
             <Upload className="h-10 w-10 mx-auto mb-2 text-muted-foreground" />
-            <p className="text-sm font-medium">点击或拖拽文件到这里</p>
+            <p className="text-sm font-medium">
+              {isDragging ? "释放文件以上传" : "点击或拖拽文件到这里"}
+            </p>
             <p className="text-xs text-muted-foreground mt-1">
               支持常见格式，单文件最大 100MB
             </p>
@@ -227,7 +268,7 @@ function UploadDialog({
               className="hidden"
               onChange={handleFileSelect}
             />
-          </button>
+          </div>
 
           {files.length > 0 && (
             <div className="space-y-2">

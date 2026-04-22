@@ -238,7 +238,6 @@ async def upload_file(
     folder_id: Optional[str] = Form(None),
     name: Optional[str] = Form(None),
     description: Optional[str] = Form(None),
-    tags: List[str] = Form(default_factory=list),
 ) -> Any:
     if folder_id:
         folder = session.get(Folder, folder_id)
@@ -300,9 +299,6 @@ async def upload_file(
     session.add(db_file)
     session.commit()
     session.refresh(db_file)
-
-    if tags:
-        add_file_tags(session, db_file.id, tags, current_user.id)
 
     update_storage_usage(session, current_user.id, file_size)
 
