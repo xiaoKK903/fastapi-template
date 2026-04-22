@@ -18,11 +18,13 @@ import { Route as LayoutIndexRouteImport } from './routes/_layout/index'
 import { Route as LayoutTransactionsRouteImport } from './routes/_layout/transactions'
 import { Route as LayoutTasksRouteImport } from './routes/_layout/tasks'
 import { Route as LayoutSettingsRouteImport } from './routes/_layout/settings'
+import { Route as LayoutRecycleRouteImport } from './routes/_layout/recycle'
 import { Route as LayoutItemsRouteImport } from './routes/_layout/items'
 import { Route as LayoutHabitsRouteImport } from './routes/_layout/habits'
 import { Route as LayoutHabitStatsRouteImport } from './routes/_layout/habit-stats'
 import { Route as LayoutHabitCalendarRouteImport } from './routes/_layout/habit-calendar'
 import { Route as LayoutFinanceStatsRouteImport } from './routes/_layout/finance-stats'
+import { Route as LayoutFilesRouteImport } from './routes/_layout/files'
 import { Route as LayoutCategoriesRouteImport } from './routes/_layout/categories'
 import { Route as LayoutBudgetsRouteImport } from './routes/_layout/budgets'
 import { Route as LayoutAdminRouteImport } from './routes/_layout/admin'
@@ -71,6 +73,11 @@ const LayoutSettingsRoute = LayoutSettingsRouteImport.update({
   path: '/settings',
   getParentRoute: () => LayoutRoute,
 } as any)
+const LayoutRecycleRoute = LayoutRecycleRouteImport.update({
+  id: '/recycle',
+  path: '/recycle',
+  getParentRoute: () => LayoutRoute,
+} as any)
 const LayoutItemsRoute = LayoutItemsRouteImport.update({
   id: '/items',
   path: '/items',
@@ -94,6 +101,11 @@ const LayoutHabitCalendarRoute = LayoutHabitCalendarRouteImport.update({
 const LayoutFinanceStatsRoute = LayoutFinanceStatsRouteImport.update({
   id: '/finance-stats',
   path: '/finance-stats',
+  getParentRoute: () => LayoutRoute,
+} as any)
+const LayoutFilesRoute = LayoutFilesRouteImport.update({
+  id: '/files',
+  path: '/files',
   getParentRoute: () => LayoutRoute,
 } as any)
 const LayoutCategoriesRoute = LayoutCategoriesRouteImport.update({
@@ -121,11 +133,13 @@ export interface FileRoutesByFullPath {
   '/admin': typeof LayoutAdminRoute
   '/budgets': typeof LayoutBudgetsRoute
   '/categories': typeof LayoutCategoriesRoute
+  '/files': typeof LayoutFilesRoute
   '/finance-stats': typeof LayoutFinanceStatsRoute
   '/habit-calendar': typeof LayoutHabitCalendarRoute
   '/habit-stats': typeof LayoutHabitStatsRoute
   '/habits': typeof LayoutHabitsRoute
   '/items': typeof LayoutItemsRoute
+  '/recycle': typeof LayoutRecycleRoute
   '/settings': typeof LayoutSettingsRoute
   '/tasks': typeof LayoutTasksRoute
   '/transactions': typeof LayoutTransactionsRoute
@@ -138,11 +152,13 @@ export interface FileRoutesByTo {
   '/admin': typeof LayoutAdminRoute
   '/budgets': typeof LayoutBudgetsRoute
   '/categories': typeof LayoutCategoriesRoute
+  '/files': typeof LayoutFilesRoute
   '/finance-stats': typeof LayoutFinanceStatsRoute
   '/habit-calendar': typeof LayoutHabitCalendarRoute
   '/habit-stats': typeof LayoutHabitStatsRoute
   '/habits': typeof LayoutHabitsRoute
   '/items': typeof LayoutItemsRoute
+  '/recycle': typeof LayoutRecycleRoute
   '/settings': typeof LayoutSettingsRoute
   '/tasks': typeof LayoutTasksRoute
   '/transactions': typeof LayoutTransactionsRoute
@@ -158,11 +174,13 @@ export interface FileRoutesById {
   '/_layout/admin': typeof LayoutAdminRoute
   '/_layout/budgets': typeof LayoutBudgetsRoute
   '/_layout/categories': typeof LayoutCategoriesRoute
+  '/_layout/files': typeof LayoutFilesRoute
   '/_layout/finance-stats': typeof LayoutFinanceStatsRoute
   '/_layout/habit-calendar': typeof LayoutHabitCalendarRoute
   '/_layout/habit-stats': typeof LayoutHabitStatsRoute
   '/_layout/habits': typeof LayoutHabitsRoute
   '/_layout/items': typeof LayoutItemsRoute
+  '/_layout/recycle': typeof LayoutRecycleRoute
   '/_layout/settings': typeof LayoutSettingsRoute
   '/_layout/tasks': typeof LayoutTasksRoute
   '/_layout/transactions': typeof LayoutTransactionsRoute
@@ -179,11 +197,13 @@ export interface FileRouteTypes {
     | '/admin'
     | '/budgets'
     | '/categories'
+    | '/files'
     | '/finance-stats'
     | '/habit-calendar'
     | '/habit-stats'
     | '/habits'
     | '/items'
+    | '/recycle'
     | '/settings'
     | '/tasks'
     | '/transactions'
@@ -196,11 +216,13 @@ export interface FileRouteTypes {
     | '/admin'
     | '/budgets'
     | '/categories'
+    | '/files'
     | '/finance-stats'
     | '/habit-calendar'
     | '/habit-stats'
     | '/habits'
     | '/items'
+    | '/recycle'
     | '/settings'
     | '/tasks'
     | '/transactions'
@@ -215,11 +237,13 @@ export interface FileRouteTypes {
     | '/_layout/admin'
     | '/_layout/budgets'
     | '/_layout/categories'
+    | '/_layout/files'
     | '/_layout/finance-stats'
     | '/_layout/habit-calendar'
     | '/_layout/habit-stats'
     | '/_layout/habits'
     | '/_layout/items'
+    | '/_layout/recycle'
     | '/_layout/settings'
     | '/_layout/tasks'
     | '/_layout/transactions'
@@ -299,6 +323,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LayoutSettingsRouteImport
       parentRoute: typeof LayoutRoute
     }
+    '/_layout/recycle': {
+      id: '/_layout/recycle'
+      path: '/recycle'
+      fullPath: '/recycle'
+      preLoaderRoute: typeof LayoutRecycleRouteImport
+      parentRoute: typeof LayoutRoute
+    }
     '/_layout/items': {
       id: '/_layout/items'
       path: '/items'
@@ -334,6 +365,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LayoutFinanceStatsRouteImport
       parentRoute: typeof LayoutRoute
     }
+    '/_layout/files': {
+      id: '/_layout/files'
+      path: '/files'
+      fullPath: '/files'
+      preLoaderRoute: typeof LayoutFilesRouteImport
+      parentRoute: typeof LayoutRoute
+    }
     '/_layout/categories': {
       id: '/_layout/categories'
       path: '/categories'
@@ -362,11 +400,13 @@ interface LayoutRouteChildren {
   LayoutAdminRoute: typeof LayoutAdminRoute
   LayoutBudgetsRoute: typeof LayoutBudgetsRoute
   LayoutCategoriesRoute: typeof LayoutCategoriesRoute
+  LayoutFilesRoute: typeof LayoutFilesRoute
   LayoutFinanceStatsRoute: typeof LayoutFinanceStatsRoute
   LayoutHabitCalendarRoute: typeof LayoutHabitCalendarRoute
   LayoutHabitStatsRoute: typeof LayoutHabitStatsRoute
   LayoutHabitsRoute: typeof LayoutHabitsRoute
   LayoutItemsRoute: typeof LayoutItemsRoute
+  LayoutRecycleRoute: typeof LayoutRecycleRoute
   LayoutSettingsRoute: typeof LayoutSettingsRoute
   LayoutTasksRoute: typeof LayoutTasksRoute
   LayoutTransactionsRoute: typeof LayoutTransactionsRoute
@@ -377,11 +417,13 @@ const LayoutRouteChildren: LayoutRouteChildren = {
   LayoutAdminRoute: LayoutAdminRoute,
   LayoutBudgetsRoute: LayoutBudgetsRoute,
   LayoutCategoriesRoute: LayoutCategoriesRoute,
+  LayoutFilesRoute: LayoutFilesRoute,
   LayoutFinanceStatsRoute: LayoutFinanceStatsRoute,
   LayoutHabitCalendarRoute: LayoutHabitCalendarRoute,
   LayoutHabitStatsRoute: LayoutHabitStatsRoute,
   LayoutHabitsRoute: LayoutHabitsRoute,
   LayoutItemsRoute: LayoutItemsRoute,
+  LayoutRecycleRoute: LayoutRecycleRoute,
   LayoutSettingsRoute: LayoutSettingsRoute,
   LayoutTasksRoute: LayoutTasksRoute,
   LayoutTransactionsRoute: LayoutTransactionsRoute,

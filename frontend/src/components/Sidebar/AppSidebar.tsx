@@ -9,6 +9,9 @@ import {
   PieChart,
   Tag,
   CheckSquare,
+  FolderOpen,
+  Trash2,
+  Share2,
 } from "lucide-react"
 
 import { SidebarAppearance } from "@/components/Common/Appearance"
@@ -31,6 +34,8 @@ interface MenuConfig extends Item {
 const menuConfigs: MenuConfig[] = [
   { icon: Home, title: "Dashboard", path: "/" },
   { icon: Briefcase, title: "Items", path: "/items" },
+  { icon: FolderOpen, title: "文件管理", path: "/files" },
+  { icon: Trash2, title: "回收站", path: "/recycle" },
   { icon: Target, title: "习惯管理", path: "/habits" },
   { icon: CalendarIcon, title: "打卡日历", path: "/habit-calendar" },
   { icon: BarChart3, title: "习惯统计", path: "/habit-stats" },

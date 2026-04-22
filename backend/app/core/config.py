@@ -87,6 +87,18 @@ class Settings(BaseSettings):
     FIRST_SUPERUSER: EmailStr
     FIRST_SUPERUSER_PASSWORD: str
 
+    STORAGE_PATH: str = "./storage"
+    MAX_FILE_SIZE: int = 100 * 1024 * 1024
+    ALLOWED_EXTENSIONS: list[str] = [
+        "jpg", "jpeg", "png", "gif", "bmp", "webp", "svg",
+        "pdf", "doc", "docx", "xls", "xlsx", "ppt", "pptx",
+        "txt", "md", "json", "csv", "xml", "yaml", "yml",
+        "zip", "rar", "7z", "tar", "gz",
+        "mp4", "mp3", "wav", "avi", "mkv", "mov",
+    ]
+    DEFAULT_STORAGE_QUOTA: int = 2 * 1024 * 1024 * 1024
+    SHARE_LINK_EXPIRE_HOURS: int = 24
+
     def _check_default_secret(self, var_name: str, value: str | None) -> None:
         if value == "changethis":
             message = (

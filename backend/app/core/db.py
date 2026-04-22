@@ -48,6 +48,10 @@ def _init_permissions(session: Session) -> None:
         ResourceType.PERMISSION,
         ResourceType.OPERATION_LOG,
         ResourceType.TASK,
+        ResourceType.FILE,
+        ResourceType.FOLDER,
+        ResourceType.FILE_TAG,
+        ResourceType.FILE_SHARE,
     ]
     all_actions = [ActionType.CREATE, ActionType.READ, ActionType.UPDATE, ActionType.DELETE]
 
@@ -89,6 +93,10 @@ def _init_roles(session: Session) -> None:
                 f"{ResourceType.CATEGORY.value}:*",
                 f"{ResourceType.BUDGET.value}:*",
                 f"{ResourceType.TASK.value}:*",
+                f"{ResourceType.FILE.value}:*",
+                f"{ResourceType.FOLDER.value}:*",
+                f"{ResourceType.FILE_TAG.value}:*",
+                f"{ResourceType.FILE_SHARE.value}:*",
             ],
         },
         {
@@ -102,6 +110,8 @@ def _init_roles(session: Session) -> None:
                 f"{ResourceType.CATEGORY.value}:{ActionType.READ.value}",
                 f"{ResourceType.BUDGET.value}:{ActionType.READ.value}",
                 f"{ResourceType.TASK.value}:{ActionType.READ.value}",
+                f"{ResourceType.FILE.value}:{ActionType.READ.value}",
+                f"{ResourceType.FOLDER.value}:{ActionType.READ.value}",
             ],
         },
     ]
