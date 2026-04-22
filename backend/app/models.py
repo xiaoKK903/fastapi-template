@@ -646,14 +646,12 @@ class OperationLogBase(SQLModel):
     request_path: str | None = None
     request_method: str | None = None
     request_data: str | None = None
-    query_params: str | None = None
     response_status: int | None = None
-    response_data: str | None = None
-    duration_ms: int | None = Field(default=None, ge=0)
     ip_address: str | None = None
     user_agent: str | None = None
     success: bool = True
     error_message: str | None = None
+    duration_ms: int | None = Field(default=None, ge=0)
 
 
 class OperationLogCreate(OperationLogBase):
@@ -668,40 +666,6 @@ class OperationLogPublic(OperationLogBase):
 class OperationLogsPublic(SQLModel):
     data: list[OperationLogPublic]
     count: int
-
-
-class LogStatsByResource(SQLModel):
-    resource: str
-    count: int
-    avg_duration_ms: float | None = None
-
-
-class LogStatsByAction(SQLModel):
-    action: str
-    count: int
-    avg_duration_ms: float | None = None
-
-
-class LogStatsByUser(SQLModel):
-    user_id: str
-    user_email: str | None
-    count: int
-
-
-class LogStatsSummary(SQLModel):
-    total_logs: int
-    success_count: int
-    failed_count: int
-    success_rate: float
-    avg_duration_ms: float | None = None
-    top_resources: list[LogStatsByResource]
-    top_actions: list[LogStatsByAction]
-    top_users: list[LogStatsByUser]
-    recent_failures: list[OperationLogPublic]
-
-
-class Message(SQLModel):
-    message: str
 
 
 class OperationLog(OperationLogBase, table=True):
