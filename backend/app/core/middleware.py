@@ -83,6 +83,11 @@ class OperationLogMiddleware(BaseHTTPMiddleware):
             if ignored in request.url.path:
                 return await call_next(request)
 
+        resource_type = get_resource_type_from_path(request.url.path)
+
+        if resource_type == ResourceType.OPERATION_LOG:
+            return await call_next(request)
+
         request.state.operation_log_data = {
             "resource_name": None,
             "resource_id": None,
@@ -90,11 +95,10 @@ class OperationLogMiddleware(BaseHTTPMiddleware):
             "error_message": None,
         }
 
-        resource_type = get_resource_type_from_path(request.url.path)
         action = get_action_from_method(request.method)
 
         request_data = None
-        if resource_type and action:
+        if resource_type and action and request.method in ["POST", "PUT", "PATCH", "DELETE"]:
             try:
                 body = await request.json()
                 if body:
