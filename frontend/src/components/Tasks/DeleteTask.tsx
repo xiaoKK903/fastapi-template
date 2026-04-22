@@ -1,6 +1,4 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query"
-
-import { type TaskPublic, TasksService } from "@/services/TasksService"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -13,6 +11,7 @@ import {
 } from "@/components/ui/dialog"
 import { LoadingButton } from "@/components/ui/loading-button"
 import useCustomToast from "@/hooks/useCustomToast"
+import { type TaskPublic, TasksService } from "@/services/TasksService"
 import { handleError } from "@/utils"
 
 interface DeleteTaskProps {
@@ -47,7 +46,8 @@ const DeleteTask = ({ task, open, onOpenChange }: DeleteTaskProps) => {
         <DialogHeader>
           <DialogTitle>确认删除</DialogTitle>
           <DialogDescription>
-            确定要永久删除任务 <span className="font-semibold">{task.title}</span> 吗？
+            确定要永久删除任务{" "}
+            <span className="font-semibold">{task.title}</span> 吗？
             此操作不可撤销，任务及其所有子任务将被永久删除。
           </DialogDescription>
         </DialogHeader>

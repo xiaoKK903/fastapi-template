@@ -1,19 +1,27 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { createFileRoute } from "@tanstack/react-router"
-import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Check, X, Trash2 } from "lucide-react"
+import {
+  Calendar as CalendarIcon,
+  Check,
+  ChevronLeft,
+  ChevronRight,
+  Trash2,
+  X,
+} from "lucide-react"
 import { Suspense, useMemo, useState } from "react"
 
 import {
-  HabitsService,
-  HabitRecordsService,
-  type HabitPublic,
   type HabitCalendar,
   type HabitCalendarDay,
+  type HabitPublic,
   type HabitRecordCreate,
   type HabitRecordPublic,
-  type HabitRecordsPublic,
+  HabitRecordsService,
+  HabitsService,
 } from "@/client"
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import {
   Dialog,
   DialogContent,
@@ -30,8 +38,6 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Skeleton } from "@/components/ui/skeleton"
-import { Badge } from "@/components/ui/badge"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import useCustomToast from "@/hooks/useCustomToast"
 import { handleError } from "@/utils"
 
@@ -63,7 +69,7 @@ function formatDate(year: number, month: number, day: number): string {
 function getCalendarDays(
   calendar: HabitCalendar | undefined,
   year: number,
-  month: number
+  month: number,
 ): (HabitCalendarDay | null)[] {
   if (!calendar) return []
 
@@ -109,9 +115,14 @@ function getHabitsQueryOptions() {
   }
 }
 
-function getRecordsQueryOptions(habit_id: string, start_date: string, end_date: string) {
+function _getRecordsQueryOptions(
+  habit_id: string,
+  start_date: string,
+  end_date: string,
+) {
   return {
-    queryFn: () => HabitRecordsService.readHabitRecords({ habit_id, start_date, end_date }),
+    queryFn: () =>
+      HabitRecordsService.readHabitRecords({ habit_id, start_date, end_date }),
     queryKey: ["habit-records", habit_id, start_date, end_date],
     enabled: !!habit_id,
   }
@@ -123,7 +134,8 @@ function HabitCalendarContent() {
   const [isCheckInDialogOpen, setIsCheckInDialogOpen] = useState(false)
   const [selectedHabitId, setSelectedHabitId] = useState<string>("")
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false)
-  const [recordToDelete, setRecordToDelete] = useState<HabitRecordPublic | null>(null)
+  const [recordToDelete, setRecordToDelete] =
+    useState<HabitRecordPublic | null>(null)
 
   const queryClient = useQueryClient()
   const { showSuccessToast, showErrorToast } = useCustomToast()
@@ -131,20 +143,34 @@ function HabitCalendarContent() {
   const year = currentDate.getFullYear()
   const month = currentDate.getMonth() + 1
 
-  const { data: calendar, isLoading: isCalendarLoading, refetch: refetchCalendar } = useQuery(
-    getCalendarQueryOptions(year, month)
-  )
+  const {
+    data: calendar,
+    isLoading: isCalendarLoading,
+    refetch: refetchCalendar,
+  } = useQuery(getCalendarQueryOptions(year, month))
 
-  const { data: habits, isLoading: isHabitsLoading } = useQuery(getHabitsQueryOptions())
+  const { data: habits, isLoading: isHabitsLoading } = useQuery(
+    getHabitsQueryOptions(),
+  )
 
   const calendarDays = useMemo(
     () => getCalendarDays(calendar, year, month),
-    [calendar, year, month]
+    [calendar, year, month],
   )
 
   const monthNames = [
-    "一月", "二月", "三月", "四月", "五月", "六月",
-    "七月", "八月", "九月", "十月", "十一月", "十二月",
+    "一月",
+    "二月",
+    "三月",
+    "四月",
+    "五月",
+    "六月",
+    "七月",
+    "八月",
+    "九月",
+    "十月",
+    "十一月",
+    "十二月",
   ]
 
   const weekDays = ["日", "一", "二", "三", "四", "五", "六"]
@@ -230,31 +256,46 @@ function HabitCalendarContent() {
     const completionRate = day.completed_count / day.total_count
 
     if (completionRate === 1) {
-      return { status: "completed", color: "bg-green-500/20 text-green-600 dark:text-green-400 border-green-300 dark:border-green-700" }
+      return {
+        status: "completed",
+        color:
+          "bg-green-500/20 text-green-600 dark:text-green-400 border-green-300 dark:border-green-700",
+      }
     }
     if (completionRate > 0) {
-      return { status: "partial", color: "bg-yellow-500/20 text-yellow-600 dark:text-yellow-400 border-yellow-300 dark:border-yellow-700" }
+      return {
+        status: "partial",
+        color:
+          "bg-yellow-500/20 text-yellow-600 dark:text-yellow-400 border-yellow-300 dark:border-yellow-700",
+      }
     }
-    return { status: "incomplete", color: "bg-red-500/20 text-red-600 dark:text-red-400 border-red-300 dark:border-red-700" }
+    return {
+      status: "incomplete",
+      color:
+        "bg-red-500/20 text-red-600 dark:text-red-400 border-red-300 dark:border-red-700",
+    }
   }
 
-  const getCheckedHabitsForDay = (day: HabitCalendarDay | null): HabitPublic[] => {
+  const getCheckedHabitsForDay = (
+    day: HabitCalendarDay | null,
+  ): HabitPublic[] => {
     if (!day || !habits?.data) return []
-    return habits.data.filter(h => day.habit_ids.includes(h.id))
+    return habits.data.filter((h) => day.habit_ids.includes(h.id))
   }
 
-  const getUncheckedHabitsForDay = (day: HabitCalendarDay | null): HabitPublic[] => {
+  const getUncheckedHabitsForDay = (
+    day: HabitCalendarDay | null,
+  ): HabitPublic[] => {
     if (!day || !habits?.data) return habits?.data || []
-    return habits.data.filter(h => !day.habit_ids.includes(h.id))
+    return habits.data.filter((h) => !day.habit_ids.includes(h.id))
   }
 
   const isToday = (day: HabitCalendarDay | null): boolean => {
     if (!day) return false
     const today = new Date()
-    return day.date === formatDate(
-      today.getFullYear(),
-      today.getMonth() + 1,
-      today.getDate()
+    return (
+      day.date ===
+      formatDate(today.getFullYear(), today.getMonth() + 1, today.getDate())
     )
   }
 
@@ -297,18 +338,14 @@ function HabitCalendarContent() {
         <CardHeader className="pb-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={goToPreviousMonth}
-              >
+              <Button variant="ghost" size="icon" onClick={goToPreviousMonth}>
                 <ChevronLeft className="h-5 w-5" />
               </Button>
               <div className="flex items-center gap-2">
                 <Select
                   value={year.toString()}
                   onValueChange={(val) =>
-                    setCurrentDate(new Date(parseInt(val), month - 1, 1))
+                    setCurrentDate(new Date(parseInt(val, 10), month - 1, 1))
                   }
                 >
                   <SelectTrigger className="w-24">
@@ -329,11 +366,7 @@ function HabitCalendarContent() {
                   {monthNames[month - 1]}
                 </span>
               </div>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={goToNextMonth}
-              >
+              <Button variant="ghost" size="icon" onClick={goToNextMonth}>
                 <ChevronRight className="h-5 w-5" />
               </Button>
             </div>
@@ -439,7 +472,9 @@ function HabitCalendarContent() {
             <div className="space-y-4 max-h-96 overflow-y-auto">
               {getCheckedHabitsForDay(selectedDay).length > 0 && (
                 <div>
-                  <h4 className="text-sm font-medium text-muted-foreground mb-2">已打卡</h4>
+                  <h4 className="text-sm font-medium text-muted-foreground mb-2">
+                    已打卡
+                  </h4>
                   <div className="space-y-2">
                     {getCheckedHabitsForDay(selectedDay).map((habit) => (
                       <div
@@ -456,8 +491,8 @@ function HabitCalendarContent() {
                               {habit.frequency === "daily"
                                 ? "每日"
                                 : habit.frequency === "weekly"
-                                ? "每周"
-                                : "每月"}
+                                  ? "每周"
+                                  : "每月"}
                               · 目标 {habit.target_count} 次
                             </p>
                           </div>
@@ -467,7 +502,7 @@ function HabitCalendarContent() {
                           size="icon"
                           className="text-red-500 hover:text-red-600 hover:bg-red-50"
                           onClick={() => {
-                            if (selectedDay?.record_ids && selectedDay.record_ids[habit.id]) {
+                            if (selectedDay?.record_ids?.[habit.id]) {
                               const recordId = selectedDay.record_ids[habit.id]
                               const fakeRecord: HabitRecordPublic = {
                                 id: recordId,
@@ -492,7 +527,9 @@ function HabitCalendarContent() {
 
               {getUncheckedHabitsForDay(selectedDay).length > 0 && (
                 <div>
-                  <h4 className="text-sm font-medium text-muted-foreground mb-2">待打卡</h4>
+                  <h4 className="text-sm font-medium text-muted-foreground mb-2">
+                    待打卡
+                  </h4>
                   <div className="space-y-2">
                     {getUncheckedHabitsForDay(selectedDay).map((habit) => (
                       <div
@@ -520,8 +557,8 @@ function HabitCalendarContent() {
                               {habit.frequency === "daily"
                                 ? "每日"
                                 : habit.frequency === "weekly"
-                                ? "每周"
-                                : "每月"}
+                                  ? "每周"
+                                  : "每月"}
                               · 目标 {habit.target_count} 次
                             </p>
                           </div>
@@ -595,26 +632,28 @@ function HabitCalendarContent() {
 
 function HabitCalendarPage() {
   return (
-    <Suspense fallback={
-      <div className="flex flex-col gap-6">
-        <div className="flex items-center justify-between">
-          <Skeleton className="h-8 w-48" />
-          <Skeleton className="h-10 w-32" />
+    <Suspense
+      fallback={
+        <div className="flex flex-col gap-6">
+          <div className="flex items-center justify-between">
+            <Skeleton className="h-8 w-48" />
+            <Skeleton className="h-10 w-32" />
+          </div>
+          <Card>
+            <CardHeader>
+              <Skeleton className="h-6 w-32" />
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-7 gap-2">
+                {Array.from({ length: 35 }).map((_, i) => (
+                  <Skeleton key={i} className="h-16 w-full rounded-lg" />
+                ))}
+              </div>
+            </CardContent>
+          </Card>
         </div>
-        <Card>
-          <CardHeader>
-            <Skeleton className="h-6 w-32" />
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-7 gap-2">
-              {Array.from({ length: 35 }).map((_, i) => (
-                <Skeleton key={i} className="h-16 w-full rounded-lg" />
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    }>
+      }
+    >
       <HabitCalendarContent />
     </Suspense>
   )

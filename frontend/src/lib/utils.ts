@@ -13,7 +13,7 @@ export interface FlatTaskWithLevel extends TaskWithSubtasks {
 
 export function flattenTaskTree(
   tasks: TaskWithSubtasks[],
-  level: number = 0
+  level: number = 0,
 ): FlatTaskWithLevel[] {
   const result: FlatTaskWithLevel[] = []
 
@@ -36,7 +36,7 @@ export function flattenTaskTree(
 
 export function filterExpandedTasks(
   flatTasks: FlatTaskWithLevel[],
-  expandedIds: Set<string>
+  expandedIds: Set<string>,
 ): FlatTaskWithLevel[] {
   return flatTasks.filter((task) => {
     if (task.level === 0) return true

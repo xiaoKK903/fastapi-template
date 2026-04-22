@@ -4,15 +4,16 @@ import { Tag } from "lucide-react"
 import { Suspense, useState } from "react"
 
 import { CategoriesService } from "@/client"
-import { DataTable } from "@/components/Common/DataTable"
 import AddCategory from "@/components/Categories/AddCategory"
 import { columns } from "@/components/Categories/columns"
+import { DataTable } from "@/components/Common/DataTable"
 import PendingCategories from "@/components/Pending/PendingCategories"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 function getCategoriesQueryOptions(type?: string) {
   return {
-    queryFn: () => CategoriesService.readCategories({ type: type as any, limit: 100 }),
+    queryFn: () =>
+      CategoriesService.readCategories({ type: type as any, limit: 100 }),
     queryKey: ["categories", type],
   }
 }
@@ -32,7 +33,7 @@ function CategoriesTableContent() {
   const [activeTab, setActiveTab] = useState<string>("all")
 
   const { data: categories } = useSuspenseQuery(
-    getCategoriesQueryOptions(activeTab === "all" ? undefined : activeTab)
+    getCategoriesQueryOptions(activeTab === "all" ? undefined : activeTab),
   )
 
   if (categories.data.length === 0) {

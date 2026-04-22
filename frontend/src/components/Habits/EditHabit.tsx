@@ -26,6 +26,7 @@ import {
   FormMessage,
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
+import { LoadingButton } from "@/components/ui/loading-button"
 import {
   Select,
   SelectContent,
@@ -33,14 +34,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { LoadingButton } from "@/components/ui/loading-button"
 import useCustomToast from "@/hooks/useCustomToast"
 import { handleError } from "@/utils"
 
 const formSchema = z.object({
   name: z.string().min(1, { message: "习惯名称是必填项" }),
   frequency: z.enum(["daily", "weekly", "monthly"]).default("daily"),
-  target_count: z.coerce.number().int().min(1, { message: "目标次数至少为1" }).default(1),
+  target_count: z.coerce
+    .number()
+    .int()
+    .min(1, { message: "目标次数至少为1" })
+    .default(1),
   description: z.string().nullable().optional(),
 })
 
@@ -100,9 +104,7 @@ const EditHabit = ({ habit, onSuccess }: EditHabitProps) => {
           <form onSubmit={form.handleSubmit(onSubmit)}>
             <DialogHeader>
               <DialogTitle>编辑习惯</DialogTitle>
-              <DialogDescription>
-                更新习惯详情。
-              </DialogDescription>
+              <DialogDescription>更新习惯详情。</DialogDescription>
             </DialogHeader>
             <div className="grid gap-4 py-4">
               <FormField
@@ -160,7 +162,9 @@ const EditHabit = ({ habit, onSuccess }: EditHabitProps) => {
                           min={1}
                           {...field}
                           value={field.value ?? 1}
-                          onChange={(e) => field.onChange(parseInt(e.target.value) || 1)}
+                          onChange={(e) =>
+                            field.onChange(parseInt(e.target.value, 10) || 1)
+                          }
                         />
                       </FormControl>
                       <FormMessage />
@@ -176,7 +180,12 @@ const EditHabit = ({ habit, onSuccess }: EditHabitProps) => {
                   <FormItem>
                     <FormLabel>描述</FormLabel>
                     <FormControl>
-                      <Input placeholder="习惯描述（可选）" type="text" {...field} value={field.value ?? ""} />
+                      <Input
+                        placeholder="习惯描述（可选）"
+                        type="text"
+                        {...field}
+                        value={field.value ?? ""}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

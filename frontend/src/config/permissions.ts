@@ -68,14 +68,14 @@ export const BuiltinRoles = {
 export type BuiltinRole = (typeof BuiltinRoles)[keyof typeof BuiltinRoles]
 
 export const roleHierarchy: Record<string, string[]> = {
-  admin: ['admin', 'user', 'guest'],
-  user: ['user', 'guest'],
-  guest: ['guest'],
+  admin: ["admin", "user", "guest"],
+  user: ["user", "guest"],
+  guest: ["guest"],
 }
 
 export function hasRequiredRole(
   userRoles: string[],
-  requiredRole: string
+  requiredRole: string,
 ): boolean {
   for (const role of userRoles) {
     const inheritedRoles = roleHierarchy[role] || [role]
@@ -89,7 +89,7 @@ export function hasRequiredRole(
 export function canAccessMenu(
   menu: MenuPermission,
   isSuperuser: boolean,
-  userRoles: string[]
+  userRoles: string[],
 ): boolean {
   // 超级用户可以访问所有菜单
   if (isSuperuser) {
@@ -110,7 +110,7 @@ export function canAccessMenu(
 export function filterAccessibleMenus(
   menus: MenuPermission[],
   isSuperuser: boolean,
-  userRoles: string[]
+  userRoles: string[],
 ): MenuPermission[] {
   return menus.filter((menu) => canAccessMenu(menu, isSuperuser, userRoles))
 }

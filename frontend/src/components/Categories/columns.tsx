@@ -2,11 +2,11 @@ import type { ColumnDef } from "@tanstack/react-table"
 import { Check, Copy } from "lucide-react"
 
 import type { CategoryPublic } from "@/client"
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { useCopyToClipboard } from "@/hooks/useCopyToClipboard"
 import { cn } from "@/lib/utils"
 import { CategoryActionsMenu } from "./CategoryActionsMenu"
-import { Badge } from "@/components/ui/badge"
 
 function CopyId({ id }: { id: string }) {
   const [copiedText, copy] = useCopyToClipboard()
@@ -44,7 +44,7 @@ function getTypeVariant(type: string) {
   return type === "income" ? "default" : "destructive"
 }
 
-function getTypeColor(type: string) {
+function _getTypeColor(type: string) {
   return type === "income" ? "text-green-500" : "text-red-500"
 }
 
@@ -67,7 +67,9 @@ export const columns: ColumnDef<CategoryPublic>[] = [
         )}
         <span className="font-medium">{row.original.name}</span>
         {row.original.icon && (
-          <span className="text-xs text-muted-foreground">({row.original.icon})</span>
+          <span className="text-xs text-muted-foreground">
+            ({row.original.icon})
+          </span>
         )}
       </div>
     ),

@@ -4,8 +4,7 @@ import { Plus } from "lucide-react"
 import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
-
-import { type CategoryCreate } from "@/client"
+import { CategoriesService, type CategoryCreate } from "@/client"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -26,17 +25,11 @@ import {
   FormMessage,
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
-import {
-  RadioGroup,
-  RadioGroupItem,
-} from "@/components/ui/radio-group"
 import { Label } from "@/components/ui/label"
 import { LoadingButton } from "@/components/ui/loading-button"
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import useCustomToast from "@/hooks/useCustomToast"
 import { handleError } from "@/utils"
-import {
-  CategoriesService,
-} from "@/client"
 
 const formSchema = z.object({
   name: z.string().min(1, { message: "分类名称是必填项" }),
@@ -141,11 +134,21 @@ const AddCategory = () => {
                     >
                       <div className="flex items-center space-x-3">
                         <RadioGroupItem value="income" id="cat-income" />
-                        <Label htmlFor="cat-income" className="text-green-500 font-medium cursor-pointer">收入</Label>
+                        <Label
+                          htmlFor="cat-income"
+                          className="text-green-500 font-medium cursor-pointer"
+                        >
+                          收入
+                        </Label>
                       </div>
                       <div className="flex items-center space-x-3">
                         <RadioGroupItem value="expense" id="cat-expense" />
-                        <Label htmlFor="cat-expense" className="text-red-500 font-medium cursor-pointer">支出</Label>
+                        <Label
+                          htmlFor="cat-expense"
+                          className="text-red-500 font-medium cursor-pointer"
+                        >
+                          支出
+                        </Label>
                       </div>
                     </RadioGroup>
                     <FormMessage />
@@ -191,7 +194,11 @@ const AddCategory = () => {
                                 ? "border-primary bg-primary/10"
                                 : "border-muted hover:border-primary/50"
                             }`}
-                            onClick={() => field.onChange(field.value === icon.value ? "" : icon.value)}
+                            onClick={() =>
+                              field.onChange(
+                                field.value === icon.value ? "" : icon.value,
+                              )
+                            }
                           >
                             {icon.label}
                           </button>
@@ -221,7 +228,11 @@ const AddCategory = () => {
                                 : "border-transparent hover:scale-105"
                             }`}
                             style={{ backgroundColor: color.value }}
-                            onClick={() => field.onChange(field.value === color.value ? "" : color.value)}
+                            onClick={() =>
+                              field.onChange(
+                                field.value === color.value ? "" : color.value,
+                              )
+                            }
                             title={color.label}
                           />
                         ))}
@@ -239,7 +250,11 @@ const AddCategory = () => {
                   <FormItem>
                     <FormLabel>描述</FormLabel>
                     <FormControl>
-                      <Input placeholder="分类描述（可选）" type="text" {...field} />
+                      <Input
+                        placeholder="分类描述（可选）"
+                        type="text"
+                        {...field}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

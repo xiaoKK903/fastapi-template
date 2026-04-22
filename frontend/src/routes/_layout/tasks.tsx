@@ -1,29 +1,28 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { createFileRoute } from "@tanstack/react-router"
-import { Search, Trash2, ChevronDown, ChevronRight, TrendingUp } from "lucide-react"
-import { useState, useCallback, useMemo } from "react"
+import { Search, Trash2, TrendingUp } from "lucide-react"
+import { useCallback, useMemo, useState } from "react"
 import {
-  LineChart,
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Cell,
+  Legend,
   Line,
+  LineChart,
+  ResponsiveContainer,
+  Tooltip,
   XAxis,
   YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-  BarChart,
-  Bar,
-  Cell,
 } from "recharts"
-
-import { TasksService, TaskStatus, TaskPriority, type TaskStatistics, type TasksPublic, type TasksWithSubtasksPublic, type TaskWithSubtasks, type TaskTrend } from "@/services/TasksService"
 import { DataTable } from "@/components/Common/DataTable"
+import PendingTasks from "@/components/Pending/PendingTasks"
 import AddTask from "@/components/Tasks/AddTask"
 import { columns, createTreeColumns } from "@/components/Tasks/columns"
-import PendingTasks from "@/components/Pending/PendingTasks"
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
+import { Input } from "@/components/ui/input"
 import {
   Select,
   SelectContent,
@@ -31,12 +30,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { Input } from "@/components/ui/input"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import useCustomToast from "@/hooks/useCustomToast"
+import { filterExpandedTasks, flattenTaskTree } from "@/lib/utils"
+import {
+  type TaskPriority,
+  type TaskStatistics,
+  type TaskStatus,
+  type TasksPublic,
+  TasksService,
+  type TasksWithSubtasksPublic,
+  type TaskTrend,
+} from "@/services/TasksService"
 import { handleError } from "@/utils"
-import type { FlatTaskWithLevel } from "@/lib/utils"
-import { flattenTaskTree, filterExpandedTasks } from "@/lib/utils"
 
 function getTasksQueryOptions({
   status,
@@ -62,7 +68,14 @@ function getTasksQueryOptions({
         includeArchived,
         includeDeleted,
       }),
-    queryKey: ["tasks", status, priority, search, includeArchived, includeDeleted],
+    queryKey: [
+      "tasks",
+      status,
+      priority,
+      search,
+      includeArchived,
+      includeDeleted,
+    ],
     retry: 1,
   }
 }
@@ -89,7 +102,14 @@ function getTaskTreeQueryOptions({
         includeArchived,
         includeDeleted,
       }),
-    queryKey: ["tasksTree", status, priority, search, includeArchived, includeDeleted],
+    queryKey: [
+      "tasksTree",
+      status,
+      priority,
+      search,
+      includeArchived,
+      includeDeleted,
+    ],
     retry: 1,
   }
 }
@@ -140,9 +160,7 @@ function StatCard({
       <CardContent>
         <div className="flex items-center gap-2">
           <div className="text-2xl font-bold">{value}</div>
-          {badge && (
-            <Badge variant={badgeVariant || "outline"}>{badge}</Badge>
-          )}
+          {badge && <Badge variant={badgeVariant || "outline"}>{badge}</Badge>}
         </div>
       </CardContent>
     </Card>
@@ -195,11 +213,7 @@ function Statistics({
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
       <StatCard title="总任务数" value={stats.total_tasks} />
-      <StatCard
-        title="待办任务"
-        value={stats.todo_tasks}
-        badge="待处理"
-      />
+      <StatCard title="待办任务" value={stats.todo_tasks} badge="待处理" />
       <StatCard
         title="进行中"
         value={stats.in_progress_tasks}
@@ -294,11 +308,7 @@ function TaskTrendChart({
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={chartData}>
             <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-            <XAxis
-              dataKey="date"
-              stroke="#9CA3AF"
-              tick={{ fontSize: 12 }}
-            />
+            <XAxis dataKey="date" stroke="#9CA3AF" tick={{ fontSize: 12 }} />
             <YAxis
               stroke="#9CA3AF"
               tick={{ fontSize: 12 }}
@@ -440,10 +450,18 @@ function TasksTableContent({
           <Search className="h-8 w-8 text-muted-foreground" />
         </div>
         <h3 className="text-lg font-semibold">
-          {includeDeleted ? "回收站为空" : includeArchived ? "没有已归档的任务" : "您还没有任何任务"}
+          {includeDeleted
+            ? "回收站为空"
+            : includeArchived
+              ? "没有已归档的任务"
+              : "您还没有任何任务"}
         </h3>
         <p className="text-muted-foreground">
-          {includeDeleted ? "回收站中没有任务" : includeArchived ? "没有已归档的任务" : "添加一个新任务开始您的待办之旅"}
+          {includeDeleted
+            ? "回收站中没有任务"
+            : includeArchived
+              ? "没有已归档的任务"
+              : "添加一个新任务开始您的待办之旅"}
         </p>
       </div>
     )
@@ -467,11 +485,11 @@ function TasksTreeTableContent({
 }) {
   const treeColumns = useMemo(
     () => createTreeColumns({ expandedIds, onToggleExpand }),
-    [expandedIds, onToggleExpand]
+    [expandedIds, onToggleExpand],
   )
 
   const displayData = useMemo(() => {
-    if (!tasks || !tasks.data) return []
+    if (!tasks?.data) return []
     const flatTasks = flattenTaskTree(tasks.data)
     return filterExpandedTasks(flatTasks, expandedIds)
   }, [tasks, expandedIds])
@@ -540,18 +558,46 @@ function Tasks() {
   const queryClient = useQueryClient()
   const { showSuccessToast, showErrorToast } = useCustomToast()
 
-  const { data: stats, isLoading: statsLoading, error: statsError } = useQuery(getStatisticsQueryOptions())
-  const { data: trend, isLoading: trendLoading, error: trendError } = useQuery(getTaskTrendQueryOptions(7))
+  const {
+    data: stats,
+    isLoading: statsLoading,
+    error: statsError,
+  } = useQuery(getStatisticsQueryOptions())
+  const {
+    data: trend,
+    isLoading: trendLoading,
+    error: trendError,
+  } = useQuery(getTaskTrendQueryOptions(7))
 
   const includeArchived = activeTab === "archived"
   const includeDeleted = activeTab === "trash"
 
-  const { data: tasks, isLoading: tasksLoading, error: tasksError } = useQuery(
-    getTasksQueryOptions({ status, priority, search, includeArchived, includeDeleted })
+  const {
+    data: tasks,
+    isLoading: tasksLoading,
+    error: tasksError,
+  } = useQuery(
+    getTasksQueryOptions({
+      status,
+      priority,
+      search,
+      includeArchived,
+      includeDeleted,
+    }),
   )
 
-  const { data: tasksTree, isLoading: treeLoading, error: treeError } = useQuery(
-    getTaskTreeQueryOptions({ status, priority, search, includeArchived: false, includeDeleted: false })
+  const {
+    data: tasksTree,
+    isLoading: treeLoading,
+    error: treeError,
+  } = useQuery(
+    getTaskTreeQueryOptions({
+      status,
+      priority,
+      search,
+      includeArchived: false,
+      includeDeleted: false,
+    }),
   )
 
   const emptyTrashMutation = useMutation({
@@ -578,11 +624,19 @@ function Tasks() {
       <Statistics stats={stats} isLoading={statsLoading} error={statsError} />
 
       <div className="grid gap-4 md:grid-cols-2">
-        <TaskTrendChart trend={trend} isLoading={trendLoading} error={trendError} />
+        <TaskTrendChart
+          trend={trend}
+          isLoading={trendLoading}
+          error={trendError}
+        />
         <StatusDistributionChart stats={stats} />
       </div>
 
-      <Tabs defaultValue="active" value={activeTab} onValueChange={setActiveTab}>
+      <Tabs
+        defaultValue="active"
+        value={activeTab}
+        onValueChange={setActiveTab}
+      >
         <div className="flex items-center justify-between">
           <TabsList>
             <TabsTrigger value="active">进行中</TabsTrigger>
@@ -593,7 +647,9 @@ function Tasks() {
             <div className="flex gap-2">
               <Select
                 value={status || "all"}
-                onValueChange={(v) => setStatus(v === "all" ? undefined : (v as TaskStatus))}
+                onValueChange={(v) =>
+                  setStatus(v === "all" ? undefined : (v as TaskStatus))
+                }
               >
                 <SelectTrigger className="w-[120px]">
                   <SelectValue placeholder="状态" />
@@ -610,7 +666,9 @@ function Tasks() {
 
               <Select
                 value={priority || "all"}
-                onValueChange={(v) => setPriority(v === "all" ? undefined : (v as TaskPriority))}
+                onValueChange={(v) =>
+                  setPriority(v === "all" ? undefined : (v as TaskPriority))
+                }
               >
                 <SelectTrigger className="w-[120px]">
                   <SelectValue placeholder="优先级" />

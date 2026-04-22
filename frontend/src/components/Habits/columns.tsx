@@ -49,9 +49,7 @@ export const columns: ColumnDef<HabitPublic>[] = [
   {
     accessorKey: "name",
     header: "习惯名称",
-    cell: ({ row }) => (
-      <span className="font-medium">{row.original.name}</span>
-    ),
+    cell: ({ row }) => <span className="font-medium">{row.original.name}</span>,
   },
   {
     accessorKey: "frequency",
