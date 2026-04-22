@@ -1,4 +1,5 @@
 import {
+  Activity,
   BarChart3,
   Briefcase,
   Calendar as CalendarIcon,
@@ -43,17 +44,25 @@ const menuConfigs: MenuConfig[] = [
   { icon: Tag, title: "分类管理", path: "/categories" },
   { icon: PieChart, title: "预算管理", path: "/budgets" },
   { icon: BarChart3, title: "财务统计", path: "/finance-stats" },
-  { icon: Users, title: "Admin", path: "/admin" },
+  { icon: Activity, title: "日志管理", path: "/logs", isSuperuserOnly: true },
+  { icon: Users, title: "Admin", path: "/admin", isSuperuserOnly: true },
 ]
 
 export function AppSidebar() {
-  const { user: currentUser } = useAuth()
+  const { user: currentUser, isSuperuser } = useAuth()
 
-  const items: Item[] = menuConfigs.map((menu) => ({
-    icon: menu.icon,
-    title: menu.title,
-    path: menu.path,
-  }))
+  const items: Item[] = menuConfigs
+    .filter((menu) => {
+      if (menu.isSuperuserOnly && !isSuperuser) {
+        return false
+      }
+      return true
+    })
+    .map((menu) => ({
+      icon: menu.icon,
+      title: menu.title,
+      path: menu.path,
+    }))
 
   return (
     <Sidebar collapsible="icon">

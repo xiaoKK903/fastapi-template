@@ -2,7 +2,7 @@ from collections.abc import Generator
 from typing import Annotated
 
 import jwt
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, Request, status
 from fastapi.security import OAuth2PasswordBearer
 from jwt.exceptions import InvalidTokenError
 from pydantic import ValidationError
@@ -36,7 +36,7 @@ SessionDep = Annotated[Session, Depends(get_db)]
 TokenDep = Annotated[str, Depends(reusable_oauth2)]
 
 
-def get_current_user(session: SessionDep, token: TokenDep) -> User:
+def get_current_user(session: SessionDep, token: TokenDep, request: Request) -> User:
     try:
         payload = jwt.decode(
             token, settings.SECRET_KEY, algorithms=[security.ALGORITHM]
@@ -59,6 +59,8 @@ def get_current_user(session: SessionDep, token: TokenDep) -> User:
         raise HTTPException(status_code=400, detail="Inactive user")
     if user.is_banned:
         raise HTTPException(status_code=403, detail="User is banned")
+    
+    request.state.current_user = user
     return user
 
 
