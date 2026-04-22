@@ -19,6 +19,7 @@ import { Route as LayoutTransactionsRouteImport } from './routes/_layout/transac
 import { Route as LayoutTasksRouteImport } from './routes/_layout/tasks'
 import { Route as LayoutSettingsRouteImport } from './routes/_layout/settings'
 import { Route as LayoutRecycleRouteImport } from './routes/_layout/recycle'
+import { Route as LayoutLogsRouteImport } from './routes/_layout/logs'
 import { Route as LayoutItemsRouteImport } from './routes/_layout/items'
 import { Route as LayoutHabitsRouteImport } from './routes/_layout/habits'
 import { Route as LayoutHabitStatsRouteImport } from './routes/_layout/habit-stats'
@@ -76,6 +77,11 @@ const LayoutSettingsRoute = LayoutSettingsRouteImport.update({
 const LayoutRecycleRoute = LayoutRecycleRouteImport.update({
   id: '/recycle',
   path: '/recycle',
+  getParentRoute: () => LayoutRoute,
+} as any)
+const LayoutLogsRoute = LayoutLogsRouteImport.update({
+  id: '/logs',
+  path: '/logs',
   getParentRoute: () => LayoutRoute,
 } as any)
 const LayoutItemsRoute = LayoutItemsRouteImport.update({
@@ -139,6 +145,7 @@ export interface FileRoutesByFullPath {
   '/habit-stats': typeof LayoutHabitStatsRoute
   '/habits': typeof LayoutHabitsRoute
   '/items': typeof LayoutItemsRoute
+  '/logs': typeof LayoutLogsRoute
   '/recycle': typeof LayoutRecycleRoute
   '/settings': typeof LayoutSettingsRoute
   '/tasks': typeof LayoutTasksRoute
@@ -158,6 +165,7 @@ export interface FileRoutesByTo {
   '/habit-stats': typeof LayoutHabitStatsRoute
   '/habits': typeof LayoutHabitsRoute
   '/items': typeof LayoutItemsRoute
+  '/logs': typeof LayoutLogsRoute
   '/recycle': typeof LayoutRecycleRoute
   '/settings': typeof LayoutSettingsRoute
   '/tasks': typeof LayoutTasksRoute
@@ -180,6 +188,7 @@ export interface FileRoutesById {
   '/_layout/habit-stats': typeof LayoutHabitStatsRoute
   '/_layout/habits': typeof LayoutHabitsRoute
   '/_layout/items': typeof LayoutItemsRoute
+  '/_layout/logs': typeof LayoutLogsRoute
   '/_layout/recycle': typeof LayoutRecycleRoute
   '/_layout/settings': typeof LayoutSettingsRoute
   '/_layout/tasks': typeof LayoutTasksRoute
@@ -203,6 +212,7 @@ export interface FileRouteTypes {
     | '/habit-stats'
     | '/habits'
     | '/items'
+    | '/logs'
     | '/recycle'
     | '/settings'
     | '/tasks'
@@ -222,6 +232,7 @@ export interface FileRouteTypes {
     | '/habit-stats'
     | '/habits'
     | '/items'
+    | '/logs'
     | '/recycle'
     | '/settings'
     | '/tasks'
@@ -243,6 +254,7 @@ export interface FileRouteTypes {
     | '/_layout/habit-stats'
     | '/_layout/habits'
     | '/_layout/items'
+    | '/_layout/logs'
     | '/_layout/recycle'
     | '/_layout/settings'
     | '/_layout/tasks'
@@ -330,6 +342,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LayoutRecycleRouteImport
       parentRoute: typeof LayoutRoute
     }
+    '/_layout/logs': {
+      id: '/_layout/logs'
+      path: '/logs'
+      fullPath: '/logs'
+      preLoaderRoute: typeof LayoutLogsRouteImport
+      parentRoute: typeof LayoutRoute
+    }
     '/_layout/items': {
       id: '/_layout/items'
       path: '/items'
@@ -406,6 +425,7 @@ interface LayoutRouteChildren {
   LayoutHabitStatsRoute: typeof LayoutHabitStatsRoute
   LayoutHabitsRoute: typeof LayoutHabitsRoute
   LayoutItemsRoute: typeof LayoutItemsRoute
+  LayoutLogsRoute: typeof LayoutLogsRoute
   LayoutRecycleRoute: typeof LayoutRecycleRoute
   LayoutSettingsRoute: typeof LayoutSettingsRoute
   LayoutTasksRoute: typeof LayoutTasksRoute
@@ -423,6 +443,7 @@ const LayoutRouteChildren: LayoutRouteChildren = {
   LayoutHabitStatsRoute: LayoutHabitStatsRoute,
   LayoutHabitsRoute: LayoutHabitsRoute,
   LayoutItemsRoute: LayoutItemsRoute,
+  LayoutLogsRoute: LayoutLogsRoute,
   LayoutRecycleRoute: LayoutRecycleRoute,
   LayoutSettingsRoute: LayoutSettingsRoute,
   LayoutTasksRoute: LayoutTasksRoute,

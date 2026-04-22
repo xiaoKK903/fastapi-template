@@ -65,7 +65,7 @@ import {
 } from "@/components/ui/pagination"
 import useAuth from "@/hooks/useAuth"
 import { formatDateTime, formatDuration } from "@/utils"
-import { useCustomToast } from "@/hooks/useCustomToast"
+import useCustomToast from "@/hooks/useCustomToast"
 
 function getResourceLabel(resource: ResourceType): string {
   const labels: Record<ResourceType, string> = {
@@ -135,7 +135,7 @@ function LogsPage() {
   const navigate = useNavigate()
   const { isSuperuser } = useAuth()
   const queryClient = useQueryClient()
-  const { showSuccessToast, showErrorToast, showConfirmToast } = useCustomToast()
+  const { showSuccessToast, showErrorToast } = useCustomToast()
 
   const [currentPage, setCurrentPage] = useState(1)
   const [pageSize, setPageSize] = useState(20)
@@ -206,15 +206,9 @@ function LogsPage() {
     setDetailDialogOpen(true)
   }
 
-  const handleCleanLogs = async () => {
-    const confirmed = await showConfirmToast(
-      `确定要清理 ${confirmCleanDays} 天前的所有日志吗？`,
-      "此操作不可恢复",
-    )
-    if (confirmed) {
-      cleanMutation.mutate(confirmCleanDays)
-      setCleanDialogOpen(false)
-    }
+  const handleCleanLogs = () => {
+    cleanMutation.mutate(confirmCleanDays)
+    setCleanDialogOpen(false)
   }
 
   const renderStatsCards = () => {
