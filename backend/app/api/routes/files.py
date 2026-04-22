@@ -4,10 +4,9 @@ from pathlib import Path
 from typing import Any, Optional, List
 from urllib.parse import quote
 
-from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File, Form, Request, BackgroundTasks
+from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File as FileParam, Form, Request, BackgroundTasks
 from fastapi.responses import FileResponse, StreamingResponse
 from sqlmodel import col, func, select, or_
-import magic
 
 from app.api.deps import CurrentUser, SessionDep
 from app.core.config import settings
@@ -35,6 +34,46 @@ from app.utils.storage import (
     format_file_size,
     save_uploaded_file,
 )
+
+
+MIME_TYPE_MAP = {
+    "jpg": "image/jpeg",
+    "jpeg": "image/jpeg",
+    "png": "image/png",
+    "gif": "image/gif",
+    "bmp": "image/bmp",
+    "webp": "image/webp",
+    "svg": "image/svg+xml",
+    "pdf": "application/pdf",
+    "doc": "application/msword",
+    "docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    "xls": "application/vnd.ms-excel",
+    "xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    "ppt": "application/vnd.ms-powerpoint",
+    "pptx": "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+    "txt": "text/plain",
+    "md": "text/markdown",
+    "json": "application/json",
+    "csv": "text/csv",
+    "xml": "application/xml",
+    "yaml": "text/yaml",
+    "yml": "text/yaml",
+    "zip": "application/zip",
+    "rar": "application/vnd.rar",
+    "7z": "application/x-7z-compressed",
+    "tar": "application/x-tar",
+    "gz": "application/gzip",
+    "mp4": "video/mp4",
+    "avi": "video/x-msvideo",
+    "mkv": "video/x-matroska",
+    "mov": "video/quicktime",
+    "mp3": "audio/mpeg",
+    "wav": "audio/wav",
+}
+
+
+def get_mime_type(extension: str) -> str:
+    return MIME_TYPE_MAP.get(extension.lower(), "application/octet-stream")
 
 
 router = APIRouter(prefix="/files", tags=["files"])
@@ -195,7 +234,7 @@ async def upload_file(
     *,
     session: SessionDep,
     current_user: CurrentUser,
-    file: UploadFile = File(...),
+    file: UploadFile = FileParam(...),
     folder_id: Optional[str] = Form(None),
     name: Optional[str] = Form(None),
     description: Optional[str] = Form(None),
@@ -240,7 +279,7 @@ async def upload_file(
     with open(str(file_path), 'wb') as f:
         f.write(content)
 
-    mime_type = magic.from_buffer(content[:1024], mime=True) if file_size > 0 else None
+    mime_type = get_mime_type(extension) if file_size > 0 else None
     file_type = get_file_type(extension)
 
     original_name = filename

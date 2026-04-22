@@ -4,7 +4,6 @@ import secrets
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
 from typing import Optional
-import aiofiles
 from fastapi import UploadFile, HTTPException
 
 from app.core.config import settings
@@ -95,16 +94,13 @@ def get_share_expire_time(hours: Optional[int] = None) -> Optional[datetime]:
     return datetime.now(timezone.utc) + timedelta(hours=hours)
 
 
-async def save_uploaded_file(file: UploadFile, file_path: Path) -> int:
+def save_uploaded_file(content: bytes, file_path: Path) -> int:
     file_path.parent.mkdir(parents=True, exist_ok=True)
 
-    total_size = 0
-    async with aiofiles.open(str(file_path), 'wb') as out_file:
-        while content := await file.read(1024 * 1024):
-            await out_file.write(content)
-            total_size += len(content)
+    with open(str(file_path), 'wb') as out_file:
+        out_file.write(content)
 
-    return total_size
+    return len(content)
 
 
 def calculate_file_hash(file_path: Path, algorithm: str = "sha256") -> str:

@@ -1,3 +1,13 @@
+from app.utils.email import (
+    EmailData,
+    render_email_template,
+    send_email,
+    generate_test_email,
+    generate_reset_password_email,
+    generate_new_account_email,
+    generate_password_reset_token,
+    verify_password_reset_token,
+)
 from app.utils.storage import (
     get_user_storage_path,
     get_file_path,
@@ -17,6 +27,14 @@ from app.utils.storage import (
 )
 
 __all__ = [
+    "EmailData",
+    "render_email_template",
+    "send_email",
+    "generate_test_email",
+    "generate_reset_password_email",
+    "generate_new_account_email",
+    "generate_password_reset_token",
+    "verify_password_reset_token",
     "get_user_storage_path",
     "get_file_path",
     "generate_unique_filename",

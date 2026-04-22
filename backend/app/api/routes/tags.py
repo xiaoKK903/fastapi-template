@@ -169,7 +169,7 @@ def search_tags(
 def get_popular_tags(
     session: SessionDep,
     current_user: CurrentUser,
-    limit: int = Query(10, ge=1, le=100),
+    limit: int,
 ) -> Any:
     statement = (
         select(FileTag, func.count(FileTagLink.file_id).label("file_count"))
