@@ -81,8 +81,31 @@ const getUrl = (config: OpenAPIConfig, options: ApiRequestOptions): string => {
 	return options.query ? url + getQueryString(options.query) : url;
 };
 
-export const getFormData = (options: ApiRequestOptions): FormData | undefined => {
+export const getFormData = (options: ApiRequestOptions): FormData | URLSearchParams | undefined => {
 	if (options.formData) {
+		if (options.mediaType === 'application/x-www-form-urlencoded') {
+			const urlSearchParams = new URLSearchParams();
+			const process = (key: string, value: unknown) => {
+				if (isString(value)) {
+					urlSearchParams.append(key, value);
+				} else if (value !== undefined && value !== null) {
+					urlSearchParams.append(key, String(value));
+				}
+			};
+
+			Object.entries(options.formData)
+				.filter(([, value]) => value !== undefined && value !== null)
+				.forEach(([key, value]) => {
+					if (Array.isArray(value)) {
+						value.forEach(v => process(key, v));
+					} else {
+						process(key, value);
+					}
+				});
+
+			return urlSearchParams;
+		}
+
 		const formData = new FormData();
 
 		const process = (key: string, value: unknown) => {
