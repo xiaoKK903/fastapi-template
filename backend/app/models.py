@@ -1,7 +1,7 @@
 import uuid
 from datetime import date, datetime, timezone
 from enum import Enum
-from typing import List, Optional
+from typing import Any, List, Optional
 
 from pydantic import EmailStr
 from sqlalchemy import DateTime as SA_DateTime, JSON as SA_JSON
@@ -66,6 +66,21 @@ class ResourceType(str, Enum):
     FOLDER = "folder"
     FILE_TAG = "file_tag"
     FILE_SHARE = "file_share"
+    ARTICLE = "article"
+    ARTICLE_CATEGORY = "article_category"
+    ARTICLE_TAG = "article_tag"
+
+
+class ArticleStatus(str, Enum):
+    DRAFT = "draft"
+    PUBLISHED = "published"
+    ARCHIVED = "archived"
+
+
+class SensitiveLevel(str, Enum):
+    SAFE = "safe"
+    WARNING = "warning"
+    BLOCKED = "blocked"
 
 
 class ActionType(str, Enum):
@@ -1083,3 +1098,214 @@ class StorageQuota(StorageQuotaBase, table=True):
 User.folders = Relationship(back_populates="owner", cascade_delete=True)
 User.files = Relationship(back_populates="owner", cascade_delete=True)
 User.file_shares = Relationship(back_populates="owner", cascade_delete=True)
+
+
+class ArticleCategoryBase(SQLModel):
+    name: str = Field(min_length=1, max_length=100)
+    description: str | None = Field(default=None, max_length=500)
+    color: str | None = Field(default=None, max_length=20)
+    icon: str | None = Field(default=None, max_length=50)
+    parent_id: str | None = Field(default=None, foreign_key="articlecategory.id", nullable=True)
+
+
+class ArticleCategoryCreate(SQLModel):
+    name: str = Field(min_length=1, max_length=100)
+    description: str | None = Field(default=None, max_length=500)
+    color: str | None = None
+    icon: str | None = None
+    parent_id: str | None = None
+
+
+class ArticleCategoryUpdate(SQLModel):
+    name: str | None = Field(default=None, min_length=1, max_length=100)
+    description: str | None = Field(default=None, max_length=500)
+    color: str | None = None
+    icon: str | None = None
+    parent_id: str | None = None
+
+
+class ArticleCategoryPublic(ArticleCategoryBase):
+    id: str
+    owner_id: str
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
+    article_count: int = 0
+
+
+class ArticleCategoriesPublic(SQLModel):
+    data: list[ArticleCategoryPublic]
+    count: int
+
+
+class ArticleCategory(ArticleCategoryBase, table=True):
+    id: str = Field(default_factory=generate_uuid, primary_key=True)
+    created_at: datetime | None = Field(
+        default_factory=get_datetime_utc,
+        sa_type=SA_DateTime(timezone=True),
+    )
+    updated_at: datetime | None = Field(
+        default_factory=get_datetime_utc,
+        sa_type=SA_DateTime(timezone=True),
+    )
+    owner_id: str = Field(
+        foreign_key="user.id", nullable=False, ondelete="CASCADE"
+    )
+    owner: "User" = Relationship()
+    parent: Optional["ArticleCategory"] = Relationship(
+        back_populates="children",
+        sa_relationship_kwargs={"remote_side": "ArticleCategory.id"}
+    )
+    children: List["ArticleCategory"] = Relationship(back_populates="parent")
+    articles: List["Article"] = Relationship(back_populates="category")
+
+
+class ArticleTagBase(SQLModel):
+    name: str = Field(min_length=1, max_length=50)
+    color: str | None = Field(default=None, max_length=20)
+
+
+class ArticleTagCreate(SQLModel):
+    name: str = Field(min_length=1, max_length=50)
+    color: str | None = None
+
+
+class ArticleTagPublic(ArticleTagBase):
+    id: str
+    owner_id: str
+    created_at: datetime | None = None
+    article_count: int = 0
+
+
+class ArticleTagsPublic(SQLModel):
+    data: list[ArticleTagPublic]
+    count: int
+
+
+class ArticleTagLink(SQLModel, table=True):
+    article_id: str = Field(
+        foreign_key="article.id", primary_key=True, ondelete="CASCADE"
+    )
+    tag_id: str = Field(
+        foreign_key="articletag.id", primary_key=True, ondelete="CASCADE"
+    )
+
+
+class ArticleTag(ArticleTagBase, table=True):
+    id: str = Field(default_factory=generate_uuid, primary_key=True)
+    created_at: datetime | None = Field(
+        default_factory=get_datetime_utc,
+        sa_type=SA_DateTime(timezone=True),
+    )
+    owner_id: str = Field(
+        foreign_key="user.id", nullable=False, ondelete="CASCADE"
+    )
+    owner: "User" = Relationship()
+    articles: List["Article"] = Relationship(
+        back_populates="tags",
+        link_model=ArticleTagLink,
+    )
+
+
+class ArticleBase(SQLModel):
+    title: str = Field(min_length=1, max_length=500)
+    summary: str | None = Field(default=None, max_length=1000)
+    content: str | None = None
+    cover_image: str | None = Field(default=None, max_length=500)
+    status: ArticleStatus = Field(default=ArticleStatus.DRAFT)
+    category_id: str | None = Field(default=None, foreign_key="articlecategory.id", nullable=True)
+    views: int = Field(default=0, ge=0)
+    word_count: int = Field(default=0, ge=0)
+    is_deleted: bool = False
+    is_private: bool = True
+    sensitive_level: SensitiveLevel = Field(default=SensitiveLevel.SAFE)
+    sensitive_reason: str | None = Field(default=None, max_length=500)
+
+
+class ArticleCreate(SQLModel):
+    title: str = Field(min_length=1, max_length=500)
+    summary: str | None = Field(default=None, max_length=1000)
+    content: str | None = None
+    cover_image: str | None = None
+    status: ArticleStatus = ArticleStatus.DRAFT
+    category_id: str | None = None
+    tag_ids: list[str] | None = None
+    is_private: bool = True
+
+
+class ArticleUpdate(SQLModel):
+    title: str | None = Field(default=None, min_length=1, max_length=500)
+    summary: str | None = Field(default=None, max_length=1000)
+    content: str | None = None
+    cover_image: str | None = None
+    status: ArticleStatus | None = None
+    category_id: str | None = None
+    tag_ids: list[str] | None = None
+    is_private: bool | None = None
+
+
+class ArticlePublic(ArticleBase):
+    id: str
+    owner_id: str
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
+    published_at: datetime | None = None
+    category_name: str | None = None
+    category_color: str | None = None
+    tag_names: list[str] = []
+    tag_colors: list[str] = []
+
+
+class ArticlesPublic(SQLModel):
+    data: list[ArticlePublic]
+    count: int
+
+
+class ArticleStatistics(SQLModel):
+    total_articles: int = 0
+    draft_articles: int = 0
+    published_articles: int = 0
+    archived_articles: int = 0
+    deleted_articles: int = 0
+    total_views: int = 0
+    total_words: int = 0
+    category_distribution: list[dict[str, Any]] = []
+
+
+class ArchiveMonth(SQLModel):
+    year: int
+    month: int
+    article_count: int
+
+
+class ArticleArchive(SQLModel):
+    months: list[ArchiveMonth]
+
+
+class Article(ArticleBase, table=True):
+    id: str = Field(default_factory=generate_uuid, primary_key=True)
+    created_at: datetime | None = Field(
+        default_factory=get_datetime_utc,
+        sa_type=SA_DateTime(timezone=True),
+    )
+    updated_at: datetime | None = Field(
+        default_factory=get_datetime_utc,
+        sa_type=SA_DateTime(timezone=True),
+    )
+    published_at: datetime | None = Field(
+        default=None,
+        sa_type=SA_DateTime(timezone=True),
+    )
+    owner_id: str = Field(
+        foreign_key="user.id", nullable=False, ondelete="CASCADE"
+    )
+    owner: "User" = Relationship()
+    category: ArticleCategory | None = Relationship(back_populates="articles")
+    tags: List["ArticleTag"] = Relationship(
+        back_populates="articles",
+        link_model=ArticleTagLink,
+    )
+
+
+User.article_categories = Relationship(back_populates="owner", cascade_delete=True)
+User.article_tags = Relationship(back_populates="owner", cascade_delete=True)
+User.articles = Relationship(back_populates="owner", cascade_delete=True)
