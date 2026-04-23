@@ -13,28 +13,7 @@ import {
 } from "lucide-react"
 import { useEffect, useState } from "react"
 import { useForm } from "react-hook-form"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form"
-import { Input } from "@/components/ui/input"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
-import { Separator } from "@/components/ui/separator"
-import { Switch } from "@/components/ui/switch"
-import { Textarea } from "@/components/ui/textarea"
+import { Badge, Button, Card, CardContent, CardHeader, CardTitle, Checkbox, Form, FormControl, FormField, FormItem, FormLabel, FormMessage, Input, Separator, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Textarea } from "@/components/ui"
 import useCustomToast from "@/hooks/useCustomToast"
 import {
   ArticleStatus,
@@ -42,11 +21,15 @@ import {
   type ArticleUpdate,
   ArticlesService,
   type ArticleCreate,
-  type ArticleCategoryPublic,
-  ArticleCategoriesService,
-  type ArticleTagPublic,
-  ArticleTagsService,
 } from "@/services/ArticlesService"
+import {
+  ArticleCategoriesService,
+  type ArticleCategoryPublic,
+} from "@/services/ArticleCategoriesService"
+import {
+  ArticleTagsService,
+  type ArticleTagPublic,
+} from "@/services/ArticleTagsService"
 import { handleError } from "@/utils"
 
 export const Route = createFileRoute("/_layout/articles/$id")({
@@ -142,7 +125,7 @@ function ArticleEditorPage() {
       showSuccessToast("文章创建成功")
       queryClient.invalidateQueries({ queryKey: ["articles"] })
       queryClient.invalidateQueries({ queryKey: ["articleStatistics"] })
-      navigate({ to: "/_layout/articles/$id", params: { id: result.id } })
+      navigate({ to: "/articles/$id", params: { id: result.id } })
     },
     onError: handleError.bind(showErrorToast),
   })
@@ -187,7 +170,7 @@ function ArticleEditorPage() {
       showSuccessToast("文章已移至回收站")
       queryClient.invalidateQueries({ queryKey: ["articles"] })
       queryClient.invalidateQueries({ queryKey: ["articleStatistics"] })
-      navigate({ to: "/_layout/articles" })
+      navigate({ to: "/articles" })
     },
     onError: handleError.bind(showErrorToast),
   })
@@ -527,7 +510,7 @@ function ArticleEditorPage() {
                             </p>
                           </div>
                           <FormControl>
-                            <Switch
+                            <Checkbox
                               checked={field.value}
                               onCheckedChange={field.onChange}
                             />
