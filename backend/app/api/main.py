@@ -19,6 +19,9 @@ from app.api.routes.files import router as files_router
 from app.api.routes.recycle import router as recycle_router
 from app.api.routes.shares import router as shares_router
 from app.api.routes.tags import router as tags_router
+from app.api.routes.article_categories import router as article_categories_router
+from app.api.routes.article_tags import router as article_tags_router
+from app.api.routes.articles import router as articles_router
 from app.core.config import settings
 
 api_router = APIRouter()
@@ -40,6 +43,9 @@ api_router.include_router(files_router)
 api_router.include_router(recycle_router)
 api_router.include_router(shares_router)
 api_router.include_router(tags_router)
+api_router.include_router(article_categories_router)
+api_router.include_router(article_tags_router)
+api_router.include_router(articles_router)
 
 
 if settings.ENVIRONMENT == "local":

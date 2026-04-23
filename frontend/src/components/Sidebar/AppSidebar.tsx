@@ -1,6 +1,7 @@
 import {
   Activity,
   BarChart3,
+  BookOpen,
   Briefcase,
   Calendar as CalendarIcon,
   CheckSquare,
@@ -33,6 +34,7 @@ interface MenuConfig extends Item {
 
 const menuConfigs: MenuConfig[] = [
   { icon: Home, title: "Dashboard", path: "/" },
+  { icon: BookOpen, title: "文章管理", path: "/articles" },
   { icon: Briefcase, title: "Items", path: "/items" },
   { icon: FolderOpen, title: "文件管理", path: "/files" },
   { icon: Trash2, title: "回收站", path: "/recycle" },

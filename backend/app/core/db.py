@@ -52,6 +52,9 @@ def _init_permissions(session: Session) -> None:
         ResourceType.FOLDER,
         ResourceType.FILE_TAG,
         ResourceType.FILE_SHARE,
+        ResourceType.ARTICLE,
+        ResourceType.ARTICLE_CATEGORY,
+        ResourceType.ARTICLE_TAG,
     ]
     all_actions = [ActionType.CREATE, ActionType.READ, ActionType.UPDATE, ActionType.DELETE]
 
@@ -97,6 +100,9 @@ def _init_roles(session: Session) -> None:
                 f"{ResourceType.FOLDER.value}:*",
                 f"{ResourceType.FILE_TAG.value}:*",
                 f"{ResourceType.FILE_SHARE.value}:*",
+                f"{ResourceType.ARTICLE.value}:*",
+                f"{ResourceType.ARTICLE_CATEGORY.value}:*",
+                f"{ResourceType.ARTICLE_TAG.value}:*",
             ],
         },
         {
