@@ -30,6 +30,7 @@ import { Route as LayoutCategoriesRouteImport } from './routes/_layout/categorie
 import { Route as LayoutBudgetsRouteImport } from './routes/_layout/budgets'
 import { Route as LayoutArticlesRouteImport } from './routes/_layout/articles'
 import { Route as LayoutAdminRouteImport } from './routes/_layout/admin'
+import { Route as LayoutArticlesIndexRouteImport } from './routes/_layout/articles.index'
 import { Route as LayoutArticlesIdRouteImport } from './routes/_layout/articles.$id'
 
 const SignupRoute = SignupRouteImport.update({
@@ -136,6 +137,11 @@ const LayoutAdminRoute = LayoutAdminRouteImport.update({
   path: '/admin',
   getParentRoute: () => LayoutRoute,
 } as any)
+const LayoutArticlesIndexRoute = LayoutArticlesIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => LayoutArticlesRoute,
+} as any)
 const LayoutArticlesIdRoute = LayoutArticlesIdRouteImport.update({
   id: '/$id',
   path: '/$id',
@@ -164,6 +170,7 @@ export interface FileRoutesByFullPath {
   '/tasks': typeof LayoutTasksRoute
   '/transactions': typeof LayoutTransactionsRoute
   '/articles/$id': typeof LayoutArticlesIdRoute
+  '/articles/': typeof LayoutArticlesIndexRoute
 }
 export interface FileRoutesByTo {
   '/login': typeof LoginRoute
@@ -171,7 +178,6 @@ export interface FileRoutesByTo {
   '/reset-password': typeof ResetPasswordRoute
   '/signup': typeof SignupRoute
   '/admin': typeof LayoutAdminRoute
-  '/articles': typeof LayoutArticlesRouteWithChildren
   '/budgets': typeof LayoutBudgetsRoute
   '/categories': typeof LayoutCategoriesRoute
   '/files': typeof LayoutFilesRoute
@@ -187,6 +193,7 @@ export interface FileRoutesByTo {
   '/transactions': typeof LayoutTransactionsRoute
   '/': typeof LayoutIndexRoute
   '/articles/$id': typeof LayoutArticlesIdRoute
+  '/articles': typeof LayoutArticlesIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -212,6 +219,7 @@ export interface FileRoutesById {
   '/_layout/transactions': typeof LayoutTransactionsRoute
   '/_layout/': typeof LayoutIndexRoute
   '/_layout/articles/$id': typeof LayoutArticlesIdRoute
+  '/_layout/articles/': typeof LayoutArticlesIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -237,6 +245,7 @@ export interface FileRouteTypes {
     | '/tasks'
     | '/transactions'
     | '/articles/$id'
+    | '/articles/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/login'
@@ -244,7 +253,6 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/signup'
     | '/admin'
-    | '/articles'
     | '/budgets'
     | '/categories'
     | '/files'
@@ -260,6 +268,7 @@ export interface FileRouteTypes {
     | '/transactions'
     | '/'
     | '/articles/$id'
+    | '/articles'
   id:
     | '__root__'
     | '/_layout'
@@ -284,6 +293,7 @@ export interface FileRouteTypes {
     | '/_layout/transactions'
     | '/_layout/'
     | '/_layout/articles/$id'
+    | '/_layout/articles/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -443,6 +453,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LayoutAdminRouteImport
       parentRoute: typeof LayoutRoute
     }
+    '/_layout/articles/': {
+      id: '/_layout/articles/'
+      path: '/'
+      fullPath: '/articles/'
+      preLoaderRoute: typeof LayoutArticlesIndexRouteImport
+      parentRoute: typeof LayoutArticlesRoute
+    }
     '/_layout/articles/$id': {
       id: '/_layout/articles/$id'
       path: '/$id'
@@ -455,10 +472,12 @@ declare module '@tanstack/react-router' {
 
 interface LayoutArticlesRouteChildren {
   LayoutArticlesIdRoute: typeof LayoutArticlesIdRoute
+  LayoutArticlesIndexRoute: typeof LayoutArticlesIndexRoute
 }
 
 const LayoutArticlesRouteChildren: LayoutArticlesRouteChildren = {
   LayoutArticlesIdRoute: LayoutArticlesIdRoute,
+  LayoutArticlesIndexRoute: LayoutArticlesIndexRoute,
 }
 
 const LayoutArticlesRouteWithChildren = LayoutArticlesRoute._addFileChildren(

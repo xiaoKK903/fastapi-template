@@ -63,6 +63,19 @@ import {
 } from "./card"
 import { Skeleton } from "./skeleton"
 import { Alert, AlertTitle, AlertDescription } from "./alert"
+import { Textarea } from "./textarea"
+import { Separator } from "./separator"
+import { Checkbox } from "./checkbox"
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+  useFormField,
+} from "./form"
 
 export {
   React,
@@ -123,4 +136,15 @@ export {
   Alert,
   AlertTitle,
   AlertDescription,
+  Textarea,
+  Separator,
+  Checkbox,
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+  useFormField,
 }
