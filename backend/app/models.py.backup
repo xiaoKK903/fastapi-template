@@ -556,9 +556,7 @@ class User(UserBase, table=True):
     file_shares: list["FileShare"] = Relationship(back_populates="owner", cascade_delete=True)
     schedules: list["Schedule"] = Relationship(back_populates="owner", cascade_delete=True)
     pomodoro_sessions: list["PomodoroSession"] = Relationship(back_populates="owner", cascade_delete=True)
-    pomodoro_settings: Optional["PomodoroSettings"] = Relationship(back_populates="owner", cascade_delete=True)
-    media_collections: list["MediaCollection"] = Relationship(back_populates="owner", cascade_delete=True)
-    media_tags: list["MediaTag"] = Relationship(back_populates="owner", cascade_delete=True)
+    pomodoro_settings: "PomodoroSettings | None" = Relationship(back_populates="owner", uselist=False, cascade_delete=True)
 
 
 class Category(CategoryBase, table=True):
@@ -1314,10 +1312,6 @@ class Article(ArticleBase, table=True):
 User.article_categories = Relationship(back_populates="owner", cascade_delete=True)
 User.article_tags = Relationship(back_populates="owner", cascade_delete=True)
 User.articles = Relationship(back_populates="owner", cascade_delete=True)
-User.pomodoro_sessions = Relationship(back_populates="owner", cascade_delete=True)
-User.pomodoro_settings = Relationship(back_populates="owner", cascade_delete=True)
-User.media_collections = Relationship(back_populates="owner", cascade_delete=True)
-User.media_tags = Relationship(back_populates="owner", cascade_delete=True)
 
 
 class ScheduleColor(str, Enum):
@@ -1573,167 +1567,3 @@ class PomodoroSettings(PomodoroSettingsBase, table=True):
         sa_type=SA_DateTime(timezone=True),
     )
     owner: "User" = Relationship(back_populates="pomodoro_settings")
-
-
-class MediaType(str, Enum):
-    BOOK = "book"
-    MOVIE = "movie"
-    TV_SHOW = "tv_show"
-
-
-class MediaStatus(str, Enum):
-    WANT_TO_WATCH = "want_to_watch"
-    WATCHING = "watching"
-    COMPLETED = "completed"
-    ON_HOLD = "on_hold"
-    DROPPED = "dropped"
-
-
-class MediaCollectionBase(SQLModel):
-    title: str = Field(min_length=1, max_length=500)
-    original_title: str | None = Field(default=None, max_length=500)
-    media_type: MediaType = Field(default=MediaType.BOOK)
-    status: MediaStatus = Field(default=MediaType.WANT_TO_WATCH)
-    rating: float | None = Field(default=None, ge=0, le=10)
-    description: str | None = Field(default=None, max_length=5000)
-    notes: str | None = Field(default=None, max_length=2000)
-    cover_image: str | None = Field(default=None, max_length=500)
-    year: int | None = Field(default=None, ge=1000, le=2100)
-    genre: str | None = Field(default=None, max_length=500)
-    author: str | None = Field(default=None, max_length=500)
-    director: str | None = Field(default=None, max_length=500)
-    episodes: int | None = Field(default=None, ge=0)
-    is_private: bool = Field(default=False)
-
-
-class MediaCollectionCreate(SQLModel):
-    title: str = Field(min_length=1, max_length=500)
-    original_title: str | None = Field(default=None, max_length=500)
-    media_type: MediaType = Field(default=MediaType.BOOK)
-    status: MediaStatus = Field(default=MediaType.WANT_TO_WATCH)
-    rating: float | None = Field(default=None, ge=0, le=10)
-    description: str | None = Field(default=None, max_length=5000)
-    notes: str | None = Field(default=None, max_length=2000)
-    cover_image: str | None = Field(default=None, max_length=500)
-    year: int | None = Field(default=None, ge=1000, le=2100)
-    genre: str | None = Field(default=None, max_length=500)
-    author: str | None = Field(default=None, max_length=500)
-    director: str | None = Field(default=None, max_length=500)
-    episodes: int | None = Field(default=None, ge=0)
-    is_private: bool = Field(default=False)
-    tag_ids: list[str] = Field(default_factory=list)
-
-
-class MediaCollectionUpdate(SQLModel):
-    title: str | None = Field(default=None, min_length=1, max_length=500)
-    original_title: str | None = Field(default=None, max_length=500)
-    media_type: MediaType | None = None
-    status: MediaStatus | None = None
-    rating: float | None = Field(default=None, ge=0, le=10)
-    description: str | None = Field(default=None, max_length=5000)
-    notes: str | None = Field(default=None, max_length=2000)
-    cover_image: str | None = Field(default=None, max_length=500)
-    year: int | None = Field(default=None, ge=1000, le=2100)
-    genre: str | None = Field(default=None, max_length=500)
-    author: str | None = Field(default=None, max_length=500)
-    director: str | None = Field(default=None, max_length=500)
-    episodes: int | None = Field(default=None, ge=0)
-    is_private: bool | None = None
-    tag_ids: list[str] | None = None
-
-
-class MediaCollectionPublic(MediaCollectionBase):
-    id: str
-    owner_id: str
-    created_at: datetime | None = None
-    updated_at: datetime | None = None
-    completed_at: datetime | None = None
-    tag_names: list[str] = []
-
-
-class MediaCollectionsPublic(SQLModel):
-    data: list[MediaCollectionPublic]
-    count: int
-
-
-class MediaCollectionStatistics(SQLModel):
-    total_items: int
-    want_to_watch: int
-    watching: int
-    completed: int
-    on_hold: int
-    dropped: int
-    books: int
-    movies: int
-    tv_shows: int
-    average_rating: float | None = None
-
-
-class MediaTagBase(SQLModel):
-    name: str = Field(min_length=1, max_length=100)
-    color: str | None = Field(default=None, max_length=20)
-
-
-class MediaTagCreate(MediaTagBase):
-    pass
-
-
-class MediaTagPublic(MediaTagBase):
-    id: str
-    owner_id: str
-    media_count: int = 0
-    created_at: datetime | None = None
-
-
-class MediaTagsPublic(SQLModel):
-    data: list[MediaTagPublic]
-    count: int
-
-
-class MediaCollectionTagLink(SQLModel, table=True):
-    collection_id: str = Field(
-        foreign_key="mediacollection.id", primary_key=True, ondelete="CASCADE"
-    )
-    tag_id: str = Field(
-        foreign_key="mediatag.id", primary_key=True, ondelete="CASCADE"
-    )
-
-
-class MediaTag(MediaTagBase, table=True):
-    id: str = Field(default_factory=generate_uuid, primary_key=True)
-    owner_id: str = Field(
-        foreign_key="user.id", nullable=False, ondelete="CASCADE"
-    )
-    created_at: datetime | None = Field(
-        default_factory=get_datetime_utc,
-        sa_type=SA_DateTime(timezone=True),
-    )
-    collections: list["MediaCollection"] = Relationship(
-        back_populates="tags",
-        link_model=MediaCollectionTagLink,
-    )
-    owner: "User" = Relationship(back_populates="media_tags")
-
-
-class MediaCollection(MediaCollectionBase, table=True):
-    id: str = Field(default_factory=generate_uuid, primary_key=True)
-    owner_id: str = Field(
-        foreign_key="user.id", nullable=False, ondelete="CASCADE"
-    )
-    created_at: datetime | None = Field(
-        default_factory=get_datetime_utc,
-        sa_type=SA_DateTime(timezone=True),
-    )
-    updated_at: datetime | None = Field(
-        default_factory=get_datetime_utc,
-        sa_type=SA_DateTime(timezone=True),
-    )
-    completed_at: datetime | None = Field(
-        default=None,
-        sa_type=SA_DateTime(timezone=True),
-    )
-    tags: list[MediaTag] = Relationship(
-        back_populates="collections",
-        link_model=MediaCollectionTagLink,
-    )
-    owner: "User" = Relationship(back_populates="media_collections")

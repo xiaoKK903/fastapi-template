@@ -27,7 +27,8 @@ function Layout() {
   const { logout, user, isLoading, isAuthenticated } = useAuth()
 
   useEffect(() => {
-    if (isLoggedIn() && !isAuthenticated && !isLoading) {
+    const hasToken = isLoggedIn()
+    if (hasToken && !isAuthenticated && !isLoading) {
       window.location.href = "/login"
     }
   }, [isAuthenticated, isLoading])
