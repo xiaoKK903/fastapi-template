@@ -98,17 +98,18 @@ class OperationLogMiddleware(BaseHTTPMiddleware):
 
         request_data = None
         if resource_type and action and request.method in ["POST", "PUT", "PATCH", "DELETE"]:
-            try:
-                body = await request.json()
-                if body:
-                    if "password" in body:
-                        body["password"] = "********"
-                    if "new_password" in body:
-                        body["new_password"] = "********"
-                    request_data = json.dumps(body, ensure_ascii=False)
-                    request.state.operation_log_data["request_data"] = request_data
-            except Exception:
-                pass
+            if "/login/access-token" not in request.url.path and "/reset-password" not in request.url.path:
+                try:
+                    body = await request.json()
+                    if body:
+                        if "password" in body:
+                            body["password"] = "********"
+                        if "new_password" in body:
+                            body["new_password"] = "********"
+                        request_data = json.dumps(body, ensure_ascii=False)
+                        request.state.operation_log_data["request_data"] = request_data
+                except Exception:
+                    pass
 
         auth_header = request.headers.get("authorization", "")
         user_id, user_email = None, None
