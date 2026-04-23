@@ -1,5 +1,7 @@
 import json
 import time
+import uuid
+from contextvars import ContextVar
 from typing import Any
 
 import jwt
@@ -11,8 +13,16 @@ from sqlmodel import Session, select
 from app.core import security
 from app.core.config import settings
 from app.core.db import engine
-from app.core.logging import log_request, log_error
+from app.core.logging import logger, log_request, log_error
 from app.models import ActionType, OperationLog, ResourceType, User
+
+
+request_id_ctx: ContextVar[str] = ContextVar("request_id", default="")
+
+
+def get_request_id() -> str:
+    return request_id_ctx.get()
+
 
 IGNORED_PATHS = [
     "/health",
@@ -42,6 +52,7 @@ def get_resource_type_from_path(path: str) -> ResourceType | None:
         "/tags": ResourceType.FILE_TAG,
         "/login": ResourceType.USER,
         "/items": ResourceType.USER,
+        "/articles": ResourceType.USER,
     }
     for path_prefix, resource_type in path_mappings.items():
         if path_prefix in path:
@@ -76,6 +87,81 @@ def get_user_from_token(token: str) -> tuple[str | None, str | None]:
     except Exception:
         pass
     return None, None
+
+
+class RequestContextMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next) -> Response:
+        request_id = request.headers.get("X-Request-ID") or str(uuid.uuid4())
+        request_id_ctx.set(request_id)
+
+        request.state.request_id = request_id
+        request.state.start_time = time.time()
+
+        client_ip = self._get_client_ip(request)
+        user_agent = request.headers.get("user-agent", "")
+
+        logger.debug(
+            "Request started",
+            extra={
+                "request_id": request_id,
+                "method": request.method,
+                "path": request.url.path,
+                "query_params": dict(request.query_params),
+                "client_ip": client_ip,
+                "user_agent": user_agent,
+            },
+        )
+
+        try:
+            response = await call_next(request)
+
+            duration_ms = int((time.time() - request.state.start_time) * 1000)
+
+            response.headers["X-Request-ID"] = request_id
+            response.headers["X-Response-Time"] = str(duration_ms)
+
+            logger.info(
+                "Request completed",
+                extra={
+                    "request_id": request_id,
+                    "method": request.method,
+                    "path": request.url.path,
+                    "status_code": response.status_code,
+                    "duration_ms": duration_ms,
+                    "client_ip": client_ip,
+                },
+            )
+
+            return response
+
+        except Exception as e:
+            duration_ms = int((time.time() - request.state.start_time) * 1000)
+
+            logger.error(
+                f"Request failed with exception: {str(e)}",
+                exc_info=True,
+                extra={
+                    "request_id": request_id,
+                    "method": request.method,
+                    "path": request.url.path,
+                    "duration_ms": duration_ms,
+                    "client_ip": client_ip,
+                    "exception": str(e),
+                },
+            )
+
+            raise
+
+    def _get_client_ip(self, request: Request) -> str:
+        forwarded = request.headers.get("x-forwarded-for")
+        if forwarded:
+            return forwarded.split(",")[0].strip()
+
+        real_ip = request.headers.get("x-real-ip")
+        if real_ip:
+            return real_ip
+
+        return request.client.host if request.client else "unknown"
 
 
 class OperationLogMiddleware(BaseHTTPMiddleware):
@@ -191,6 +277,52 @@ class OperationLogMiddleware(BaseHTTPMiddleware):
         if forwarded:
             return forwarded.split(",")[0].strip()
         return request.client.host if request.client else None
+
+
+class RequestSizeLimitMiddleware(BaseHTTPMiddleware):
+    MAX_REQUEST_SIZE = 10 * 1024 * 1024
+
+    async def dispatch(self, request: Request, call_next) -> Response:
+        content_length = request.headers.get("content-length")
+
+        if content_length:
+            try:
+                size = int(content_length)
+                if size > self.MAX_REQUEST_SIZE:
+                    from fastapi import HTTPException
+
+                    raise HTTPException(
+                        status_code=413,
+                        detail=f"Request too large. Maximum allowed size is {self.MAX_REQUEST_SIZE // (1024 * 1024)}MB",
+                    )
+            except ValueError:
+                pass
+
+        return await call_next(request)
+
+
+class SecurityHeadersMiddleware(BaseHTTPMiddleware):
+    SECURITY_HEADERS = {
+        "X-Content-Type-Options": "nosniff",
+        "X-Frame-Options": "DENY",
+        "X-XSS-Protection": "1; mode=block",
+        "Referrer-Policy": "strict-origin-when-cross-origin",
+        "Permissions-Policy": "geolocation=(), microphone=(), camera=()",
+    }
+
+    async def dispatch(self, request: Request, call_next) -> Response:
+        response = await call_next(request)
+
+        for header, value in self.SECURITY_HEADERS.items():
+            if header not in response.headers:
+                response.headers[header] = value
+
+        if settings.is_production:
+            response.headers[
+                "Strict-Transport-Security"
+            ] = "max-age=31536000; includeSubDomains"
+
+        return response
 
 
 def set_operation_log_data(
