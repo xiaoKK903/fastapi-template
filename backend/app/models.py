@@ -554,6 +554,7 @@ class User(UserBase, table=True):
     folders: list["Folder"] = Relationship(back_populates="owner", cascade_delete=True)
     files: list["File"] = Relationship(back_populates="owner", cascade_delete=True)
     file_shares: list["FileShare"] = Relationship(back_populates="owner", cascade_delete=True)
+    schedules: list["Schedule"] = Relationship(back_populates="owner", cascade_delete=True)
 
 
 class Category(CategoryBase, table=True):
@@ -1443,6 +1444,3 @@ class ScheduleReminder(SQLModel, table=True):
         default_factory=get_datetime_utc,
         sa_type=SA_DateTime(timezone=True),
     )
-
-
-User.schedules = Relationship(back_populates="owner", cascade_delete=True)
