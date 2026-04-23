@@ -35,6 +35,7 @@ cors_origins = [
     "http://localhost:5178",
     "http://localhost:5179",
     "http://localhost:5180",
+    "http://localhost:5187",
     "https://localhost:5173",
     "https://localhost:5174",
     "https://localhost:5175",
@@ -43,6 +44,7 @@ cors_origins = [
     "https://localhost:5178",
     "https://localhost:5179",
     "https://localhost:5180",
+    "https://localhost:5187",
     "http://localhost",
     "https://localhost",
 ]
