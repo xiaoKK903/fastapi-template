@@ -20,6 +20,9 @@ IGNORED_PATHS = [
     "/openapi.json",
     "/redoc",
     "/favicon.ico",
+    "/login",
+    "/reset-password",
+    "/password-recovery",
 ]
 
 
