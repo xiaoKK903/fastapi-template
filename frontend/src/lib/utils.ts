@@ -6,6 +6,26 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
+export function formatDate(date: Date, format: string): string {
+  const weekDays = ["周日", "周一", "周二", "周三", "周四", "周五", "周六"]
+  
+  const options: Record<string, string | number> = {
+    yyyy: date.getFullYear(),
+    MM: (date.getMonth() + 1).toString().padStart(2, "0"),
+    M: date.getMonth() + 1,
+    dd: date.getDate().toString().padStart(2, "0"),
+    d: date.getDate(),
+    EEEE: weekDays[date.getDay()],
+  }
+
+  let result = format
+  for (const [key, value] of Object.entries(options)) {
+    result = result.replace(key, String(value))
+  }
+
+  return result
+}
+
 export interface FlatTaskWithLevel extends TaskWithSubtasks {
   level: number
   hasChildren: boolean

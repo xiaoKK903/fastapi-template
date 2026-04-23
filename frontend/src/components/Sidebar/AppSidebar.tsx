@@ -4,6 +4,7 @@ import {
   BookOpen,
   Briefcase,
   Calendar as CalendarIcon,
+  CalendarDays,
   CheckSquare,
   FolderOpen,
   Home,
@@ -34,6 +35,7 @@ interface MenuConfig extends Item {
 
 const menuConfigs: MenuConfig[] = [
   { icon: Home, title: "Dashboard", path: "/" },
+  { icon: CalendarDays, title: "日程日历", path: "/calendar" },
   { icon: BookOpen, title: "文章管理", path: "/articles" },
   { icon: Briefcase, title: "Items", path: "/items" },
   { icon: FolderOpen, title: "文件管理", path: "/files" },

@@ -1309,3 +1309,140 @@ class Article(ArticleBase, table=True):
 User.article_categories = Relationship(back_populates="owner", cascade_delete=True)
 User.article_tags = Relationship(back_populates="owner", cascade_delete=True)
 User.articles = Relationship(back_populates="owner", cascade_delete=True)
+
+
+class ScheduleColor(str, Enum):
+    RED = "#EF4444"
+    ORANGE = "#F97316"
+    YELLOW = "#EAB308"
+    GREEN = "#22C55E"
+    TEAL = "#14B8A6"
+    BLUE = "#3B82F6"
+    INDIGO = "#6366F1"
+    PURPLE = "#A855F7"
+    PINK = "#EC4899"
+    GRAY = "#6B7280"
+
+
+class ScheduleRecurringType(str, Enum):
+    NONE = "none"
+    DAILY = "daily"
+    WEEKLY = "weekly"
+    MONTHLY = "monthly"
+    YEARLY = "yearly"
+
+
+class ScheduleCategory(str, Enum):
+    WORK = "work"
+    PERSONAL = "personal"
+    IMPORTANT = "important"
+    MEETING = "meeting"
+    OTHER = "other"
+
+
+class ScheduleBase(SQLModel):
+    title: str = Field(min_length=1, max_length=500)
+    description: str | None = Field(default=None, max_length=2000)
+    start_time: datetime
+    end_time: datetime
+    color: ScheduleColor = Field(default=ScheduleColor.BLUE)
+    category: ScheduleCategory = Field(default=ScheduleCategory.PERSONAL)
+    is_recurring: bool = False
+    recurring_type: ScheduleRecurringType = Field(default=ScheduleRecurringType.NONE)
+    recurring_interval: int | None = Field(default=None, ge=1)
+    recurring_end_date: date | None = None
+    reminder_minutes: int | None = Field(default=None, ge=0)
+    is_all_day: bool = False
+    is_deleted: bool = False
+
+
+class ScheduleCreate(SQLModel):
+    title: str = Field(min_length=1, max_length=500)
+    description: str | None = Field(default=None, max_length=2000)
+    start_time: datetime
+    end_time: datetime
+    color: ScheduleColor = ScheduleColor.BLUE
+    category: ScheduleCategory = ScheduleCategory.PERSONAL
+    is_recurring: bool = False
+    recurring_type: ScheduleRecurringType = ScheduleRecurringType.NONE
+    recurring_interval: int | None = None
+    recurring_end_date: date | None = None
+    reminder_minutes: int | None = None
+    is_all_day: bool = False
+
+
+class ScheduleUpdate(SQLModel):
+    title: str | None = Field(default=None, min_length=1, max_length=500)
+    description: str | None = Field(default=None, max_length=2000)
+    start_time: datetime | None = None
+    end_time: datetime | None = None
+    color: ScheduleColor | None = None
+    category: ScheduleCategory | None = None
+    is_recurring: bool | None = None
+    recurring_type: ScheduleRecurringType | None = None
+    recurring_interval: int | None = None
+    recurring_end_date: date | None = None
+    reminder_minutes: int | None = None
+    is_all_day: bool | None = None
+
+
+class SchedulePublic(ScheduleBase):
+    id: str
+    owner_id: str
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
+
+
+class SchedulesPublic(SQLModel):
+    data: list[SchedulePublic]
+    count: int
+
+
+class ScheduleDayEvents(SQLModel):
+    date: str
+    events: list[SchedulePublic]
+
+
+class ScheduleCalendarView(SQLModel):
+    year: int
+    month: int
+    days: list[ScheduleDayEvents]
+
+
+class Schedule(ScheduleBase, table=True):
+    id: str = Field(default_factory=generate_uuid, primary_key=True)
+    created_at: datetime | None = Field(
+        default_factory=get_datetime_utc,
+        sa_type=SA_DateTime(timezone=True),
+    )
+    updated_at: datetime | None = Field(
+        default_factory=get_datetime_utc,
+        sa_type=SA_DateTime(timezone=True),
+    )
+    owner_id: str = Field(
+        foreign_key="user.id", nullable=False, ondelete="CASCADE"
+    )
+    owner: "User" = Relationship(back_populates="schedules")
+
+
+class ScheduleReminder(SQLModel, table=True):
+    id: str = Field(default_factory=generate_uuid, primary_key=True)
+    schedule_id: str = Field(
+        foreign_key="schedule.id", nullable=False, ondelete="CASCADE"
+    )
+    owner_id: str = Field(
+        foreign_key="user.id", nullable=False, ondelete="CASCADE"
+    )
+    reminder_time: datetime = Field(sa_type=SA_DateTime(timezone=True))
+    is_sent: bool = False
+    sent_at: datetime | None = Field(
+        default=None,
+        sa_type=SA_DateTime(timezone=True),
+    )
+    created_at: datetime | None = Field(
+        default_factory=get_datetime_utc,
+        sa_type=SA_DateTime(timezone=True),
+    )
+
+
+User.schedules = Relationship(back_populates="owner", cascade_delete=True)

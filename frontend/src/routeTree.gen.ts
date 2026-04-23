@@ -27,6 +27,7 @@ import { Route as LayoutHabitCalendarRouteImport } from './routes/_layout/habit-
 import { Route as LayoutFinanceStatsRouteImport } from './routes/_layout/finance-stats'
 import { Route as LayoutFilesRouteImport } from './routes/_layout/files'
 import { Route as LayoutCategoriesRouteImport } from './routes/_layout/categories'
+import { Route as LayoutCalendarRouteImport } from './routes/_layout/calendar'
 import { Route as LayoutBudgetsRouteImport } from './routes/_layout/budgets'
 import { Route as LayoutArticlesRouteImport } from './routes/_layout/articles'
 import { Route as LayoutAdminRouteImport } from './routes/_layout/admin'
@@ -122,6 +123,11 @@ const LayoutCategoriesRoute = LayoutCategoriesRouteImport.update({
   path: '/categories',
   getParentRoute: () => LayoutRoute,
 } as any)
+const LayoutCalendarRoute = LayoutCalendarRouteImport.update({
+  id: '/calendar',
+  path: '/calendar',
+  getParentRoute: () => LayoutRoute,
+} as any)
 const LayoutBudgetsRoute = LayoutBudgetsRouteImport.update({
   id: '/budgets',
   path: '/budgets',
@@ -157,6 +163,7 @@ export interface FileRoutesByFullPath {
   '/admin': typeof LayoutAdminRoute
   '/articles': typeof LayoutArticlesRouteWithChildren
   '/budgets': typeof LayoutBudgetsRoute
+  '/calendar': typeof LayoutCalendarRoute
   '/categories': typeof LayoutCategoriesRoute
   '/files': typeof LayoutFilesRoute
   '/finance-stats': typeof LayoutFinanceStatsRoute
@@ -179,6 +186,7 @@ export interface FileRoutesByTo {
   '/signup': typeof SignupRoute
   '/admin': typeof LayoutAdminRoute
   '/budgets': typeof LayoutBudgetsRoute
+  '/calendar': typeof LayoutCalendarRoute
   '/categories': typeof LayoutCategoriesRoute
   '/files': typeof LayoutFilesRoute
   '/finance-stats': typeof LayoutFinanceStatsRoute
@@ -205,6 +213,7 @@ export interface FileRoutesById {
   '/_layout/admin': typeof LayoutAdminRoute
   '/_layout/articles': typeof LayoutArticlesRouteWithChildren
   '/_layout/budgets': typeof LayoutBudgetsRoute
+  '/_layout/calendar': typeof LayoutCalendarRoute
   '/_layout/categories': typeof LayoutCategoriesRoute
   '/_layout/files': typeof LayoutFilesRoute
   '/_layout/finance-stats': typeof LayoutFinanceStatsRoute
@@ -232,6 +241,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/articles'
     | '/budgets'
+    | '/calendar'
     | '/categories'
     | '/files'
     | '/finance-stats'
@@ -254,6 +264,7 @@ export interface FileRouteTypes {
     | '/signup'
     | '/admin'
     | '/budgets'
+    | '/calendar'
     | '/categories'
     | '/files'
     | '/finance-stats'
@@ -279,6 +290,7 @@ export interface FileRouteTypes {
     | '/_layout/admin'
     | '/_layout/articles'
     | '/_layout/budgets'
+    | '/_layout/calendar'
     | '/_layout/categories'
     | '/_layout/files'
     | '/_layout/finance-stats'
@@ -432,6 +444,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LayoutCategoriesRouteImport
       parentRoute: typeof LayoutRoute
     }
+    '/_layout/calendar': {
+      id: '/_layout/calendar'
+      path: '/calendar'
+      fullPath: '/calendar'
+      preLoaderRoute: typeof LayoutCalendarRouteImport
+      parentRoute: typeof LayoutRoute
+    }
     '/_layout/budgets': {
       id: '/_layout/budgets'
       path: '/budgets'
@@ -488,6 +507,7 @@ interface LayoutRouteChildren {
   LayoutAdminRoute: typeof LayoutAdminRoute
   LayoutArticlesRoute: typeof LayoutArticlesRouteWithChildren
   LayoutBudgetsRoute: typeof LayoutBudgetsRoute
+  LayoutCalendarRoute: typeof LayoutCalendarRoute
   LayoutCategoriesRoute: typeof LayoutCategoriesRoute
   LayoutFilesRoute: typeof LayoutFilesRoute
   LayoutFinanceStatsRoute: typeof LayoutFinanceStatsRoute
@@ -507,6 +527,7 @@ const LayoutRouteChildren: LayoutRouteChildren = {
   LayoutAdminRoute: LayoutAdminRoute,
   LayoutArticlesRoute: LayoutArticlesRouteWithChildren,
   LayoutBudgetsRoute: LayoutBudgetsRoute,
+  LayoutCalendarRoute: LayoutCalendarRoute,
   LayoutCategoriesRoute: LayoutCategoriesRoute,
   LayoutFilesRoute: LayoutFilesRoute,
   LayoutFinanceStatsRoute: LayoutFinanceStatsRoute,

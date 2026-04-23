@@ -7,13 +7,7 @@ from app.api.main import api_router
 from app.core.config import settings
 from app.core.db import engine, init_db
 from app.core.exceptions import register_exception_handlers
-from app.core.logging import logger
-from app.core.middleware import (
-    OperationLogMiddleware,
-    RequestContextMiddleware,
-    RequestSizeLimitMiddleware,
-    SecurityHeadersMiddleware,
-)
+from app.core.middleware import OperationLogMiddleware
 from sqlmodel import SQLModel
 from sqlmodel import Session
 
@@ -75,32 +69,15 @@ app.add_middleware(
     expose_headers=["*"],
 )
 
-app.add_middleware(SecurityHeadersMiddleware)
-app.add_middleware(RequestSizeLimitMiddleware)
-app.add_middleware(RequestContextMiddleware)
 app.add_middleware(OperationLogMiddleware)
 register_exception_handlers(app)
 
 
 @app.on_event("startup")
 def on_startup():
-    logger.info(
-        "Starting application",
-        extra={
-            "environment": settings.ENVIRONMENT,
-            "project_name": settings.PROJECT_NAME,
-            "debug": settings.is_local,
-        },
-    )
     SQLModel.metadata.create_all(engine)
     with Session(engine) as session:
         init_db(session)
-    logger.info("Application started successfully")
-
-
-@app.on_event("shutdown")
-def on_shutdown():
-    logger.info("Application shutting down")
 
 
 app.include_router(api_router, prefix=settings.API_V1_STR)
