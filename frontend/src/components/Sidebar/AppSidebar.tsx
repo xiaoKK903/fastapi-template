@@ -11,6 +11,7 @@ import {
   PieChart,
   Tag,
   Target,
+  Timer,
   Trash2,
   Users,
   Wallet,
@@ -36,6 +37,7 @@ interface MenuConfig extends Item {
 const menuConfigs: MenuConfig[] = [
   { icon: Home, title: "Dashboard", path: "/" },
   { icon: CalendarDays, title: "日程日历", path: "/calendar" },
+  { icon: Timer, title: "番茄专注", path: "/pomodoro" },
   { icon: BookOpen, title: "文章管理", path: "/articles" },
   { icon: Briefcase, title: "Items", path: "/items" },
   { icon: FolderOpen, title: "文件管理", path: "/files" },

@@ -878,6 +878,28 @@ function ScheduleDialog({
     } : undefined,
   })
 
+  useEffect(() => {
+    if (open && !isEditMode && !schedule) {
+      const now = new Date()
+      const start = new Date(selectedDate)
+      start.setHours(now.getHours() + 1, 0, 0, 0)
+
+      const end = new Date(start)
+      end.setHours(end.getHours() + 1)
+
+      form.reset({
+        title: "",
+        description: "",
+        start_time: start.toISOString(),
+        end_time: end.toISOString(),
+        color: ScheduleColor.BLUE,
+        category: ScheduleCategory.PERSONAL,
+        reminder_minutes: 15,
+        is_all_day: false,
+      })
+    }
+  }, [open, isEditMode, schedule, selectedDate, form])
+
   const createMutation = useMutation({
     mutationFn: (data: ScheduleCreate) => SchedulesService.createSchedule({ requestBody: data }),
     onSuccess: () => {
