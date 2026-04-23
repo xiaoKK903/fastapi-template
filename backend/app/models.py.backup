@@ -556,7 +556,7 @@ class User(UserBase, table=True):
     file_shares: list["FileShare"] = Relationship(back_populates="owner", cascade_delete=True)
     schedules: list["Schedule"] = Relationship(back_populates="owner", cascade_delete=True)
     pomodoro_sessions: list["PomodoroSession"] = Relationship(back_populates="owner", cascade_delete=True)
-    pomodoro_settings: Optional["PomodoroSettings"] = Relationship(back_populates="owner", cascade_delete=True)
+    pomodoro_settings: "PomodoroSettings | None" = Relationship(back_populates="owner", uselist=False, cascade_delete=True)
 
 
 class Category(CategoryBase, table=True):
@@ -1312,8 +1312,6 @@ class Article(ArticleBase, table=True):
 User.article_categories = Relationship(back_populates="owner", cascade_delete=True)
 User.article_tags = Relationship(back_populates="owner", cascade_delete=True)
 User.articles = Relationship(back_populates="owner", cascade_delete=True)
-User.pomodoro_sessions = Relationship(back_populates="owner", cascade_delete=True)
-User.pomodoro_settings = Relationship(back_populates="owner", cascade_delete=True)
 
 
 class ScheduleColor(str, Enum):
