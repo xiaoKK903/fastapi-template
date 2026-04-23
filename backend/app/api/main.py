@@ -14,6 +14,7 @@ from app.api.routes.permissions import router as permissions_router
 from app.api.routes.operation_logs import router as operation_logs_router
 from app.api.routes.tasks import router as tasks_router
 from app.api.routes.schedules import router as schedules_router
+from app.api.routes.pomodoros import router as pomodoros_router
 from app.api.routes.private import router as private_router
 from app.api.routes.folders import router as folders_router
 from app.api.routes.files import router as files_router
@@ -40,6 +41,7 @@ api_router.include_router(permissions_router)
 api_router.include_router(operation_logs_router)
 api_router.include_router(tasks_router)
 api_router.include_router(schedules_router)
+api_router.include_router(pomodoros_router)
 api_router.include_router(folders_router)
 api_router.include_router(files_router)
 api_router.include_router(recycle_router)

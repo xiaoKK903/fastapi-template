@@ -555,6 +555,8 @@ class User(UserBase, table=True):
     files: list["File"] = Relationship(back_populates="owner", cascade_delete=True)
     file_shares: list["FileShare"] = Relationship(back_populates="owner", cascade_delete=True)
     schedules: list["Schedule"] = Relationship(back_populates="owner", cascade_delete=True)
+    pomodoro_sessions: list["PomodoroSession"] = Relationship(back_populates="owner", cascade_delete=True)
+    pomodoro_settings: "PomodoroSettings | None" = Relationship(back_populates="owner", uselist=False, cascade_delete=True)
 
 
 class Category(CategoryBase, table=True):
@@ -1444,3 +1446,124 @@ class ScheduleReminder(SQLModel, table=True):
         default_factory=get_datetime_utc,
         sa_type=SA_DateTime(timezone=True),
     )
+
+
+class PomodoroSessionType(str, Enum):
+    FOCUS = "focus"
+    SHORT_BREAK = "short_break"
+    LONG_BREAK = "long_break"
+
+
+class PomodoroSessionStatus(str, Enum):
+    PENDING = "pending"
+    RUNNING = "running"
+    PAUSED = "paused"
+    COMPLETED = "completed"
+    CANCELLED = "cancelled"
+
+
+class PomodoroSessionBase(SQLModel):
+    session_type: PomodoroSessionType = Field(default=PomodoroSessionType.FOCUS)
+    duration_minutes: int = Field(default=25, ge=1)
+    title: str | None = Field(default=None, max_length=255)
+    description: str | None = Field(default=None, max_length=1000)
+
+
+class PomodoroSessionCreate(SQLModel):
+    session_type: PomodoroSessionType = PomodoroSessionType.FOCUS
+    duration_minutes: int = Field(default=25, ge=1)
+    title: str | None = Field(default=None, max_length=255)
+    description: str | None = Field(default=None, max_length=1000)
+
+
+class PomodoroSessionUpdate(SQLModel):
+    session_type: PomodoroSessionType | None = None
+    duration_minutes: int | None = Field(default=None, ge=1)
+    title: str | None = None
+    description: str | None = None
+    status: PomodoroSessionStatus | None = None
+    actual_duration_seconds: int | None = Field(default=None, ge=0)
+
+
+class PomodoroSessionPublic(PomodoroSessionBase):
+    id: str
+    status: PomodoroSessionStatus
+    actual_duration_seconds: int | None = Field(default=None, ge=0)
+    start_time: datetime | None = None
+    end_time: datetime | None = None
+    owner_id: str
+    created_at: datetime | None = None
+
+
+class PomodoroSessionsPublic(SQLModel):
+    data: list[PomodoroSessionPublic]
+    count: int
+
+
+class PomodoroDailyStats(SQLModel):
+    date: str
+    total_focus_sessions: int
+    total_focus_minutes: float
+    total_break_sessions: int
+    total_break_minutes: float
+
+
+class PomodoroWeeklyStats(SQLModel):
+    days: list[PomodoroDailyStats]
+    total_focus_sessions: int
+    total_focus_minutes: float
+
+
+class PomodoroSettingsBase(SQLModel):
+    focus_duration_minutes: int = Field(default=25, ge=1, le=180)
+    short_break_duration_minutes: int = Field(default=5, ge=1, le=60)
+    long_break_duration_minutes: int = Field(default=15, ge=1, le=60)
+    sessions_before_long_break: int = Field(default=4, ge=1, le=10)
+    auto_start_breaks: bool = False
+    auto_start_focus: bool = False
+    sound_enabled: bool = True
+    notification_enabled: bool = True
+
+
+class PomodoroSettingsPublic(PomodoroSettingsBase):
+    id: str
+    owner_id: str
+    updated_at: datetime | None = None
+
+
+class PomodoroSession(PomodoroSessionBase, table=True):
+    id: str = Field(default_factory=generate_uuid, primary_key=True)
+    status: PomodoroSessionStatus = Field(default=PomodoroSessionStatus.PENDING)
+    actual_duration_seconds: int | None = Field(default=None, ge=0)
+    start_time: datetime | None = Field(
+        default=None,
+        sa_type=SA_DateTime(timezone=True),
+    )
+    end_time: datetime | None = Field(
+        default=None,
+        sa_type=SA_DateTime(timezone=True),
+    )
+    owner_id: str = Field(
+        foreign_key="user.id", nullable=False, ondelete="CASCADE"
+    )
+    created_at: datetime | None = Field(
+        default_factory=get_datetime_utc,
+        sa_type=SA_DateTime(timezone=True),
+    )
+    owner: "User" = Relationship(back_populates="pomodoro_sessions")
+
+
+class PomodoroSettings(PomodoroSettingsBase, table=True):
+    id: str = Field(default_factory=generate_uuid, primary_key=True)
+    owner_id: str = Field(
+        foreign_key="user.id", nullable=False, ondelete="CASCADE", unique=True
+    )
+    created_at: datetime | None = Field(
+        default_factory=get_datetime_utc,
+        sa_type=SA_DateTime(timezone=True),
+    )
+    updated_at: datetime | None = Field(
+        default_factory=get_datetime_utc,
+        sa_type=SA_DateTime(timezone=True),
+    )
+    owner: "User" = Relationship(back_populates="pomodoro_settings")
