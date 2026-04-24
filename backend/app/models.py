@@ -1749,7 +1749,7 @@ class HealthRecordBase(SQLModel):
     blood_pressure_diastolic: int | None = Field(default=None, ge=0, description="Diastolic blood pressure")
     sleep_duration: float | None = Field(default=None, ge=0, description="Sleep duration in hours")
     exercise_duration: float | None = Field(default=None, ge=0, description="Exercise duration in minutes")
-    tags: list[str] | None = Field(default_factory=list, description="Tags for categorization")
+    tags: list[str] | None = Field(default_factory=list, sa_column=Column(SA_JSON), description="Tags for categorization")
     notes: str | None = Field(default=None, max_length=2000, description="Additional notes")
 
 
