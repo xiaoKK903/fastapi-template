@@ -22,6 +22,7 @@ import { Route as LayoutRecycleRouteImport } from './routes/_layout/recycle'
 import { Route as LayoutPomodoroRouteImport } from './routes/_layout/pomodoro'
 import { Route as LayoutLogsRouteImport } from './routes/_layout/logs'
 import { Route as LayoutItemsRouteImport } from './routes/_layout/items'
+import { Route as LayoutHealthRouteImport } from './routes/_layout/health'
 import { Route as LayoutHabitsRouteImport } from './routes/_layout/habits'
 import { Route as LayoutHabitStatsRouteImport } from './routes/_layout/habit-stats'
 import { Route as LayoutHabitCalendarRouteImport } from './routes/_layout/habit-calendar'
@@ -98,6 +99,11 @@ const LayoutLogsRoute = LayoutLogsRouteImport.update({
 const LayoutItemsRoute = LayoutItemsRouteImport.update({
   id: '/items',
   path: '/items',
+  getParentRoute: () => LayoutRoute,
+} as any)
+const LayoutHealthRoute = LayoutHealthRouteImport.update({
+  id: '/health',
+  path: '/health',
   getParentRoute: () => LayoutRoute,
 } as any)
 const LayoutHabitsRoute = LayoutHabitsRouteImport.update({
@@ -183,6 +189,7 @@ export interface FileRoutesByFullPath {
   '/habit-calendar': typeof LayoutHabitCalendarRoute
   '/habit-stats': typeof LayoutHabitStatsRoute
   '/habits': typeof LayoutHabitsRoute
+  '/health': typeof LayoutHealthRoute
   '/items': typeof LayoutItemsRoute
   '/logs': typeof LayoutLogsRoute
   '/pomodoro': typeof LayoutPomodoroRoute
@@ -208,6 +215,7 @@ export interface FileRoutesByTo {
   '/habit-calendar': typeof LayoutHabitCalendarRoute
   '/habit-stats': typeof LayoutHabitStatsRoute
   '/habits': typeof LayoutHabitsRoute
+  '/health': typeof LayoutHealthRoute
   '/items': typeof LayoutItemsRoute
   '/logs': typeof LayoutLogsRoute
   '/pomodoro': typeof LayoutPomodoroRoute
@@ -237,6 +245,7 @@ export interface FileRoutesById {
   '/_layout/habit-calendar': typeof LayoutHabitCalendarRoute
   '/_layout/habit-stats': typeof LayoutHabitStatsRoute
   '/_layout/habits': typeof LayoutHabitsRoute
+  '/_layout/health': typeof LayoutHealthRoute
   '/_layout/items': typeof LayoutItemsRoute
   '/_layout/logs': typeof LayoutLogsRoute
   '/_layout/pomodoro': typeof LayoutPomodoroRoute
@@ -267,6 +276,7 @@ export interface FileRouteTypes {
     | '/habit-calendar'
     | '/habit-stats'
     | '/habits'
+    | '/health'
     | '/items'
     | '/logs'
     | '/pomodoro'
@@ -292,6 +302,7 @@ export interface FileRouteTypes {
     | '/habit-calendar'
     | '/habit-stats'
     | '/habits'
+    | '/health'
     | '/items'
     | '/logs'
     | '/pomodoro'
@@ -320,6 +331,7 @@ export interface FileRouteTypes {
     | '/_layout/habit-calendar'
     | '/_layout/habit-stats'
     | '/_layout/habits'
+    | '/_layout/health'
     | '/_layout/items'
     | '/_layout/logs'
     | '/_layout/pomodoro'
@@ -431,6 +443,13 @@ declare module '@tanstack/react-router' {
       path: '/items'
       fullPath: '/items'
       preLoaderRoute: typeof LayoutItemsRouteImport
+      parentRoute: typeof LayoutRoute
+    }
+    '/_layout/health': {
+      id: '/_layout/health'
+      path: '/health'
+      fullPath: '/health'
+      preLoaderRoute: typeof LayoutHealthRouteImport
       parentRoute: typeof LayoutRoute
     }
     '/_layout/habits': {
@@ -553,6 +572,7 @@ interface LayoutRouteChildren {
   LayoutHabitCalendarRoute: typeof LayoutHabitCalendarRoute
   LayoutHabitStatsRoute: typeof LayoutHabitStatsRoute
   LayoutHabitsRoute: typeof LayoutHabitsRoute
+  LayoutHealthRoute: typeof LayoutHealthRoute
   LayoutItemsRoute: typeof LayoutItemsRoute
   LayoutLogsRoute: typeof LayoutLogsRoute
   LayoutPomodoroRoute: typeof LayoutPomodoroRoute
@@ -575,6 +595,7 @@ const LayoutRouteChildren: LayoutRouteChildren = {
   LayoutHabitCalendarRoute: LayoutHabitCalendarRoute,
   LayoutHabitStatsRoute: LayoutHabitStatsRoute,
   LayoutHabitsRoute: LayoutHabitsRoute,
+  LayoutHealthRoute: LayoutHealthRoute,
   LayoutItemsRoute: LayoutItemsRoute,
   LayoutLogsRoute: LayoutLogsRoute,
   LayoutPomodoroRoute: LayoutPomodoroRoute,
