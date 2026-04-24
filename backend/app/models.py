@@ -559,6 +559,7 @@ class User(UserBase, table=True):
     pomodoro_settings: Optional["PomodoroSettings"] = Relationship(back_populates="owner", cascade_delete=True)
     media_collections: list["MediaCollection"] = Relationship(back_populates="owner", cascade_delete=True)
     media_tags: list["MediaTag"] = Relationship(back_populates="owner", cascade_delete=True)
+    health_records: list["HealthRecord"] = Relationship(back_populates="owner", cascade_delete=True)
 
 
 class Category(CategoryBase, table=True):
@@ -1593,7 +1594,7 @@ class MediaCollectionBase(SQLModel):
     title: str = Field(min_length=1, max_length=500)
     original_title: str | None = Field(default=None, max_length=500)
     media_type: MediaType = Field(default=MediaType.BOOK)
-    status: MediaStatus = Field(default=MediaType.WANT_TO_WATCH)
+    status: MediaStatus = Field(default=MediaStatus.WANT_TO_WATCH)
     rating: float | None = Field(default=None, ge=0, le=10)
     description: str | None = Field(default=None, max_length=5000)
     notes: str | None = Field(default=None, max_length=2000)
@@ -1610,7 +1611,7 @@ class MediaCollectionCreate(SQLModel):
     title: str = Field(min_length=1, max_length=500)
     original_title: str | None = Field(default=None, max_length=500)
     media_type: MediaType = Field(default=MediaType.BOOK)
-    status: MediaStatus = Field(default=MediaType.WANT_TO_WATCH)
+    status: MediaStatus = Field(default=MediaStatus.WANT_TO_WATCH)
     rating: float | None = Field(default=None, ge=0, le=10)
     description: str | None = Field(default=None, max_length=5000)
     notes: str | None = Field(default=None, max_length=2000)
@@ -1737,3 +1738,61 @@ class MediaCollection(MediaCollectionBase, table=True):
         link_model=MediaCollectionTagLink,
     )
     owner: "User" = Relationship(back_populates="media_collections")
+
+
+class HealthRecordBase(SQLModel):
+    record_date: date = Field(description="Date of the health record")
+    height: float | None = Field(default=None, ge=0, description="Height in cm")
+    weight: float | None = Field(default=None, ge=0, description="Weight in kg")
+    heart_rate: int | None = Field(default=None, ge=0, description="Heart rate (bpm)")
+    blood_pressure_systolic: int | None = Field(default=None, ge=0, description="Systolic blood pressure")
+    blood_pressure_diastolic: int | None = Field(default=None, ge=0, description="Diastolic blood pressure")
+    sleep_duration: float | None = Field(default=None, ge=0, description="Sleep duration in hours")
+    exercise_duration: float | None = Field(default=None, ge=0, description="Exercise duration in minutes")
+    tags: list[str] | None = Field(default_factory=list, description="Tags for categorization")
+    notes: str | None = Field(default=None, max_length=2000, description="Additional notes")
+
+
+class HealthRecordCreate(HealthRecordBase):
+    pass
+
+
+class HealthRecordUpdate(SQLModel):
+    record_date: date | None = None
+    height: float | None = None
+    weight: float | None = None
+    heart_rate: int | None = None
+    blood_pressure_systolic: int | None = None
+    blood_pressure_diastolic: int | None = None
+    sleep_duration: float | None = None
+    exercise_duration: float | None = None
+    tags: list[str] | None = None
+    notes: str | None = None
+
+
+class HealthRecordPublic(HealthRecordBase):
+    id: str
+    owner_id: str
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
+
+
+class HealthRecordsPublic(SQLModel):
+    data: list[HealthRecordPublic]
+    count: int
+
+
+class HealthRecord(HealthRecordBase, table=True):
+    id: str = Field(default_factory=generate_uuid, primary_key=True)
+    owner_id: str = Field(
+        foreign_key="user.id", nullable=False, ondelete="CASCADE"
+    )
+    created_at: datetime | None = Field(
+        default_factory=get_datetime_utc,
+        sa_type=SA_DateTime(timezone=True),
+    )
+    updated_at: datetime | None = Field(
+        default_factory=get_datetime_utc,
+        sa_type=SA_DateTime(timezone=True),
+    )
+    owner: "User" = Relationship(back_populates="health_records")

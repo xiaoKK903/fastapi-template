@@ -39,6 +39,7 @@ const menuConfigs: MenuConfig[] = [
   { icon: Home, title: "Dashboard", path: "/" },
   { icon: CalendarDays, title: "日程日历", path: "/calendar" },
   { icon: Timer, title: "番茄专注", path: "/pomodoro" },
+  { icon: Activity, title: "健康记录", path: "/health" },
   { icon: Clapperboard, title: "收藏管理", path: "/collections" },
   { icon: BookOpen, title: "文章管理", path: "/articles" },
   { icon: Briefcase, title: "Items", path: "/items" },
