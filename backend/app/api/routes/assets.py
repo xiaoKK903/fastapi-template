@@ -126,59 +126,123 @@ def get_asset_stats(
     session: SessionDep,
     current_user: CurrentUser,
 ) -> Any:
-    count_statement = (
+    def get_count(**conditions):
+        statement = select(func.count()).select_from(Asset)
+        where_conditions = [
+            Asset.owner_id == current_user.id,
+            Asset.is_archived == False,
+        ]
+        for key, value in conditions.items():
+            if hasattr(Asset, key):
+                where_conditions.append(getattr(Asset, key) == value)
+        statement = statement.where(*where_conditions)
+        return session.exec(statement).one()
+
+    total_assets = get_count()
+
+    in_use_count = session.exec(
         select(func.count())
         .select_from(Asset)
-        .where(Asset.owner_id == current_user.id, Asset.is_archived == False)
-    )
-    
-    total_assets = session.exec(count_statement).one()
-    
-    in_use_count = session.exec(
-        count_statement.where(Asset.status == AssetStatus.IN_USE)
+        .where(
+            Asset.owner_id == current_user.id,
+            Asset.is_archived == False,
+            Asset.status == AssetStatus.IN_USE,
+        )
     ).one()
+
     idle_count = session.exec(
-        count_statement.where(Asset.status == AssetStatus.IDLE)
+        select(func.count())
+        .select_from(Asset)
+        .where(
+            Asset.owner_id == current_user.id,
+            Asset.is_archived == False,
+            Asset.status == AssetStatus.IDLE,
+        )
     ).one()
+
     scrapped_count = session.exec(
-        count_statement.where(Asset.status == AssetStatus.SCRAPPED)
+        select(func.count())
+        .select_from(Asset)
+        .where(
+            Asset.owner_id == current_user.id,
+            Asset.is_archived == False,
+            Asset.status == AssetStatus.SCRAPPED,
+        )
     ).one()
+
     maintenance_count = session.exec(
-        count_statement.where(Asset.status == AssetStatus.MAINTENANCE)
+        select(func.count())
+        .select_from(Asset)
+        .where(
+            Asset.owner_id == current_user.id,
+            Asset.is_archived == False,
+            Asset.status == AssetStatus.MAINTENANCE,
+        )
     ).one()
-    
+
     electronics_count = session.exec(
-        count_statement.where(Asset.category == AssetCategory.ELECTRONICS)
+        select(func.count())
+        .select_from(Asset)
+        .where(
+            Asset.owner_id == current_user.id,
+            Asset.is_archived == False,
+            Asset.category == AssetCategory.ELECTRONICS,
+        )
     ).one()
+
     home_appliance_count = session.exec(
-        count_statement.where(Asset.category == AssetCategory.HOME_APPLIANCE)
+        select(func.count())
+        .select_from(Asset)
+        .where(
+            Asset.owner_id == current_user.id,
+            Asset.is_archived == False,
+            Asset.category == AssetCategory.HOME_APPLIANCE,
+        )
     ).one()
+
     daily_use_count = session.exec(
-        count_statement.where(Asset.category == AssetCategory.DAILY_USE)
+        select(func.count())
+        .select_from(Asset)
+        .where(
+            Asset.owner_id == current_user.id,
+            Asset.is_archived == False,
+            Asset.category == AssetCategory.DAILY_USE,
+        )
     ).one()
-    
-    value_statement = (
+
+    total_purchase_value = session.exec(
         select(func.sum(Asset.purchase_price))
         .where(
             Asset.owner_id == current_user.id,
             Asset.is_archived == False,
             Asset.purchase_price != None,
         )
-    )
-    total_purchase_value = session.exec(value_statement).one()
-    
+    ).one()
+
     today = date.today()
     thirty_days_later = today + timedelta(days=30)
-    
-    warranty_expiring_statement = count_statement.where(
-        Asset.warranty_expiry_date >= today,
-        Asset.warranty_expiry_date <= thirty_days_later,
-    )
-    warranty_expiring_soon = session.exec(warranty_expiring_statement).one()
-    
-    warranty_expired_statement = count_statement.where(Asset.warranty_expiry_date < today)
-    warranty_expired = session.exec(warranty_expired_statement).one()
-    
+
+    warranty_expiring_soon = session.exec(
+        select(func.count())
+        .select_from(Asset)
+        .where(
+            Asset.owner_id == current_user.id,
+            Asset.is_archived == False,
+            Asset.warranty_expiry_date >= today,
+            Asset.warranty_expiry_date <= thirty_days_later,
+        )
+    ).one()
+
+    warranty_expired = session.exec(
+        select(func.count())
+        .select_from(Asset)
+        .where(
+            Asset.owner_id == current_user.id,
+            Asset.is_archived == False,
+            Asset.warranty_expiry_date < today,
+        )
+    ).one()
+
     return AssetStatistics(
         total_assets=total_assets,
         in_use_count=in_use_count,
