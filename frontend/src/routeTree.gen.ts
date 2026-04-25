@@ -17,6 +17,7 @@ import { Route as LayoutRouteImport } from './routes/_layout'
 import { Route as LayoutIndexRouteImport } from './routes/_layout/index'
 import { Route as LayoutTransactionsRouteImport } from './routes/_layout/transactions'
 import { Route as LayoutTasksRouteImport } from './routes/_layout/tasks'
+import { Route as LayoutSubscriptionsRouteImport } from './routes/_layout/subscriptions'
 import { Route as LayoutSettingsRouteImport } from './routes/_layout/settings'
 import { Route as LayoutRecycleRouteImport } from './routes/_layout/recycle'
 import { Route as LayoutPomodoroRouteImport } from './routes/_layout/pomodoro'
@@ -75,6 +76,11 @@ const LayoutTransactionsRoute = LayoutTransactionsRouteImport.update({
 const LayoutTasksRoute = LayoutTasksRouteImport.update({
   id: '/tasks',
   path: '/tasks',
+  getParentRoute: () => LayoutRoute,
+} as any)
+const LayoutSubscriptionsRoute = LayoutSubscriptionsRouteImport.update({
+  id: '/subscriptions',
+  path: '/subscriptions',
   getParentRoute: () => LayoutRoute,
 } as any)
 const LayoutSettingsRoute = LayoutSettingsRouteImport.update({
@@ -202,6 +208,7 @@ export interface FileRoutesByFullPath {
   '/pomodoro': typeof LayoutPomodoroRoute
   '/recycle': typeof LayoutRecycleRoute
   '/settings': typeof LayoutSettingsRoute
+  '/subscriptions': typeof LayoutSubscriptionsRoute
   '/tasks': typeof LayoutTasksRoute
   '/transactions': typeof LayoutTransactionsRoute
   '/articles/$id': typeof LayoutArticlesIdRoute
@@ -229,6 +236,7 @@ export interface FileRoutesByTo {
   '/pomodoro': typeof LayoutPomodoroRoute
   '/recycle': typeof LayoutRecycleRoute
   '/settings': typeof LayoutSettingsRoute
+  '/subscriptions': typeof LayoutSubscriptionsRoute
   '/tasks': typeof LayoutTasksRoute
   '/transactions': typeof LayoutTransactionsRoute
   '/': typeof LayoutIndexRoute
@@ -260,6 +268,7 @@ export interface FileRoutesById {
   '/_layout/pomodoro': typeof LayoutPomodoroRoute
   '/_layout/recycle': typeof LayoutRecycleRoute
   '/_layout/settings': typeof LayoutSettingsRoute
+  '/_layout/subscriptions': typeof LayoutSubscriptionsRoute
   '/_layout/tasks': typeof LayoutTasksRoute
   '/_layout/transactions': typeof LayoutTransactionsRoute
   '/_layout/': typeof LayoutIndexRoute
@@ -292,6 +301,7 @@ export interface FileRouteTypes {
     | '/pomodoro'
     | '/recycle'
     | '/settings'
+    | '/subscriptions'
     | '/tasks'
     | '/transactions'
     | '/articles/$id'
@@ -319,6 +329,7 @@ export interface FileRouteTypes {
     | '/pomodoro'
     | '/recycle'
     | '/settings'
+    | '/subscriptions'
     | '/tasks'
     | '/transactions'
     | '/'
@@ -349,6 +360,7 @@ export interface FileRouteTypes {
     | '/_layout/pomodoro'
     | '/_layout/recycle'
     | '/_layout/settings'
+    | '/_layout/subscriptions'
     | '/_layout/tasks'
     | '/_layout/transactions'
     | '/_layout/'
@@ -420,6 +432,13 @@ declare module '@tanstack/react-router' {
       path: '/tasks'
       fullPath: '/tasks'
       preLoaderRoute: typeof LayoutTasksRouteImport
+      parentRoute: typeof LayoutRoute
+    }
+    '/_layout/subscriptions': {
+      id: '/_layout/subscriptions'
+      path: '/subscriptions'
+      fullPath: '/subscriptions'
+      preLoaderRoute: typeof LayoutSubscriptionsRouteImport
       parentRoute: typeof LayoutRoute
     }
     '/_layout/settings': {
@@ -598,6 +617,7 @@ interface LayoutRouteChildren {
   LayoutPomodoroRoute: typeof LayoutPomodoroRoute
   LayoutRecycleRoute: typeof LayoutRecycleRoute
   LayoutSettingsRoute: typeof LayoutSettingsRoute
+  LayoutSubscriptionsRoute: typeof LayoutSubscriptionsRoute
   LayoutTasksRoute: typeof LayoutTasksRoute
   LayoutTransactionsRoute: typeof LayoutTransactionsRoute
   LayoutIndexRoute: typeof LayoutIndexRoute
@@ -622,6 +642,7 @@ const LayoutRouteChildren: LayoutRouteChildren = {
   LayoutPomodoroRoute: LayoutPomodoroRoute,
   LayoutRecycleRoute: LayoutRecycleRoute,
   LayoutSettingsRoute: LayoutSettingsRoute,
+  LayoutSubscriptionsRoute: LayoutSubscriptionsRoute,
   LayoutTasksRoute: LayoutTasksRoute,
   LayoutTransactionsRoute: LayoutTransactionsRoute,
   LayoutIndexRoute: LayoutIndexRoute,

@@ -562,6 +562,7 @@ class User(UserBase, table=True):
     health_records: list["HealthRecord"] = Relationship(back_populates="owner", cascade_delete=True)
     assets: list["Asset"] = Relationship(back_populates="owner", cascade_delete=True)
     maintenance_records: list["MaintenanceRecord"] = Relationship(back_populates="owner", cascade_delete=True)
+    subscriptions: list["Subscription"] = Relationship(back_populates="owner", cascade_delete=True)
 
 
 class Category(CategoryBase, table=True):
@@ -1974,3 +1975,104 @@ class MaintenanceRecord(MaintenanceRecordBase, table=True):
     )
     owner: "User" = Relationship(back_populates="maintenance_records")
     asset: "Asset" = Relationship(back_populates="maintenance_records")
+
+
+class SubscriptionCategory(str, Enum):
+    VIP_MEMBER = "vip_member"
+    SOFTWARE_SUBSCRIPTION = "software_subscription"
+    PAID_SERVICE = "paid_service"
+    MUSIC = "music"
+    VIDEO = "video"
+    CLOUD_STORAGE = "cloud_storage"
+    GYM = "gym"
+    OTHER = "other"
+
+
+class BillingCycle(str, Enum):
+    MONTHLY = "monthly"
+    QUARTERLY = "quarterly"
+    YEARLY = "yearly"
+    LIFETIME = "lifetime"
+    ONE_TIME = "one_time"
+
+
+class SubscriptionBase(SQLModel):
+    name: str = Field(min_length=1, max_length=255)
+    category: SubscriptionCategory = Field(default=SubscriptionCategory.OTHER)
+    service_provider: str | None = Field(default=None, max_length=100)
+    price: float | None = Field(default=None, ge=0)
+    original_price: float | None = Field(default=None, ge=0)
+    billing_cycle: BillingCycle = Field(default=BillingCycle.MONTHLY)
+    start_date: date | None = None
+    end_date: date | None = None
+    next_billing_date: date | None = None
+    auto_renewal: bool = Field(default=True)
+    is_active: bool = Field(default=True)
+    description: str | None = Field(default=None, max_length=2000)
+    notes: str | None = Field(default=None, max_length=2000)
+    account_email: str | None = Field(default=None, max_length=255)
+    payment_method: str | None = Field(default=None, max_length=100)
+    tags: list[str] | None = Field(default_factory=list, sa_column=Column(SA_JSON))
+
+
+class SubscriptionCreate(SubscriptionBase):
+    pass
+
+
+class SubscriptionUpdate(SQLModel):
+    name: str | None = None
+    category: SubscriptionCategory | None = None
+    service_provider: str | None = None
+    price: float | None = None
+    original_price: float | None = None
+    billing_cycle: BillingCycle | None = None
+    start_date: date | None = None
+    end_date: date | None = None
+    next_billing_date: date | None = None
+    auto_renewal: bool | None = None
+    is_active: bool | None = None
+    description: str | None = None
+    notes: str | None = None
+    account_email: str | None = None
+    payment_method: str | None = None
+    tags: list[str] | None = None
+
+
+class SubscriptionPublic(SubscriptionBase):
+    id: str
+    owner_id: str
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
+
+
+class SubscriptionsPublic(SQLModel):
+    data: list[SubscriptionPublic]
+    count: int
+
+
+class SubscriptionStatistics(SQLModel):
+    total_subscriptions: int
+    active_count: int
+    expired_count: int
+    auto_renewal_count: int
+    manual_renewal_count: int
+    total_monthly_cost: float | None
+    total_yearly_cost: float | None
+    expiring_soon_count: int
+    expired_count: int
+
+
+class Subscription(SubscriptionBase, table=True):
+    id: str = Field(default_factory=generate_uuid, primary_key=True)
+    owner_id: str = Field(
+        foreign_key="user.id", nullable=False, ondelete="CASCADE"
+    )
+    created_at: datetime | None = Field(
+        default_factory=get_datetime_utc,
+        sa_type=SA_DateTime(timezone=True),
+    )
+    updated_at: datetime | None = Field(
+        default_factory=get_datetime_utc,
+        sa_type=SA_DateTime(timezone=True),
+    )
+    owner: "User" = Relationship(back_populates="subscriptions")
