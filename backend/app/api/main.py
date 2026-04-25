@@ -26,6 +26,7 @@ from app.api.routes.article_tags import router as article_tags_router
 from app.api.routes.articles import router as articles_router
 from app.api.routes.media_collections import router as media_router
 from app.api.routes.health_records import router as health_router
+from app.api.routes.assets import router as assets_router
 from app.core.config import settings
 
 api_router = APIRouter()
@@ -54,6 +55,7 @@ api_router.include_router(article_tags_router)
 api_router.include_router(articles_router)
 api_router.include_router(media_router)
 api_router.include_router(health_router)
+api_router.include_router(assets_router)
 
 
 if settings.ENVIRONMENT == "local":

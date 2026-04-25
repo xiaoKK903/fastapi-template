@@ -32,6 +32,7 @@ import { Route as LayoutCollectionsRouteImport } from './routes/_layout/collecti
 import { Route as LayoutCategoriesRouteImport } from './routes/_layout/categories'
 import { Route as LayoutCalendarRouteImport } from './routes/_layout/calendar'
 import { Route as LayoutBudgetsRouteImport } from './routes/_layout/budgets'
+import { Route as LayoutAssetsRouteImport } from './routes/_layout/assets'
 import { Route as LayoutArticlesRouteImport } from './routes/_layout/articles'
 import { Route as LayoutAdminRouteImport } from './routes/_layout/admin'
 import { Route as LayoutArticlesIndexRouteImport } from './routes/_layout/articles.index'
@@ -151,6 +152,11 @@ const LayoutBudgetsRoute = LayoutBudgetsRouteImport.update({
   path: '/budgets',
   getParentRoute: () => LayoutRoute,
 } as any)
+const LayoutAssetsRoute = LayoutAssetsRouteImport.update({
+  id: '/assets',
+  path: '/assets',
+  getParentRoute: () => LayoutRoute,
+} as any)
 const LayoutArticlesRoute = LayoutArticlesRouteImport.update({
   id: '/articles',
   path: '/articles',
@@ -180,6 +186,7 @@ export interface FileRoutesByFullPath {
   '/signup': typeof SignupRoute
   '/admin': typeof LayoutAdminRoute
   '/articles': typeof LayoutArticlesRouteWithChildren
+  '/assets': typeof LayoutAssetsRoute
   '/budgets': typeof LayoutBudgetsRoute
   '/calendar': typeof LayoutCalendarRoute
   '/categories': typeof LayoutCategoriesRoute
@@ -206,6 +213,7 @@ export interface FileRoutesByTo {
   '/reset-password': typeof ResetPasswordRoute
   '/signup': typeof SignupRoute
   '/admin': typeof LayoutAdminRoute
+  '/assets': typeof LayoutAssetsRoute
   '/budgets': typeof LayoutBudgetsRoute
   '/calendar': typeof LayoutCalendarRoute
   '/categories': typeof LayoutCategoriesRoute
@@ -236,6 +244,7 @@ export interface FileRoutesById {
   '/signup': typeof SignupRoute
   '/_layout/admin': typeof LayoutAdminRoute
   '/_layout/articles': typeof LayoutArticlesRouteWithChildren
+  '/_layout/assets': typeof LayoutAssetsRoute
   '/_layout/budgets': typeof LayoutBudgetsRoute
   '/_layout/calendar': typeof LayoutCalendarRoute
   '/_layout/categories': typeof LayoutCategoriesRoute
@@ -267,6 +276,7 @@ export interface FileRouteTypes {
     | '/signup'
     | '/admin'
     | '/articles'
+    | '/assets'
     | '/budgets'
     | '/calendar'
     | '/categories'
@@ -293,6 +303,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/signup'
     | '/admin'
+    | '/assets'
     | '/budgets'
     | '/calendar'
     | '/categories'
@@ -322,6 +333,7 @@ export interface FileRouteTypes {
     | '/signup'
     | '/_layout/admin'
     | '/_layout/articles'
+    | '/_layout/assets'
     | '/_layout/budgets'
     | '/_layout/calendar'
     | '/_layout/categories'
@@ -515,6 +527,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LayoutBudgetsRouteImport
       parentRoute: typeof LayoutRoute
     }
+    '/_layout/assets': {
+      id: '/_layout/assets'
+      path: '/assets'
+      fullPath: '/assets'
+      preLoaderRoute: typeof LayoutAssetsRouteImport
+      parentRoute: typeof LayoutRoute
+    }
     '/_layout/articles': {
       id: '/_layout/articles'
       path: '/articles'
@@ -563,6 +582,7 @@ const LayoutArticlesRouteWithChildren = LayoutArticlesRoute._addFileChildren(
 interface LayoutRouteChildren {
   LayoutAdminRoute: typeof LayoutAdminRoute
   LayoutArticlesRoute: typeof LayoutArticlesRouteWithChildren
+  LayoutAssetsRoute: typeof LayoutAssetsRoute
   LayoutBudgetsRoute: typeof LayoutBudgetsRoute
   LayoutCalendarRoute: typeof LayoutCalendarRoute
   LayoutCategoriesRoute: typeof LayoutCategoriesRoute
@@ -586,6 +606,7 @@ interface LayoutRouteChildren {
 const LayoutRouteChildren: LayoutRouteChildren = {
   LayoutAdminRoute: LayoutAdminRoute,
   LayoutArticlesRoute: LayoutArticlesRouteWithChildren,
+  LayoutAssetsRoute: LayoutAssetsRoute,
   LayoutBudgetsRoute: LayoutBudgetsRoute,
   LayoutCalendarRoute: LayoutCalendarRoute,
   LayoutCategoriesRoute: LayoutCategoriesRoute,
