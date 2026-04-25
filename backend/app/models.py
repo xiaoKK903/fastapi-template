@@ -560,6 +560,8 @@ class User(UserBase, table=True):
     media_collections: list["MediaCollection"] = Relationship(back_populates="owner", cascade_delete=True)
     media_tags: list["MediaTag"] = Relationship(back_populates="owner", cascade_delete=True)
     health_records: list["HealthRecord"] = Relationship(back_populates="owner", cascade_delete=True)
+    assets: list["Asset"] = Relationship(back_populates="owner", cascade_delete=True)
+    maintenance_records: list["MaintenanceRecord"] = Relationship(back_populates="owner", cascade_delete=True)
 
 
 class Category(CategoryBase, table=True):
@@ -1796,3 +1798,176 @@ class HealthRecord(HealthRecordBase, table=True):
         sa_type=SA_DateTime(timezone=True),
     )
     owner: "User" = Relationship(back_populates="health_records")
+
+
+class AssetCategory(str, Enum):
+    ELECTRONICS = "electronics"
+    HOME_APPLIANCE = "home_appliance"
+    DAILY_USE = "daily_use"
+
+
+class AssetStatus(str, Enum):
+    IN_USE = "in_use"
+    IDLE = "idle"
+    SCRAPPED = "scrapped"
+    MAINTENANCE = "maintenance"
+
+
+class MaintenanceType(str, Enum):
+    REPAIR = "repair"
+    MAINTENANCE = "maintenance"
+
+
+class AssetBase(SQLModel):
+    name: str = Field(min_length=1, max_length=255)
+    category: AssetCategory = Field(default=AssetCategory.DAILY_USE)
+    brand: str | None = Field(default=None, max_length=100)
+    model: str | None = Field(default=None, max_length=100)
+    purchase_price: float | None = Field(default=None, ge=0)
+    purchase_date: date | None = None
+    purchase_channel: str | None = Field(default=None, max_length=100)
+    storage_location: str | None = Field(default=None, max_length=100)
+    warranty_period_months: int | None = Field(default=None, ge=0)
+    warranty_expiry_date: date | None = None
+    status: AssetStatus = Field(default=AssetStatus.IN_USE)
+    description: str | None = Field(default=None, max_length=2000)
+    receipt_images: list[str] | None = Field(default_factory=list, sa_column=Column(SA_JSON))
+    serial_number: str | None = Field(default=None, max_length=100)
+    is_archived: bool = Field(default=False)
+
+
+class AssetCreate(AssetBase):
+    pass
+
+
+class AssetUpdate(SQLModel):
+    name: str | None = None
+    category: AssetCategory | None = None
+    brand: str | None = None
+    model: str | None = None
+    purchase_price: float | None = None
+    purchase_date: date | None = None
+    purchase_channel: str | None = None
+    storage_location: str | None = None
+    warranty_period_months: int | None = None
+    warranty_expiry_date: date | None = None
+    status: AssetStatus | None = None
+    description: str | None = None
+    receipt_images: list[str] | None = None
+    serial_number: str | None = None
+    is_archived: bool | None = None
+
+
+class AssetPublic(AssetBase):
+    id: str
+    owner_id: str
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
+
+
+class AssetsPublic(SQLModel):
+    data: list[AssetPublic]
+    count: int
+
+
+class AssetStatistics(SQLModel):
+    total_assets: int
+    in_use_count: int
+    idle_count: int
+    scrapped_count: int
+    maintenance_count: int
+    electronics_count: int
+    home_appliance_count: int
+    daily_use_count: int
+    total_purchase_value: float | None
+    warranty_expiring_soon: int
+    warranty_expired: int
+
+
+class MaintenanceRecordBase(SQLModel):
+    asset_id: str
+    maintenance_type: MaintenanceType = Field(default=MaintenanceType.REPAIR)
+    maintenance_date: date | None = None
+    title: str = Field(min_length=1, max_length=255)
+    description: str | None = Field(default=None, max_length=2000)
+    cost: float | None = Field(default=None, ge=0)
+    parts_replaced: list[str] | None = Field(default_factory=list, sa_column=Column(SA_JSON))
+    service_provider: str | None = Field(default=None, max_length=100)
+    technician_name: str | None = Field(default=None, max_length=100)
+    warranty_covered: bool = Field(default=False)
+    notes: str | None = Field(default=None, max_length=2000)
+
+
+class MaintenanceRecordCreate(SQLModel):
+    asset_id: str
+    maintenance_type: MaintenanceType = Field(default=MaintenanceType.REPAIR)
+    maintenance_date: date | None = None
+    title: str = Field(min_length=1, max_length=255)
+    description: str | None = None
+    cost: float | None = None
+    parts_replaced: list[str] | None = None
+    service_provider: str | None = None
+    technician_name: str | None = None
+    warranty_covered: bool = False
+    notes: str | None = None
+
+
+class MaintenanceRecordUpdate(SQLModel):
+    maintenance_type: MaintenanceType | None = None
+    maintenance_date: date | None = None
+    title: str | None = None
+    description: str | None = None
+    cost: float | None = None
+    parts_replaced: list[str] | None = None
+    service_provider: str | None = None
+    technician_name: str | None = None
+    warranty_covered: bool | None = None
+    notes: str | None = None
+
+
+class MaintenanceRecordPublic(MaintenanceRecordBase):
+    id: str
+    owner_id: str
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
+
+
+class MaintenanceRecordsPublic(SQLModel):
+    data: list[MaintenanceRecordPublic]
+    count: int
+
+
+class Asset(AssetBase, table=True):
+    id: str = Field(default_factory=generate_uuid, primary_key=True)
+    owner_id: str = Field(
+        foreign_key="user.id", nullable=False, ondelete="CASCADE"
+    )
+    created_at: datetime | None = Field(
+        default_factory=get_datetime_utc,
+        sa_type=SA_DateTime(timezone=True),
+    )
+    updated_at: datetime | None = Field(
+        default_factory=get_datetime_utc,
+        sa_type=SA_DateTime(timezone=True),
+    )
+    owner: "User" = Relationship(back_populates="assets")
+    maintenance_records: list["MaintenanceRecord"] = Relationship(
+        back_populates="asset", cascade_delete=True
+    )
+
+
+class MaintenanceRecord(MaintenanceRecordBase, table=True):
+    id: str = Field(default_factory=generate_uuid, primary_key=True)
+    owner_id: str = Field(
+        foreign_key="user.id", nullable=False, ondelete="CASCADE"
+    )
+    created_at: datetime | None = Field(
+        default_factory=get_datetime_utc,
+        sa_type=SA_DateTime(timezone=True),
+    )
+    updated_at: datetime | None = Field(
+        default_factory=get_datetime_utc,
+        sa_type=SA_DateTime(timezone=True),
+    )
+    owner: "User" = Relationship(back_populates="maintenance_records")
+    asset: "Asset" = Relationship(back_populates="maintenance_records")
