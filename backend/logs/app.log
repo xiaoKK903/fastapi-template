@@ -563,3 +563,12 @@
 2026-04-25 08:54:07,668 - fastapi_template - INFO - [GET] /api/v1/users/me -> 200 (12ms) user=aaawhz@11.com
 2026-04-25 08:54:07,693 - fastapi_template - INFO - [GET] /api/v1/users/me/full-info -> 200 (34ms) user=aaawhz@11.com
 2026-04-25 08:54:07,721 - fastapi_template - INFO - [GET] /api/v1/users/me/permissions -> 200 (62ms) user=aaawhz@11.com
+2026-04-25 09:13:01,539 - fastapi_template - INFO - [GET] /api/v1/users/me -> 200 (10ms) user=aaawhz@11.com
+2026-04-25 09:13:01,590 - fastapi_template - INFO - [GET] /api/v1/users/me/full-info -> 200 (18ms) user=aaawhz@11.com
+2026-04-25 09:13:01,614 - fastapi_template - INFO - [GET] /api/v1/users/me/permissions -> 200 (39ms) user=aaawhz@11.com
+2026-04-25 09:13:01,910 - fastapi_template - INFO - [GET] /api/v1/users/me -> 200 (13ms) user=aaawhz@11.com
+2026-04-25 09:13:01,933 - fastapi_template - INFO - [GET] /api/v1/users/me/full-info -> 200 (34ms) user=aaawhz@11.com
+2026-04-25 09:13:01,956 - fastapi_template - INFO - [GET] /api/v1/users/me/permissions -> 200 (56ms) user=aaawhz@11.com
+2026-04-25 09:13:07,893 - fastapi_template - INFO - [GET] /api/v1/users/me -> 200 (15ms) user=aaawhz@11.com
+2026-04-25 09:13:07,921 - fastapi_template - INFO - [GET] /api/v1/users/me/full-info -> 200 (40ms) user=aaawhz@11.com
+2026-04-25 09:13:07,944 - fastapi_template - INFO - [GET] /api/v1/users/me/permissions -> 200 (63ms) user=aaawhz@11.com
