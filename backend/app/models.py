@@ -1961,6 +1961,9 @@ class MaintenanceRecord(MaintenanceRecordBase, table=True):
     owner_id: str = Field(
         foreign_key="user.id", nullable=False, ondelete="CASCADE"
     )
+    asset_id: str = Field(
+        foreign_key="asset.id", nullable=False, ondelete="CASCADE"
+    )
     created_at: datetime | None = Field(
         default_factory=get_datetime_utc,
         sa_type=SA_DateTime(timezone=True),
